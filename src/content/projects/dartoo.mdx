@@ -1,0 +1,68 @@
+---
+title: Dartoo
+tagline: A mobile AI assistant that collects, summarises and pushes Korean regulatory disclosures.
+period: 2025.07 – 2026.06
+team: 6-person founding team
+role: Backend — owned 4 of the microservices
+status: deployed
+tier: 1
+order: 1
+stack:
+  - Python
+  - FastAPI
+  - Celery
+  - RabbitMQ
+  - PostgreSQL 16
+  - Redis
+  - MinIO
+  - LangChain
+  - Firebase FCM
+  - Docker
+links:
+  - kind: deployed
+    href: https://dartoo.co.kr
+    label: dartoo.co.kr
+  - kind: org
+    href: https://github.com/team-dartoo
+    label: team-dartoo
+    caveat: private organisation
+ownership:
+  owned:
+    - ingestion service (end to end)
+    - disclosure service (end to end)
+    - notification service (end to end)
+    - summary service (implementation and cross-service wiring)
+  notOwned:
+    - frontend and design
+    - CI/CD pipeline
+    - monitoring stack
+    - infrastructure provisioning
+boundaries:
+  - I did not build the CI/CD pipeline or the monitoring stack on this project.
+  - My Kubernetes work here was deployment manifests and config fixes, not cluster operation.
+---
+
+import N from '../../components/note/N.astro';
+
+The ingestion pipeline looked healthy. Every request returned 200, every worker
+reported success, and the disclosure table filled up on schedule. What it did not
+do was publish the events that the rest of the system was waiting
+for.<N id="dartoo-publisher-gap" />
+
+The failure had no log line. When RabbitMQ came up after the disclosure service,
+`EventPublisher` set `self.enabled = False` and never reset it, so once the broker
+recovered the publisher stayed switched off and discarded every event in silence.
+Success responses were telling the truth about persistence and nothing about
+delivery. Reconciling the two counts was the only way to see it.
+
+The fix was a lazy reconnect — keep the publisher enabled after startup failures
+and reconnect on first publish — plus exponential backoff, a connection guard, and
+a warning log with the receipt number so a discarded event can never again be
+invisible.<N id="dartoo-e2e-parity" />
+
+A separate assumption failed the same way. A retry counter had written off a batch
+of `NOT_READY` responses as permanent, so I re-fetched four of them a week
+later.<N id="dartoo-not-ready-experiment" /> All four returned normally. The status
+code was mixed, not terminal, so the policy became a three-stage backoff for the
+transient case and DLX isolation for the genuinely permanent
+one.<N id="dartoo-test-count" />

@@ -1,0 +1,69 @@
+# Every number on this site resolves to an entry here.
+# A `measurement` without a `condition` fails the build (see src/content.config.ts).
+
+- id: dartoo-publisher-gap
+  kind: measurement
+  body: >-
+    959 rows had been persisted to the disclosure table while EventPublisher had
+    published only 805 events. Nothing in the logs marked the 154 missing ones.
+  condition: >-
+    One day of ingestion, counted by reconciling persisted rows against published
+    events. Not a production traffic figure.
+  limits: >-
+    A count of one day, on a development deployment. It does not establish a
+    steady-state loss rate.
+
+- id: dartoo-e2e-parity
+  kind: measurement
+  body: >-
+    After the lazy-reconnect fix, the same end-to-end run produced 3,948 persisted
+    rows and 3,948 published events.
+  condition: >-
+    One end-to-end verification run under that fixture set. Parity is claimed for
+    that run only.
+  limits: >-
+    A single verified run is not a durability guarantee. I did not operate this
+    under sustained load.
+
+- id: dartoo-test-count
+  kind: measurement
+  body: >-
+    319 automated tests across the three services I owned: 110 ingestion,
+    156 notification, 53 disclosure.
+  condition: >-
+    Count of `def test_` functions under tests/ in those three repositories,
+    virtualenvs excluded, measured 2026-08-13.
+  limits: >-
+    A count of test functions, not a coverage percentage. I did not measure
+    line or branch coverage.
+
+- id: dartoo-not-ready-experiment
+  kind: commit
+  body: >-
+    Four disclosures the retry counter had written off as permanent failures
+    returned normal responses when re-fetched a week later.
+  commit: 0ec3e2b
+  limits: >-
+    Four cases. Enough to falsify "permanent", not enough to size the split
+    between transient and permanent failures.
+
+- id: map-terminal-state
+  kind: commit
+  body: >-
+    A completion event arriving before its own job record let the late
+    `in_progress` write overwrite the terminal state. Three regression tests pin
+    the ordering.
+  commit: 209c893
+  href: https://github.com/we-meet-trip
+
+- id: dartoo-ownership
+  kind: scope
+  body: >-
+    I owned ingestion, disclosure, and notification end to end, and connected
+    summary. I did not build the CI/CD pipeline or the monitoring stack.
+
+- id: k8s-scope
+  kind: limit
+  body: >-
+    My Kubernetes work was writing deployment manifests and fixing config
+    reference errors. I have not run a cluster.

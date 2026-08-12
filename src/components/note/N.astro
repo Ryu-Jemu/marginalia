@@ -1,0 +1,72 @@
+---
+/**
+ * A margin note anchored to a claim in the running text.
+ *
+ * The marker and the note are adjacent siblings, which buys three things:
+ *   - pairing is `ref.nextElementSibling`, so no ids and no duplicate-id bugs
+ *   - the numbering is a pure CSS counter, correct without JS
+ *   - a screen reader meets the note where the claim is, then returns
+ *
+ * Both are `<span>` because `<aside>` is flow content and cannot sit inside a
+ * `<p>`; Astro 7's compiler is strict about this.
+ */
+import { getEntry } from 'astro:content';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+
+const entry = await getEntry('notes', id);
+if (!entry) {
+  throw new Error(`Unknown note id: "${id}" — add it to src/content/notes.yaml`);
+}
+const n = entry.data;
+
+const commitHref =
+  n.href && n.commit ? `${n.href.replace(/\/$/, '')}/commit/${n.commit}` : n.href;
+---
+
+<span
+  class="note-ref"
+  data-note-ref
+  role="button"
+  tabindex="0"
+  aria-expanded="true"
+  aria-label={`Evidence for this claim: ${n.body.slice(0, 80)}`}></span><span
+  class="note"
+  data-note
+  data-kind={n.kind}
+  role="note"
+  ><span class="note__body">{n.body}</span>{
+    n.condition && (
+      <span class="note__meta note__meta--scope">
+        <span class="note__meta-key">Measured</span> {n.condition}
+      </span>
+    )
+  }{
+    n.commit &&
+      (commitHref ? (
+        <a class="note__meta note__meta--commit" href={commitHref} rel="noopener">
+          <code>{n.commit.slice(0, 7)}</code>
+        </a>
+      ) : (
+        <span class="note__meta note__meta--commit">
+          <code>{n.commit.slice(0, 7)}</code>
+        </span>
+      ))
+  }{
+    n.href && !n.commit && (
+      <a class="note__meta note__meta--source" href={n.href} rel="noopener">
+        Source
+      </a>
+    )
+  }{
+    n.limits && (
+      <span class="note__meta note__meta--limit">
+        <span class="note__meta-key">Does not show</span> {n.limits}
+      </span>
+    )
+  }</span
+>

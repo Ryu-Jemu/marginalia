@@ -1,0 +1,103 @@
+/* ── document ─────────────────────────────────────────────────────────────
+ * The reading column, the margin, and the notes that live in it.
+ *
+ * Phase 1 ships the inline note treatment only — which is also the narrow-
+ * viewport and no-JS fallback. Phase 3 adds the floated margin column on top.
+ * Building the fallback first is the order that keeps it honest.
+ * ------------------------------------------------------------------------ */
+
+.shell {
+  --shell-w: var(--measure);
+  max-width: var(--shell-w);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+.column {
+  max-width: var(--measure);
+}
+
+@media (min-width: 64rem) {
+  .shell {
+    --shell-w: calc(var(--measure) + var(--gutter) + var(--note-w));
+    padding-left: calc(1.5rem + var(--rail));
+  }
+}
+
+/* ── note markers ─────────────────────────────────────────────────────────
+ * The number is a CSS counter, so it is correct with JavaScript disabled and
+ * always follows DOM order.
+ * ------------------------------------------------------------------------ */
+
+.document {
+  counter-reset: note;
+}
+
+.note-ref {
+  counter-increment: note;
+  cursor: pointer;
+}
+
+.note-ref::after {
+  content: counter(note);
+  font-family: var(--family-mono);
+  font-size: 0.62em;
+  font-variant-numeric: lining-nums;
+  vertical-align: super;
+  line-height: 0;
+  color: var(--rubric);
+  padding-inline: 0.12em;
+}
+
+.note-ref:hover::after,
+.note-ref:focus-visible::after {
+  color: var(--rubric-hover);
+}
+
+/* ── notes: inline treatment (narrow viewports, and the no-JS fallback) ──── */
+
+.note {
+  display: block;
+  margin-block: 0.9rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--rule-strong);
+  font-size: var(--t-note);
+  line-height: var(--lh-note);
+  color: var(--ink-muted);
+}
+
+.note::before {
+  content: counter(note);
+  font-family: var(--family-mono);
+  font-size: 0.72em;
+  font-variant-numeric: lining-nums;
+  color: var(--rubric);
+  margin-right: 0.5em;
+  vertical-align: 0.15em;
+}
+
+.note__body {
+  display: inline;
+}
+
+.note__meta {
+  display: block;
+  margin-top: 0.4rem;
+  font-family: var(--family-mono);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+  text-wrap: pretty;
+}
+
+.note__meta-key {
+  text-transform: uppercase;
+  letter-spacing: var(--ls-meta);
+  font-size: 0.9em;
+  color: var(--scope);
+}
+
+.note__meta--commit code {
+  font-size: 1em;
+}

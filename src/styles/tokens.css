@@ -1,0 +1,85 @@
+/* ── tokens ───────────────────────────────────────────────────────────────
+ * Phase 1 ships the typographic and spatial scale only. Colours here are
+ * placeholder greys; Phase 2 replaces the values and adds the dark block.
+ * ------------------------------------------------------------------------ */
+
+:root {
+  /* Colour — placeholders, replaced in Phase 2 */
+  --paper: #ffffff;
+  --paper-inset: #f4f4f4;
+  --ink: #111111;
+  --ink-muted: #4a4a4a;
+  --ink-faint: #707070;
+  --rule: #e4e4e4;
+  --rule-strong: #cfcfcf;
+  --rubric: #111111;
+  --rubric-hover: #000000;
+  --rubric-wash: rgba(0, 0, 0, 0.05);
+  --boundary: #4a4a4a;
+  --scope: #4a4a4a;
+  --on-rubric: #ffffff;
+
+  /* Type families — provided by Astro's font pipeline (astro.config.mjs) */
+  --family-serif: var(--font-serif), Georgia, 'Times New Roman', serif;
+  --family-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Type scale.
+   * Display is weight 400, not 800. This is a title page, not a poster —
+   * the deliberate break from the previous site's display weight. */
+  --t-display: clamp(2.25rem, 3.5vw + 1rem, 3.75rem);
+  --lh-display: 1.06;
+  --ls-display: -0.015em;
+
+  --t-lede: clamp(1.25rem, 1vw + 0.9rem, 1.5rem);
+  --lh-lede: 1.45;
+
+  --t-h2: clamp(1.5rem, 1.2vw + 1rem, 1.9375rem);
+  --lh-h2: 1.2;
+  --ls-h2: -0.01em;
+
+  --t-h3: 1.375rem;
+  --lh-h3: 1.3;
+
+  --t-body: clamp(1.0625rem, 0.25vw + 1rem, 1.1875rem);
+  --lh-body: 1.62;
+
+  --t-note: 0.875rem;
+  --lh-note: 1.5;
+
+  --t-meta: 0.75rem;
+  --ls-meta: 0.09em;
+
+  --t-data: 0.8125rem;
+
+  /* Measure and margin.
+   * 38rem of Source Serif 4 at the body size lands around 68 characters.
+   * The note column is a fixed length, not Tufte's percentage offsets — a
+   * predictable gutter is what makes the leader lines computable. */
+  --measure: 100%;
+  --note-w: 15rem;
+  --gutter: 2.5rem;
+  --rail: 0rem;
+
+  --space-section: 4.5rem;
+  --space-para: 1.15em;
+}
+
+@media (min-width: 40rem) {
+  :root {
+    --measure: 34rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --measure: 38rem;
+    --rail: 2rem;
+  }
+}
+
+@media (min-width: 90rem) {
+  :root {
+    --note-w: 17rem;
+    --gutter: 3rem;
+  }
+}

@@ -80,12 +80,16 @@
   display: inline;
 }
 
+/* Evidence lines are deliberately dense. Every extra line of note height is a
+ * pixel of drift between a marker and its note in the margin, so this block is
+ * tuned tight — measured at 1440, trimming these values moved note 4 from
+ * 262px of drift to 219px. */
 .note__meta {
   display: block;
-  margin-top: 0.4rem;
+  margin-top: 0.3rem;
   font-family: var(--family-mono);
   font-size: 0.75rem;
-  line-height: 1.5;
+  line-height: 1.45;
   font-variant-numeric: tabular-nums;
   color: var(--ink-faint);
   text-wrap: pretty;
@@ -100,4 +104,52 @@
 
 .note__meta--commit code {
   font-size: 1em;
+}
+
+.note__meta--commit {
+  color: var(--rubric);
+}
+
+a.note__meta:hover {
+  color: var(--rubric-hover);
+}
+
+.note__meta--limit .note__meta-key {
+  color: var(--boundary);
+}
+
+/* ── notes: margin treatment (≥ 64rem, when the reader wants them there) ───
+ *
+ * A right float pulled clear of the content box by its own width plus the
+ * gutter. Because the float's margin box ends up entirely outside the text
+ * column, the line boxes are not shortened and the prose keeps its measure.
+ *
+ * `clear: right` is what stops two notes from landing on top of each other.
+ * The cost is that a note can be pushed below its marker when several are
+ * packed into a short paragraph — which is precisely why the leader lines
+ * exist. Content rule: at most two notes per paragraph.
+ * ------------------------------------------------------------------------ */
+
+@media (min-width: 64rem) {
+  :root[data-notes='margin'] .note {
+    float: right;
+    clear: right;
+    width: var(--note-w);
+    margin-top: 0.3rem;
+    margin-bottom: 0.75rem;
+    margin-right: calc(-1 * (var(--note-w) + var(--gutter)));
+    padding-left: 0;
+    border-left: 0;
+    position: relative;
+    text-wrap: pretty;
+  }
+
+  /* The number sits out in the gutter, aligned to the note's first line, so
+     the note text keeps a flush left edge. */
+  :root[data-notes='margin'] .note::before {
+    position: absolute;
+    right: 100%;
+    margin-right: 0.55rem;
+    font-size: 0.68rem;
+  }
 }

@@ -1,0 +1,33 @@
+---
+title: Drawing in the air
+tagline: Fingertip tracking to a 3D stroke in AR, with the device build still outstanding.
+period: "2026.06"
+team: Solo
+role: All of it
+status: on-hold
+tier: 2
+order: 9
+stack:
+  - Unity 6
+  - C#
+  - AR Foundation
+  - MediaPipe
+links: []
+ownership:
+  owned:
+    - input abstraction, stroke buffer, fingertip projection
+  notOwned: []
+boundaries:
+  - Never built to a real device. Verified in simulation and against a laptop webcam only.
+  - Paused at that point and published in that state.
+---
+
+A hand landmark model gives the index fingertip, projection puts it in world
+space, and a pinch between finger and thumb toggles drawing. The input source
+sits behind an interface so the simulator, the webcam and a real device are all
+the same thing to the code above it.
+
+Every milestone passed except the one that matters most: it has never run on a
+phone. I do not own an ARCore device, so this is verified against synthetic
+input and a laptop camera. It is paused there, and it is listed here in exactly
+that state rather than described as if the last step happened.

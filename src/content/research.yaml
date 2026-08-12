@@ -1,2 +1,65 @@
-# Filled in Phase 6.
-[]
+# authorPosition is stored as {index, of} rather than as prose, so the position
+# is rendered mechanically and cannot drift into a different claim.
+
+- id: ask-2026
+  title: >-
+    Reinforcement-learning-based three-part tariff optimisation for 5G network
+    slicing
+  venue: KIPS ASK 2026 spring conference
+  authorPosition: { index: 1, of: 2 }
+  status: accepted
+  date: "2026.05"
+  manuscriptId: C2026A0229
+  grant: NRF RS-2024-00336983
+  award: Silver award, paper competition
+  summary: >-
+    Prices two slices under a three-part tariff against their own effect on
+    churn, and separates the contribution of foresight from the contribution of
+    the learning algorithm.
+  highlights:
+    - The advantage grows with churn sensitivity and disappears where customers are insensitive to price.
+    - A myopic control trained without foresight is indistinguishable from the fixed baseline.
+    - The revenue gap is decomposed by slice, and the decomposition is in the paper.
+  notes:
+    - rl-uplift
+    - rl-embb-attribution
+
+- id: ieee-tai-survey
+  title: Large language model-based optimisation for wireless communication — a survey
+  venue: IEEE Transactions on Artificial Intelligence
+  authorPosition: { index: 4, of: 7 }
+  status: under-review
+  date: "2026"
+  manuscriptId: TAI-2026-Feb-R-00315
+  summary: >-
+    A survey of language-model approaches to wireless resource problems, covering
+    power control, bandwidth allocation, edge computing and beam prediction.
+  highlights:
+    - Reviewed and corrected the manuscript, including three references whose identifiers pointed at unrelated papers.
+  notes:
+    - ieee-position
+
+- id: ktccs-cmdp
+  title: >-
+    Constrained-MDP pricing for 5G slices under load-dependent quality of service
+  venue: KTCCS
+  authorPosition: { index: 1, of: 2 }
+  status: submission-in-progress
+  date: "2026"
+  summary: >-
+    Extends the pricing work with an explicit service-level constraint rather
+    than a penalty term folded into the reward.
+  highlights:
+    - Submission in progress. Nothing here is peer reviewed yet.
+
+- id: bp-llm-lab
+  title: Beam prediction with reprogrammed language models
+  venue: ICI Lab, Hanyang University ERICA
+  authorPosition: { index: 1, of: 1 }
+  status: assisting
+  date: "2025 – 2026"
+  summary: >-
+    Undergraduate research work on the preprocessing and model side. Training
+    ran; evaluation was never implemented.
+  notes:
+    - bp-llm-training

@@ -1,0 +1,39 @@
+---
+title: Beam prediction with a frozen language model
+tagline: Reprogramming GPT-2 for a millimetre-wave beam sequence, and the evaluation that was never built.
+period: "2025.10 – 2026.01"
+team: Solo, as an undergraduate researcher
+role: Data preparation, model, training
+status: on-hold
+tier: 2
+order: 6
+stack:
+  - Python
+  - PyTorch
+  - Hugging Face Transformers
+links: []
+ownership:
+  owned:
+    - the preprocessing pipeline from ray-tracing output to training sequences
+    - the patch embedding, cross-attention reprogramming and prompt prefix
+  notOwned:
+    - the research direction, which came from the lab
+boundaries:
+  - No train/validation/test split and no evaluation metric were implemented. There is no accuracy figure.
+  - The channel model and codebook exist as a design outline only.
+  - The source dataset was deleted for disk space and the pipeline has not been re-run since.
+---
+
+import N from '../../../components/note/N.astro';
+
+Ray-tracing output at 28 GHz, reduced to the strongest path's departure angles,
+windowed into past-40 and future-10 sequences. A frozen GPT-2 with a patch
+embedding in front of it, cross-attention reprogramming, and a prompt prefix,
+trained end to end on the small set of parameters that remained
+unfrozen.<N id="bp-llm-training" />
+
+It trained. That is the entire honest claim. There is no held-out split and no
+metric, so the loss curve says the model fitted what it saw and nothing about
+whether it predicts beams. I am listing it because the preprocessing and the
+reprogramming were real work, and because leaving out the missing half would
+make it look like a result.

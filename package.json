@@ -7,8 +7,11 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "npm run verify",
     "build": "astro build",
     "preview": "astro preview",
+    "verify": "node scripts/check-claims.mjs && node scripts/check-notes.mjs",
+    "check": "astro check",
     "astro": "astro"
   },
   "dependencies": {

@@ -1,0 +1,123 @@
+---
+title: MAP
+tagline: A travel recommendation app whose backend wraps five external APIs behind one gateway and plans routes with a rule engine the model is not allowed to overrule.
+period: "2026.03 – present"
+team: 5 people
+role: Backend and AI — gateway, agent, infra, and the Java BFF
+status: in-progress
+tier: 1
+order: 2
+stack:
+  - Python
+  - FastAPI
+  - LangGraph
+  - Gemini
+  - PostGIS
+  - Redis Streams
+  - Java 17
+  - Spring Boot 3.4
+  - OSRM
+  - Docker
+links:
+  - kind: deployed
+    href: https://map-project-cbd94.web.app
+    label: map-project-cbd94.web.app
+  - kind: org
+    href: https://github.com/we-meet-trip
+    label: we-meet-trip
+ownership:
+  owned:
+    - hub — the external API gateway, its cache and its rule engine
+    - agent — the LangGraph recommendation pipeline and its contract checks
+    - infra — compose topology, health gating, self-hosted routing
+    - user — the Java BFF and its stream consumer
+  notOwned:
+    - the Flutter client, where I am a contributor rather than an owner
+    - product design and the itinerary UI
+decisions:
+  - decision: Let the terminal state win, whatever order the writes arrive in.
+    why: >-
+      The completion event could reach the database before the record of the job
+      that produced it. The late `in_progress` write then overwrote the finished
+      state and the client waited forever for a result that had already arrived.
+      Writing the first record only when no row exists, and retrying a primary
+      key collision on the completion path as an update, makes arrival order
+      stop mattering.
+    rejected:
+      - Ordering the writes upstream — that moves the race rather than removing it.
+      - A lock around the transition — contention on the hot path to fix a rare interleaving.
+    notes:
+      - map-terminal-state
+  - decision: Filter with rules first, then let the model choose.
+    why: >-
+      A model asked to pick places from an open field will invent them. Given a
+      candidate list a deterministic engine has already filtered by travel
+      radius, weather and exclusion zones, the worst it can do is pick a bad
+      real place. The output is then validated as a contract — visit order a
+      permutation, legs connected, coordinates in range — before anything is
+      published.
+    rejected:
+      - Letting the model query the APIs directly. Cheaper to build, impossible to bound.
+    notDone:
+      - Any measurement of recommendation quality. There is no evaluation set.
+    notes:
+      - map-llm-budget
+      - map-tsp
+  - decision: Answer immediately with 202 and let the client poll.
+    why: >-
+      A recommendation takes longer than a request should. The endpoint returns
+      202 with a Retry-After, the work continues on a stream, and the job record
+      is the single place the client asks about.
+    rejected:
+      - Holding the connection open — it turns every slow model call into a client timeout.
+  - decision: Cap re-recommendation at KST midnight rather than a rolling window.
+    why: >-
+      A rolling window means a user who retried at 23:50 is still limited at
+      00:10 for reasons they cannot see. An absolute expiry matches what "three
+      times today" means to the person reading it.
+    notes:
+      - map-rate-limit
+  - decision: Move every third-party key out of the client and onto the server.
+    why: >-
+      The Flutter app was calling external APIs with keys shipped inside the
+      bundle, which is to say published. Routing those calls through the gateway
+      made the keys server-side and gave the cache something to sit in front of.
+boundaries:
+  - The recommendation agent is at v0.0.1-poc with no tests. The test count on this project is the gateway.
+  - Authentication in the Java BFF is a placeholder and unfinished.
+  - The cache is two tiers, not three. The database-backed tier was designed and never built.
+  - On the Flutter client I am a contributor, not an owner.
+---
+
+import N from '../../components/note/N.astro';
+
+The bug that taught me most on this project was a race I could not reproduce on
+demand. A recommendation would finish, the client would keep waiting, and the
+job row would say `in_progress` — for a job that had completed several seconds
+earlier.<N id="map-terminal-state" />
+
+The completion event was arriving before the record of the job that produced it.
+Whichever write landed second won, and half the time that was the stale one. The
+fix was to stop treating the two writes as ordered at all: the first record is
+only written when no row exists, and a primary key collision on the completion
+path is retried as an update. A terminal state, once written, is never walked
+back. Three regression tests fix the orderings that used to break it.
+
+The other decision worth defending is where the model sits. A recommendation
+agent that queries travel APIs directly is a weekend's work and impossible to
+bound. This one runs behind a deterministic rule engine — travel radius by mode,
+indoor preference when it rains, exclusion zones as polyline intersections — and
+the model only chooses among candidates that already
+passed.<N id="map-llm-budget" /> Its output is then checked as a contract before
+anything downstream sees it.
+
+Visit order is solved exhaustively while that is cheap and approximately once it
+is not.<N id="map-tsp" /> The gateway keeps a Redis tier in front of a scheduled
+prefetch, and a failed upstream degrades to an empty result rather than a 5xx,
+because a missing weather forecast should not take down an
+itinerary.<N id="map-cache-tiers" />
+
+What I have not done here matters as much. The agent has no tests and no
+evaluation set.<N id="map-agent-tests" /> Auth in the Java BFF is still a
+placeholder.<N id="map-bff-auth" /> And on the Flutter client I am one
+contributor among several, not the owner.<N id="map-flutter" />

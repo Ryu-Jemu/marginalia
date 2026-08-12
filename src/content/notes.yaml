@@ -1,5 +1,10 @@
 # Every number on this site resolves to an entry here.
-# A `measurement` without a `condition` fails the build (see src/content.config.ts).
+#
+# A `measurement` without a `condition` fails the build; so does a `commit`
+# without a sha, or a `source` without a link. See src/content.config.ts.
+# `npm run verify` additionally refuses a note nobody cites.
+
+# ── Dartoo ────────────────────────────────────────────────────────────────
 
 - id: dartoo-publisher-gap
   kind: measurement
@@ -10,8 +15,8 @@
     One day of ingestion, counted by reconciling persisted rows against published
     events. Not a production traffic figure.
   limits: >-
-    A count of one day, on a development deployment. It does not establish a
-    steady-state loss rate.
+    A count from a single day on a development deployment. It does not establish
+    a steady-state loss rate, and I never measured one.
 
 - id: dartoo-e2e-parity
   kind: measurement
@@ -23,7 +28,7 @@
     that run only.
   limits: >-
     A single verified run is not a durability guarantee. I did not operate this
-    under sustained load.
+    service under sustained load, and I have no failure statistics over time.
 
 - id: dartoo-test-count
   kind: measurement
@@ -34,8 +39,8 @@
     Count of `def test_` functions under tests/ in those three repositories,
     virtualenvs excluded, measured 2026-08-13.
   limits: >-
-    A count of test functions, not a coverage percentage. I did not measure
-    line or branch coverage.
+    A count of test functions, not a coverage figure. I did not measure line or
+    branch coverage, so this says nothing about what fraction of the code runs.
 
 - id: dartoo-not-ready-experiment
   kind: commit
@@ -45,25 +50,222 @@
   commit: 0ec3e2b
   limits: >-
     Four cases. Enough to falsify "permanent", not enough to size the split
-    between transient and permanent failures.
+    between transient and permanent failures — which I never measured.
+
+- id: dartoo-ownership
+  kind: scope
+  body: >-
+    I owned ingestion, disclosure and notification end to end, and implemented
+    summary and its wiring to the others. Four services of the system, not all of it.
+
+- id: dartoo-notification-scope
+  kind: scope
+  body: >-
+    The sha256 idempotency key, the ten-step orchestration and the seven-day TTL
+    dead-letter queue are the notification service specifically — not a house style.
+
+- id: dartoo-lua-scope
+  kind: scope
+  body: >-
+    The Redis Lua atomic counter is the summary service specifically. It replaced
+    a non-atomic INCR then EXPIRE that could leak a key with no expiry.
+
+- id: dartoo-award
+  kind: source
+  body: >-
+    Grand Prize, IT/CSE applied research and development, Hanyang University
+    SW/ICT/AI conference, December 2025.
+  href: https://dartoo.co.kr
+
+# ── MAP ───────────────────────────────────────────────────────────────────
 
 - id: map-terminal-state
   kind: commit
   body: >-
     A completion event arriving before its own job record let the late
-    `in_progress` write overwrite the terminal state. Three regression tests pin
-    the ordering.
+    `in_progress` write overwrite the terminal state, and the client waited
+    forever. Three regression tests pin the ordering.
   commit: 209c893
   href: https://github.com/we-meet-trip
 
-- id: dartoo-ownership
+- id: map-rate-limit
+  kind: commit
+  body: >-
+    Re-recommendation is capped at three per itinerary per day by a Redis Lua
+    INCR and EXPIREAT, expiring at KST midnight rather than a rolling window.
+  commit: b7e80cf
+  href: https://github.com/we-meet-trip
+
+- id: map-cache-tiers
+  kind: limit
+  body: >-
+    The cache is two tiers, not three: a Redis L1 in front of a scheduled
+    prefetch. A database-backed L2 was designed and never built.
+
+- id: map-agent-tests
+  kind: limit
+  body: >-
+    The recommendation agent is at v0.0.1-poc with no tests. The 75-plus tests
+    on this project are the gateway service, not the agent.
+
+- id: map-bff-auth
+  kind: limit
+  body: >-
+    Authentication in the Java BFF is an `AuthPlaceholder`. The token handling
+    described here is the Python side; the BFF path is unfinished.
+
+- id: map-flutter
+  kind: measurement
+  body: >-
+    On the Flutter client I am a contributor rather than an owner — 39 of 195
+    commits on the branch the team actually shares.
+  condition: >-
+    Authored commits on `origin/develop`, measured 2026-08-13. Counting all
+    branches gives 116 of 280 and counting `origin/main` alone gives 3 of 79.
+  limits: >-
+    Commit counts move by a factor of six depending on which branch you pick,
+    which is why the ownership section names surfaces instead of percentages.
+
+- id: map-llm-budget
   kind: scope
   body: >-
-    I owned ingestion, disclosure, and notification end to end, and connected
-    summary. I did not build the CI/CD pipeline or the monitoring stack.
+    The agent calls the model at most three times per request. Candidates are
+    filtered by a deterministic rule engine first, and the model only chooses
+    among what survives.
+
+- id: map-tsp
+  kind: scope
+  body: >-
+    Under eight stops the visit order is solved exhaustively — at most 5,040
+    permutations. Above that it falls back to nearest-neighbour with 2-opt,
+    which is not guaranteed optimal.
+
+# ── Reinforcement learning for 5G pricing ─────────────────────────────────
+
+- id: rl-uplift
+  kind: measurement
+  body: >-
+    Against a max-price baseline the learned policy gains 2.1% at m=1, 105.8% at
+    m=3, 195.8% at m=5 and 363.2% at m=10.
+  condition: >-
+    Simulated environment, churn-sensitivity multiplier m. Only m≥3 is
+    significant at p<0.001; the m=1 result is p=0.472, not significant.
+  limits: >-
+    Simulation, not a network. The result says the policy matters when customers
+    are sensitive to price, not that it would earn this in the field.
+
+- id: rl-embb-attribution
+  kind: limit
+  body: >-
+    97% of the m=3 revenue gap comes from the eMBB slice alone. The headline
+    number is one slice, not a balanced gain across both.
+
+- id: rl-myopic
+  kind: measurement
+  body: >-
+    A myopic version of the same policy, trained with the discount factor set to
+    zero, is indistinguishable from the max-price baseline at every m.
+  condition: >-
+    Same environment and seeds as the main comparison. This is the control that
+    shows the gain comes from looking ahead, not from the algorithm.
+
+- id: rl-algorithms
+  kind: measurement
+  body: >-
+    Deterministic TD3 lands 6.5% below the on-policy method, while SAC is
+    statistically indistinguishable from it (p=0.938).
+  condition: >-
+    Same environment, five seeds each. Reported so the algorithm choice reads as
+    a finding rather than a preference.
+
+- id: rl-award
+  kind: source
+  body: >-
+    First author. Silver award, paper competition, KIPS ASK 2026 spring
+    conference. Paper C2026A0229, grant NRF RS-2024-00336983.
+  href: https://github.com/Ryu-Jemu/network-pricing
+
+# ── Seoul crime factor analysis ───────────────────────────────────────────
+
+- id: crime-model
+  kind: measurement
+  body: >-
+    Five variables explain 84% of the variation in crime across Seoul's 25
+    districts — R² 0.843, adjusted 0.801.
+  condition: >-
+    OLS across 25 districts, cross-checked with LassoCV and RidgeCV at 5 folds.
+    Twenty-five rows is a small sample.
+  limits: >-
+    Association, not causation, and n=25. The residual map names the districts
+    the model fails on rather than hiding them.
+
+- id: crime-significant
+  kind: measurement
+  body: >-
+    Population (p=0.001) and the density of entertainment venues (p<0.001) are
+    significant. CCTV count is not.
+  condition: >-
+    Same OLS fit. Every variable has a VIF below 5, so the coefficients are not
+    being distorted by collinearity.
+
+- id: crime-streetlight-gap
+  kind: limit
+  body: >-
+    Streetlight counts were only published for some districts. The rest were
+    estimated from electricity use, so that one variable is weaker than the others.
+
+# ── examiner ──────────────────────────────────────────────────────────────
+
+- id: examiner-determinism
+  kind: scope
+  body: >-
+    The final confidence figure is computed in Python, not produced by the model.
+    The agents argue; the arithmetic is not theirs to do.
+
+- id: examiner-completeness
+  kind: limit
+  body: >-
+    Built solo as a working prototype and deployed on a free instance that sleeps.
+    It has no evaluation set, so I cannot tell you how often its verdicts are right.
+
+# ── Research and record ───────────────────────────────────────────────────
+
+- id: ieee-position
+  kind: source
+  body: >-
+    Fourth of seven authors on the survey, under review. The position is stored
+    as a number so it cannot drift into a different claim.
+  href: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=9078688
+
+- id: bp-llm-training
+  kind: measurement
+  body: >-
+    A frozen GPT-2 reprogrammed for beam prediction, 339,338 trainable
+    parameters, training loss 2.08 to 0.0009 over ten epochs.
+  condition: >-
+    Training loss only. No train/validation/test split and no evaluation metric
+    were implemented, so there is no accuracy figure to report.
+  limits: >-
+    A loss curve shows the model fit the data it saw. Without a held-out split it
+    says nothing about whether the model predicts beams.
+
+- id: teaching-assistant
+  kind: source
+  body: >-
+    Ran the weekly C programming lab for one semester — two hours a week, five
+    assignments written and graded, exams invigilated.
+  href: https://www.hanyang.ac.kr/
+
+# ── Global boundaries cited in the running text ───────────────────────────
 
 - id: k8s-scope
   kind: limit
   body: >-
-    My Kubernetes work was writing deployment manifests and fixing config
+    My Kubernetes work was writing deployment manifests and fixing configuration
     reference errors. I have not run a cluster.
+
+- id: no-operations
+  kind: limit
+  body: >-
+    Everything here was deployed, none of it was operated. There is no on-call
+    history, no incident record and no availability figure behind any of it.

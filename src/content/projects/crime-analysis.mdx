@@ -1,0 +1,85 @@
+---
+title: What actually predicts crime across Seoul
+tagline: Five variables, twenty-five districts, and a result that contradicts the policy everyone assumes works.
+period: "2025.05 – 2025.06"
+team: 4 people
+role: The analysis
+status: archived
+tier: 1
+order: 5
+stack:
+  - Python
+  - pandas
+  - statsmodels
+  - scikit-learn
+  - folium
+  - GeoJSON
+links:
+  - kind: repo
+    href: https://github.com/Ryu-Jemu/crime-analysis
+    label: Ryu-Jemu/crime-analysis
+ownership:
+  owned:
+    - data collection, cleaning and the district-level join
+    - the regression, the collinearity checks and the regularised cross-checks
+    - the residual map
+  notOwned:
+    - the report and presentation, which were shared work
+decisions:
+  - decision: Check collinearity before reading any coefficient.
+    why: >-
+      Population, income and streetlight counts all move together across
+      districts. Without a variance inflation check the coefficients can be
+      unstable enough that their signs are noise, and every conclusion drawn
+      from them is decoration.
+    notes:
+      - crime-significant
+  - decision: Re-fit with Lasso and Ridge rather than trusting one fit.
+    why: >-
+      With twenty-five rows, a single OLS fit is one draw. Regularised
+      cross-validated fits keeping the same variables and the same explanatory
+      power is what makes the result worth reporting.
+    notes:
+      - crime-model
+  - decision: Map the residuals and name the districts the model fails on.
+    why: >-
+      A choropleth of predictions flatters the model. A choropleth of residuals
+      shows where it is wrong, which is the part a reader needs in order to
+      judge whether to believe it.
+    notDone:
+      - Adding a floating-population variable, which the residuals suggest is the missing one. The data was not available at district level.
+  - decision: Report that CCTV is not significant.
+    why: >-
+      It was the variable the project started from, and the expected finding was
+      the opposite. Dropping it quietly would have been the easy edit.
+boundaries:
+  - Twenty-five rows. Association, not causation, and a small sample either way.
+  - Streetlight counts were partly estimated, so that variable is weaker than the rest.
+---
+
+import N from '../../components/note/N.astro';
+
+The premise going in was that surveillance density explains crime. Install more
+cameras where crime is high — the policy writes itself. The data does not
+support it.
+
+Five variables across Seoul's twenty-five districts explain about 84% of the
+variation between them.<N id="crime-model" /> The two that carry it are
+population and the density of entertainment venues. CCTV count is not
+significant.<N id="crime-significant" /> Crime concentrates where people and
+nightlife concentrate, which is a different policy conclusion from the one the
+project set out to confirm.
+
+Getting there took more care than the fit itself. Population, income and
+streetlight counts move together across districts, so I checked variance
+inflation before reading a single coefficient — an unstable fit produces signs
+that are noise, and every conclusion drawn from them is decoration. With
+twenty-five rows a single OLS fit is one draw, so I re-fit with cross-validated
+Lasso and Ridge; the same variables survived with the same explanatory power.
+
+The last step was mapping the residuals rather than the predictions. A
+prediction map flatters the model. A residual map names the districts it gets
+wrong, and those are clustered in a way that points at a floating-population
+variable I could not get at district
+level.<N id="crime-streetlight-gap" /> That gap is in the report, next to the
+result.

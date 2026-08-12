@@ -1,2 +1,106 @@
-# Filled in Phase 6.
-[]
+- id: ask-silver
+  kind: award
+  title: Silver award, paper competition
+  issuer: KIPS ASK 2026 spring conference
+  date: "2026.05"
+  detail: First author.
+  notes:
+    - rl-award
+
+- id: hanyang-grand-prize
+  kind: award
+  title: Grand Prize, IT/CSE applied research and development
+  issuer: Hanyang University SW/ICT/AI conference
+  date: "2025.12"
+  detail: For Dartoo.
+  notes:
+    - dartoo-award
+
+- id: ai-top-100
+  kind: award
+  title: Finalist, AI_TOP_100 CAMPUS
+  issuer: Kakao Impact and Brian Impact
+  date: "2026.04"
+  detail: One of 100 selected.
+
+- id: tourism-data
+  kind: award
+  title: Passed service review, tourism data competition
+  issuer: Korea Tourism Organization and Kakao
+  date: "2026.05"
+  detail: Web service category, for MAP.
+
+- id: ai-rookie
+  kind: award
+  title: One of 100 teams selected, AI ROOKIE
+  issuer: Ministry of Science and ICT
+  date: "2026.05"
+  detail: For MAP.
+
+- id: aws-clf
+  kind: certification
+  title: AWS Certified Cloud Practitioner
+  issuer: Amazon Web Services
+  date: "2025.03"
+
+- id: sqld
+  kind: certification
+  title: SQL Developer
+  issuer: Korea Data Agency
+  date: "2025.04"
+
+- id: azure-ai
+  kind: certification
+  title: Microsoft Certified — Azure AI Fundamentals
+  issuer: Microsoft
+  date: "2025.07"
+  score: 890 / 1000
+
+- id: adsp
+  kind: certification
+  title: Advanced Data Analytics Semi-Professional
+  issuer: Korea Data Agency
+  date: "2025.09"
+
+- id: hanyang
+  kind: education
+  title: BSc Computer Science, with a second major in Convergence Security
+  issuer: Hanyang University ERICA
+  date: "2023.03 – 2027.02"
+  detail: GPA 4.18 / 4.5 across 143 credits. Graduating February 2027.
+
+- id: kau
+  kind: education
+  title: Avionics and Information Engineering — withdrew
+  issuer: Korea Aerospace University
+  date: "2020.03 – 2021.05"
+
+- id: air-force
+  kind: service
+  title: Radio communications equipment maintenance, discharged as sergeant
+  issuer: Republic of Korea Air Force
+  date: "2021.06 – 2023.03"
+  detail: Completed the full term of service.
+
+- id: ici-lab
+  kind: lab
+  title: Undergraduate researcher
+  issuer: ICI Lab, Hanyang University ERICA
+  date: "2025.03 – 2026.06"
+  detail: First-author pricing paper, survey co-author, beam prediction work.
+
+- id: teaching
+  kind: teaching
+  title: Teaching assistant, C programming lab
+  issuer: Hanyang University
+  date: "2026.03 – 2026.06"
+  notes:
+    - teaching-assistant
+
+- id: blog
+  kind: writing
+  title: Technical blog — 30 posts
+  issuer: velog
+  date: "2024 – present"
+  detail: AWS labs, Kubernetes, Spring and backend architecture.
+  href: https://velog.io/@muqqi_bba

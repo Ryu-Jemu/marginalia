@@ -1,0 +1,36 @@
+---
+title: Why multiplex revenue fell
+tagline: A four-angle analysis, and a scraper I had to throw away to make the thing reproducible.
+period: "2025.01"
+team: 6 people
+role: The Python analysis
+status: archived
+tier: 2
+order: 7
+stack:
+  - Python
+  - pandas
+  - folium
+  - KoNLPy
+  - Naver Search API
+links: []
+ownership:
+  owned:
+    - the analysis pipeline and the single-command dashboard build
+    - geocoding, proximity scoring and the text analysis
+  notOwned:
+    - the report and the presentation
+boundaries:
+  - Coursework analysis on public data. Descriptive, not causal.
+---
+
+The finding that survived scrutiny was locational: among the twenty
+highest-revenue branches, one operator had a single shopping-mall site where a
+competitor had ten. The hypothesis the team started with — that branch count
+explained the gap — did not survive the numbers.
+
+The part I would rather talk about is the scraper. A Selenium crawler against a
+site that kept changing its markup produced a three-byte CSV one morning and
+nobody noticed until the numbers looked odd. Rewriting it against a documented
+search API made the pipeline dull and repeatable, which is what a one-command
+rebuild of the whole dashboard actually requires.

@@ -1,0 +1,95 @@
+---
+title: Dynamic pricing for 5G network slices
+tagline: A reinforcement learning policy for three-part tariffs, and the control experiment that shows where its advantage actually comes from.
+period: "2026.01 – 2026.05"
+team: First author, with a corresponding author at ICI Lab
+role: Problem formulation, environment, experiments, paper
+status: archived
+tier: 1
+order: 3
+stack:
+  - Python
+  - Gymnasium
+  - Stable-Baselines3
+  - PPO · SAC · TD3
+  - NumPy
+  - Matplotlib
+links:
+  - kind: repo
+    href: https://github.com/Ryu-Jemu/network-pricing
+    label: Ryu-Jemu/network-pricing
+ownership:
+  owned:
+    - the environment, its dynamics and its calibration
+    - the experiments, baselines and significance testing
+    - the paper
+  notOwned:
+    - the lab's wider research programme this sits inside
+decisions:
+  - decision: Make churn a parameter and sweep it, rather than picking a value.
+    why: >-
+      A single churn setting produces one number and no understanding. Sweeping
+      the sensitivity multiplier shows the gain appearing as customers get more
+      price-sensitive — and shows it vanishing at m=1, where it is not
+      significant. The sweep is what makes the result a finding instead of a
+      score.
+    notes:
+      - rl-uplift
+  - decision: Add a myopic control trained with the discount factor at zero.
+    why: >-
+      Without it, the comparison only says a learned policy beats a fixed one.
+      The myopic version is the same algorithm stripped of foresight, and it is
+      indistinguishable from the baseline at every setting — so the advantage is
+      the looking ahead, not the machinery.
+    notes:
+      - rl-myopic
+  - decision: Decompose the revenue gain by slice and publish the decomposition.
+    why: >-
+      The headline number at m=3 is large. Almost all of it comes from one slice.
+      Reporting the aggregate alone would have implied a balanced result across
+      both, which the data does not support.
+    notes:
+      - rl-embb-attribution
+  - decision: Report the algorithm comparison as a result, not a preference.
+    why: >-
+      Deterministic TD3 underperforms and SAC is statistically indistinguishable
+      from the method used. Saying so is more useful than presenting the choice
+      as obvious after the fact.
+    notes:
+      - rl-algorithms
+boundaries:
+  - This is a simulation. No result here was observed on a real network.
+  - The revenue advantage at the headline setting is concentrated in a single slice.
+  - At the lowest churn sensitivity the advantage is not statistically significant.
+---
+
+import N from '../../components/note/N.astro';
+
+Two slices, urgent and bulk, priced with a three-part tariff: a subscription
+fee, an included allowance, and an overage rate. Set them too high and customers
+leave; too low and the revenue is not there. The policy has to price against its
+own effect on the customer base, which is what makes it a sequential problem
+rather than an optimisation.
+
+The result is that the learned policy beats a max-price baseline by a margin
+that grows with how sensitive customers are to
+price.<N id="rl-uplift" /> The number I would defend in an interview, though, is
+not the largest one. It is the control: the same algorithm trained with its
+discount factor set to zero — able to learn, unable to look ahead — is
+indistinguishable from the baseline at every
+setting.<N id="rl-myopic" /> That is the experiment that says the advantage
+comes from anticipating churn rather than from having used reinforcement
+learning.
+
+Two things cut against the headline. Decomposing the revenue gap by slice shows
+almost all of it in one of the two, so the aggregate figure describes one slice
+wearing the average as a
+disguise.<N id="rl-embb-attribution" /> And at the lowest churn sensitivity
+the advantage is not significant at all — a result worth keeping, because it
+marks the boundary of where the approach is worth anything.
+
+The algorithm comparison went the same way: a deterministic method landed below,
+another on-policy method was statistically indistinguishable, and reporting that
+honestly is more useful than presenting the choice as
+obvious.<N id="rl-algorithms" /> The paper took first author and a silver award
+at the conference's paper competition.<N id="rl-award" />

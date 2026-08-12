@@ -250,6 +250,10 @@ export function initNoteLines(): () => void {
       const note = ref.nextElementSibling;
       if (!(note instanceof HTMLElement) || !note.matches('[data-note]')) continue;
 
+      // Only a note that actually floated into the margin gets a line. Notes
+      // inside a figure grid stay in the flow and need no connector.
+      if (getComputedStyle(note).float !== 'right') continue;
+
       const rects = ref.getClientRects();
       const last = rects[rects.length - 1]; // a marker split across a line wrap
       const noteBox = note.getBoundingClientRect();

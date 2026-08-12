@@ -39,7 +39,7 @@
   claim: Authentication in the MAP Java BFF is a placeholder.
   detail: >-
     The token handling I describe is the Python side. The BFF's auth path is an
-    `AuthPlaceholder` that was never completed, so the service is not something
+    AuthPlaceholder that was never completed, so the service is not something
     I would describe as having an authentication layer.
   scope: map
 

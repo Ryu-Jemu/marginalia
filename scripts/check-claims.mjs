@@ -117,14 +117,23 @@ function walk(dir) {
   return out;
 }
 
+/**
+ * Content files are checked line for line — everything in them is published.
+ * In source files, a comment explaining why a phrase is banned is not a claim,
+ * so comment lines are skipped there. YAML is content, so its `#` lines still
+ * count.
+ */
+const CONTENT = new Set(['.md', '.mdx', '.yaml', '.yml']);
+const isSourceComment = (file, line) =>
+  !CONTENT.has(extname(file)) && /^\s*(\/\/|\/\*|\*(?!\/)|\*\/|<!--)/.test(line);
+
 const files = DIRS.flatMap((d) => walk(join(ROOT, d)));
 const violations = [];
 
 for (const file of files) {
   const lines = readFileSync(file, 'utf8').split('\n');
   lines.forEach((line, i) => {
-    // The rules themselves quote the forbidden phrasing.
-    if (file.endsWith('check-claims.mjs')) return;
+    if (isSourceComment(file, line)) return;
     for (const rule of RULES) {
       const m = line.match(rule.re);
       if (!m) continue;

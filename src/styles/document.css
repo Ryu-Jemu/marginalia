@@ -121,7 +121,9 @@ a.note__meta:hover {
   color: var(--boundary);
   text-decoration: none;
   border-bottom: 1px solid transparent;
-  display: inline-block;
+  /* Its own line like the other meta rows, but only as wide as its text so the
+     hover rule underlines the link rather than the whole column. */
+  width: fit-content;
 }
 
 .note__meta--limit .note__meta-key {
@@ -169,5 +171,23 @@ a.note__meta:hover {
     right: 100%;
     margin-right: 0.55rem;
     font-size: 0.68rem;
+  }
+
+  /* Floats only clear within their own block formatting context, so notes in a
+     grid cell cannot see each other and land on top of one another. A figure
+     grid is not prose; inside one the note stays in the flow. The leader lines
+     skip these, because a line is only drawn to a note that is in the margin. */
+  :root[data-notes='margin'] [data-notes-inline] .note {
+    float: none;
+    clear: none;
+    width: auto;
+    margin-right: 0;
+    padding-left: 0.9rem;
+    border-left: 2px solid var(--rule-strong);
+  }
+
+  :root[data-notes='margin'] [data-notes-inline] .note::before {
+    position: static;
+    margin-right: 0.5em;
   }
 }

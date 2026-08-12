@@ -1,18 +1,39 @@
 ---
-// PHASE 1 — typographic skeleton. No colour, no motion. Real copy, not lorem:
-// the measure is only worth judging against the sentences it has to carry.
-import { getEntry, render } from 'astro:content';
+import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Controls from '../components/chrome/Controls.astro';
+import Masthead from '../components/chrome/Masthead.astro';
 import NoteLines from '../components/note/NoteLines.astro';
+import N from '../components/note/N.astro';
+import Section from '../components/doc/Section.astro';
+import Boundary from '../components/doc/Boundary.astro';
+import ProjectEntry from '../components/work/ProjectEntry.astro';
+import PaperEntry from '../components/research/PaperEntry.astro';
+import { site } from '../lib/site';
 
-const entry = await getEntry('projects', 'dartoo');
-if (!entry) throw new Error('missing dartoo entry');
-const { Content } = await render(entry);
-const p = entry.data;
+const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) =>
+  a.data.order - b.data.order;
+
+const projects = (await getCollection('projects')).sort(byOrder);
+const tier1 = projects.filter((p) => p.data.tier === 1);
+const tier2 = projects.filter((p) => p.data.tier === 2);
+
+const research = await getCollection('research');
+const record = await getCollection('record');
+const boundaries = await getCollection('boundaries');
+
+const byKind = (kind: string) => record.filter((r) => r.data.kind === kind);
+const awards = byKind('award');
+const certifications = byKind('certification');
+const history = record.filter((r) =>
+  ['education', 'service', 'lab', 'teaching', 'writing'].includes(r.data.kind),
+);
 ---
 
-<Base title="Ryu Jemu — backend, verified in the margin">
+<Base
+  title={`${site.name} — ${site.role}`}
+  description="Backend and AI work, with the evidence for every claim in the margin beside it."
+>
   <div class="shell page-top">
     <Controls />
   </div>
@@ -21,16 +42,219 @@ const p = entry.data;
     <article class="document" data-annotated>
       <NoteLines />
 
-      <header class="column entry-head">
-        <p class="meta">§ 3.1 &nbsp;·&nbsp; {p.period} &nbsp;·&nbsp; {p.team}</p>
-        <h1>{p.title}</h1>
-        <p class="lede">{p.tagline}</p>
-        <p class="meta entry-head__role">{p.role}</p>
-      </header>
+      <Masthead />
 
-      <div class="column prose">
-        <Content />
-      </div>
+      {/* ── § 1 ─────────────────────────────────────────────────────── */}
+      <Section
+        id="start"
+        n="1"
+        title="Start here"
+        lede="One commit, in a public repository, that you can open before reading anything else."
+      >
+        <div class="column">
+          <p>
+            A recommendation would finish, and the client would keep waiting. The completion
+            event was reaching the database before the record of the job that produced it, so
+            the late <code>in_progress</code> write overwrote the terminal state and the job
+            looked unfinished forever.<N id="map-terminal-state" />
+          </p>
+          <p>
+            The fix stops treating the two writes as ordered: the first record is only written
+            when no row exists, and a primary key collision on the completion path is retried as
+            an update. Three regression tests fix the orderings that used to break it — reversed
+            arrival, duplicate key, and a failing retry.
+          </p>
+          <p class="aside">
+            Most of what follows is a student's work, deployed and demonstrated rather than
+            operated. That commit is the shortest way to check whether the way I describe it
+            matches what I actually did.
+          </p>
+        </div>
+      </Section>
+
+      {/* ── § 2 ─────────────────────────────────────────────────────── */}
+      <Section
+        id="how"
+        n="2"
+        title="How I work"
+        lede="Four habits, each with the case that produced it."
+      >
+        <div class="column">
+          <h3 class="habit">Count the same thing twice</h3>
+          <p>
+            Success responses describe what a service did, not what it delivered. On Dartoo the
+            publisher had been silently disabled for a whole run and every request still
+            returned 200 — visible only by reconciling rows persisted against events
+            published.<N id="dartoo-publisher-gap" />
+          </p>
+
+          <h3 class="habit">Treat a classification as a hypothesis</h3>
+          <p>
+            A retry counter had written off a batch of responses as permanent failures.
+            Re-fetching four of them a week later returned all four normally, which made the
+            classification wrong rather than the data.<N id="dartoo-not-ready-experiment" /> The
+            experiment cost an afternoon and changed the retry policy.
+          </p>
+
+          <h3 class="habit">Build the control, not just the result</h3>
+          <p>
+            A learned pricing policy beating a fixed baseline says very little on its own. The
+            same policy trained without foresight, and landing level with the baseline, is what
+            identifies where the advantage comes from.<N id="rl-myopic" /> The control is the
+            part I would defend.
+          </p>
+
+          <h3 class="habit">Distrust a test that passes</h3>
+          <p>
+            Changing the last character of a signature and asserting rejection looked like a
+            valid tamper test. base64url encodes the final characters with spare bits, so the
+            token had not actually changed — the test passed for the wrong reason, and the
+            failure it was supposed to catch would have gone straight through.
+          </p>
+
+          <p class="aside">
+            What is not on this list: operating anything. I have written tests, not pipelines;
+            manifests, not clusters.<N id="k8s-scope" />
+          </p>
+        </div>
+      </Section>
+
+      {/* ── § 3 ─────────────────────────────────────────────────────── */}
+      <Section
+        id="work"
+        n="3"
+        title="Work"
+        lede="Five projects. Each detail page carries the decisions, what was rejected, and what was not done."
+      >
+        <div class="column">
+          {tier1.map((entry) => <ProjectEntry entry={entry} />)}
+        </div>
+      </Section>
+
+      {/* ── § 4 ─────────────────────────────────────────────────────── */}
+      <Section id="also" n="4" title="Also built" lede="Smaller, and listed as it stands.">
+        <div class="column">
+          {tier2.map((entry) => <ProjectEntry entry={entry} compact />)}
+        </div>
+      </Section>
+
+      {/* ── § 5 ─────────────────────────────────────────────────────── */}
+      <Section
+        id="research"
+        n="5"
+        title="Research"
+        lede="Author position is stored as a number and rendered from it, so it cannot drift."
+      >
+        <div class="column">
+          {research.map((entry) => <PaperEntry entry={entry} />)}
+        </div>
+      </Section>
+
+      {/* ── § 6 ─────────────────────────────────────────────────────── */}
+      <Section id="record" n="6" title="Record">
+        <div class="column">
+          <h3 class="record__group">Awards and selections</h3>
+          <ul class="record">
+            {
+              awards.map((r) => (
+                <li class="record__row">
+                  <span class="record__date">{r.data.date}</span>
+                  <span class="record__body">
+                    <strong>{r.data.title}</strong>
+                    <span class="record__issuer">{r.data.issuer}</span>
+                    {r.data.detail && <span class="record__detail">{r.data.detail}</span>}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+
+          <h3 class="record__group">Certifications</h3>
+          <ul class="record">
+            {
+              certifications.map((r) => (
+                <li class="record__row">
+                  <span class="record__date">{r.data.date}</span>
+                  <span class="record__body">
+                    <strong>{r.data.title}</strong>
+                    <span class="record__issuer">
+                      {r.data.issuer}
+                      {r.data.score && ` · ${r.data.score}`}
+                    </span>
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+
+          <h3 class="record__group">Education and service</h3>
+          <ul class="record">
+            {
+              history.map((r) => (
+                <li class="record__row">
+                  <span class="record__date">{r.data.date}</span>
+                  <span class="record__body">
+                    <strong>
+                      {r.data.href ? (
+                        <a href={r.data.href} rel="noopener">
+                          {r.data.title}
+                        </a>
+                      ) : (
+                        r.data.title
+                      )}
+                    </strong>
+                    <span class="record__issuer">{r.data.issuer}</span>
+                    {r.data.detail && <span class="record__detail">{r.data.detail}</span>}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </Section>
+
+      {/* ── § 7 ─────────────────────────────────────────────────────── */}
+      <Section
+        id="boundaries"
+        n="7"
+        title="Boundaries"
+        lede="What this page does not support. Same size as the results, on purpose."
+      >
+        <div class="column">
+          <p class="aside">
+            Everything here was deployed and demonstrated. None of it was
+            operated.<N id="no-operations" /> The list below is what I would have to say out
+            loud in an interview anyway, written down before the question is asked.
+          </p>
+          {
+            boundaries.map((b) => (
+              <Boundary claim={b.data.claim}>
+                <p>{b.data.detail}</p>
+              </Boundary>
+            ))
+          }
+        </div>
+      </Section>
+
+      {/* ── § 8 ─────────────────────────────────────────────────────── */}
+      <Section id="contact" n="8" title="Contact">
+        <div class="column">
+          <p>
+            I owned four backend services on Dartoo and five repositories on
+            MAP.<N id="dartoo-ownership" /> Ownership on this site is described by surface
+            rather than by percentage, for a reason given in § 7.
+          </p>
+          <ul class="contact">
+            <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+            <li><a href={site.links.github} rel="noopener">github.com/Ryu-Jemu</a></li>
+            <li><a href={site.links.blog} rel="noopener">velog.io/@muqqi_bba</a></li>
+          </ul>
+          <p class="aside">
+            <a href="/evidence/">Every claim on this page, with its evidence &rarr;</a><br />
+            <a href="/colophon/">How this site is built, and what it chose not to do &rarr;</a>
+          </p>
+        </div>
+      </Section>
     </article>
   </main>
 </Base>
@@ -39,31 +263,80 @@ const p = entry.data;
   .page-top {
     padding-block: 1.75rem 0;
   }
-
   main {
     padding-block: 3rem 8rem;
   }
 
-  .entry-head {
-    padding-bottom: 1.75rem;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid var(--rule);
+  .aside {
+    margin-top: 1.4rem;
+    color: var(--ink-faint);
+    font-size: 0.95em;
   }
 
-  .entry-head h1 {
-    margin-top: 0.6rem;
+  .habit {
+    margin-top: 1.6rem;
+    margin-bottom: 0.45rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .habit:first-child {
+    margin-top: 0;
   }
 
-  .lede {
-    margin-top: 0.9rem;
-    font-size: var(--t-lede);
-    line-height: var(--lh-lede);
-    font-weight: 300;
-    font-style: italic;
+  .record__group {
+    margin-top: 2rem;
+    margin-bottom: 0.8rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-meta);
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--scope);
+    font-weight: 500;
+  }
+  .record__group:first-child {
+    margin-top: 0;
+  }
+  .record {
+    display: grid;
+    gap: 0.9rem;
+  }
+  .record__row {
+    display: grid;
+    grid-template-columns: 8.5rem 1fr;
+    gap: 0.25rem 1rem;
+    align-items: baseline;
+  }
+  @media (max-width: 32rem) {
+    .record__row {
+      grid-template-columns: 1fr;
+    }
+  }
+  .record__date {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-faint);
+  }
+  .record__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    font-size: 0.98em;
+  }
+  .record__issuer,
+  .record__detail {
     color: var(--ink-muted);
+    font-size: 0.92em;
+  }
+  .record__detail {
+    color: var(--ink-faint);
   }
 
-  .entry-head__role {
-    margin-top: 1.1rem;
+  .contact {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.35rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
   }
 </style>

@@ -1,0 +1,137 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  entry: CollectionEntry<'research'>;
+}
+
+const { entry } = Astro.props;
+const r = entry.data;
+
+/**
+ * Rendered from {index, of}. The position cannot be mistyped into a stronger
+ * claim, because it is never written as prose anywhere in the content.
+ */
+const ORDINAL = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
+const authorship =
+  r.authorPosition.of === 1
+    ? 'Sole author'
+    : r.authorPosition.index === 1
+      ? `First author of ${r.authorPosition.of}`
+      : `Co-author — ${ORDINAL[r.authorPosition.index] ?? r.authorPosition.index} of ${r.authorPosition.of}`;
+
+const STATUS = {
+  accepted: 'Accepted',
+  'under-review': 'Under review',
+  revision: 'In revision',
+  'submission-in-progress': 'Submission in progress',
+  assisting: 'Lab work',
+} as const;
+---
+
+<article class="paper">
+  <p class="meta paper__meta">
+    <span class="paper__authorship">{authorship}</span>
+    <span class="paper__sep">·</span>
+    <span class="paper__status" data-status={r.status}>{STATUS[r.status]}</span>
+    <span class="paper__sep">·</span>
+    <span>{r.date}</span>
+  </p>
+
+  <h3 class="paper__title">{r.title}</h3>
+  <p class="paper__venue">{r.venue}</p>
+  {r.summary && <p class="paper__summary">{r.summary}</p>}
+
+  {
+    r.highlights.length > 0 && (
+      <ul class="paper__points">
+        {r.highlights.map((h) => (
+          <li>{h}</li>
+        ))}
+      </ul>
+    )
+  }
+
+  {
+    (r.manuscriptId || r.grant || r.award) && (
+      <p class="paper__ids">
+        {r.award && <span class="paper__award">{r.award}</span>}
+        {r.manuscriptId && <span>{r.manuscriptId}</span>}
+        {r.grant && <span>{r.grant}</span>}
+      </p>
+    )
+  }
+</article>
+
+<style>
+  .paper {
+    padding-block: 1.3rem;
+    border-top: 1px solid var(--rule);
+  }
+  .paper:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .paper__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .paper__authorship {
+    color: var(--rubric);
+  }
+  .paper__sep {
+    color: var(--rule-strong);
+  }
+  /* Anything not yet peer reviewed is marked as such, at the top. */
+  .paper__status[data-status='under-review'],
+  .paper__status[data-status='submission-in-progress'],
+  .paper__status[data-status='revision'] {
+    color: var(--boundary);
+  }
+  .paper__title {
+    font-size: 1.2rem;
+    line-height: 1.32;
+    font-weight: 600;
+  }
+  .paper__venue {
+    margin-top: 0.25rem;
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+  .paper__summary {
+    margin-top: 0.6rem;
+    color: var(--ink-muted);
+    font-size: 0.98em;
+  }
+  .paper__points {
+    margin-top: 0.6rem;
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.95em;
+    color: var(--ink-muted);
+  }
+  .paper__points li {
+    padding-left: 1rem;
+    position: relative;
+  }
+  .paper__points li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--rule-strong);
+  }
+  .paper__ids {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin-top: 0.7rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    color: var(--ink-faint);
+  }
+  .paper__award {
+    color: var(--rubric);
+  }
+</style>

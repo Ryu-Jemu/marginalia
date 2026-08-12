@@ -1,0 +1,127 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import StatusLabel from './StatusLabel.astro';
+
+interface Props {
+  entry: CollectionEntry<'projects'>;
+  compact?: boolean;
+}
+
+const { entry, compact = false } = Astro.props;
+const p = entry.data;
+const href = `/work/${entry.id.replace(/^tier2\//, '')}/`;
+---
+
+<article class:list={['entry', compact && 'entry--compact']}>
+  <p class="meta entry__meta">
+    <span>{p.period}</span>
+    <span class="entry__sep">·</span>
+    <span>{p.team}</span>
+    <StatusLabel status={p.status} />
+  </p>
+
+  <h3 class="entry__title"><a href={href}>{p.title}</a></h3>
+  <p class="entry__tagline">{p.tagline}</p>
+
+  {
+    !compact && (
+      <p class="meta entry__role">
+        <span class="entry__key">Owned</span> {p.ownership.owned.join(' · ')}
+      </p>
+    )
+  }
+
+  <p class="entry__links">
+    <a class="entry__more" href={href}>Decisions and evidence &rarr;</a>
+    {
+      p.links.map((l) => (
+        <a class="entry__link" href={l.href} rel="noopener">
+          {l.label}
+          {l.caveat && <span class="entry__caveat"> — {l.caveat}</span>}
+        </a>
+      ))
+    }
+  </p>
+</article>
+
+<style>
+  .entry {
+    padding-block: 1.4rem;
+    border-top: 1px solid var(--rule);
+  }
+  .entry:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .entry__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.5rem;
+  }
+  .entry__sep {
+    color: var(--rule-strong);
+  }
+  .entry__title {
+    font-size: var(--t-h3);
+    line-height: var(--lh-h3);
+  }
+  .entry--compact .entry__title {
+    font-size: 1.15rem;
+  }
+  .entry__title a {
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .entry__title a:hover {
+    color: var(--rubric);
+    border-bottom-color: currentColor;
+  }
+  .entry__tagline {
+    margin-top: 0.4rem;
+    color: var(--ink-muted);
+  }
+  .entry--compact .entry__tagline {
+    font-size: 0.98em;
+  }
+  .entry__role {
+    margin-top: 0.7rem;
+    text-transform: none;
+    letter-spacing: 0;
+    line-height: 1.55;
+  }
+  .entry__key {
+    text-transform: uppercase;
+    letter-spacing: var(--ls-meta);
+    color: var(--scope);
+  }
+  .entry__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+    margin-top: 0.8rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+  }
+  .entry__more {
+    color: var(--rubric);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .entry__more:hover {
+    border-bottom-color: currentColor;
+  }
+  .entry__link {
+    color: var(--ink-faint);
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .entry__link:hover {
+    color: var(--ink);
+  }
+  .entry__caveat {
+    border: 0;
+    color: var(--boundary);
+  }
+</style>

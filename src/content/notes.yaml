@@ -1,8 +1,8 @@
 # Every number on this site resolves to an entry here.
 #
-# A `measurement` without a `condition` fails the build; so does a `commit`
-# without a sha, or a `source` without a link. See src/content.config.ts.
-# `npm run verify` additionally refuses a note nobody cites.
+# A measurement without a condition fails the build; so does a commit
+# without a sha, or a source without a link. See src/content.config.ts.
+# npm run verify additionally refuses a note nobody cites.
 
 # ── Dartoo ────────────────────────────────────────────────────────────────
 
@@ -36,7 +36,7 @@
     319 automated tests across the three services I owned: 110 ingestion,
     156 notification, 53 disclosure.
   condition: >-
-    Count of `def test_` functions under tests/ in those three repositories,
+    Count of def test_ functions under tests/ in those three repositories,
     virtualenvs excluded, measured 2026-08-13.
   limits: >-
     A count of test functions, not a coverage figure. I did not measure line or
@@ -83,7 +83,7 @@
   kind: commit
   body: >-
     A completion event arriving before its own job record let the late
-    `in_progress` write overwrite the terminal state, and the client waited
+    in_progress write overwrite the terminal state, and the client waited
     forever. Three regression tests pin the ordering.
   commit: 209c893
   href: https://github.com/we-meet-trip
@@ -111,7 +111,7 @@
 - id: map-bff-auth
   kind: limit
   body: >-
-    Authentication in the Java BFF is an `AuthPlaceholder`. The token handling
+    Authentication in the Java BFF is an AuthPlaceholder. The token handling
     described here is the Python side; the BFF path is unfinished.
 
 - id: map-flutter
@@ -120,8 +120,8 @@
     On the Flutter client I am a contributor rather than an owner — 39 of 195
     commits on the branch the team actually shares.
   condition: >-
-    Authored commits on `origin/develop`, measured 2026-08-13. Counting all
-    branches gives 116 of 280 and counting `origin/main` alone gives 3 of 79.
+    Authored commits on origin/develop, measured 2026-08-13. Counting all
+    branches gives 116 of 280 and counting origin/main alone gives 3 of 79.
   limits: >-
     Commit counts move by a factor of six depending on which branch you pick,
     which is why the ownership section names surfaces instead of percentages.
@@ -255,6 +255,17 @@
     Ran the weekly C programming lab for one semester — two hours a week, five
     assignments written and graded, exams invigilated.
   href: https://www.hanyang.ac.kr/
+
+# ── Masthead ──────────────────────────────────────────────────────────────
+
+- id: deployed-scope
+  kind: scope
+  body: >-
+    Dartoo and MAP, both mobile products with a team behind them. examiner is
+    also deployed — solo, on a free instance that sleeps between visits.
+  limits: >-
+    Deployed means reachable and demonstrated. None of the three carried real
+    users under load, and none has an availability record.
 
 # ── Global boundaries cited in the running text ───────────────────────────
 

@@ -1,0 +1,41 @@
+---
+/** A numbered section of the document. `§ 3` rather than `03` — this reads as
+ *  a paper, not as a landing page. */
+interface Props {
+  id: string;
+  n: string;
+  title: string;
+  lede?: string;
+}
+const { id, n, title, lede } = Astro.props;
+---
+
+<section id={id} class="section">
+  <header class="column section__head">
+    <p class="meta section__n">§&nbsp;{n}</p>
+    <h2>{title}</h2>
+    {lede && <p class="section__lede">{lede}</p>}
+  </header>
+  <slot />
+</section>
+
+<style>
+  .section {
+    margin-top: var(--space-section);
+    scroll-margin-top: 3rem;
+  }
+  .section__head {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    margin-bottom: 1.75rem;
+  }
+  .section__n {
+    color: var(--rubric);
+    margin-bottom: 0.5rem;
+  }
+  .section__lede {
+    margin-top: 0.7rem;
+    color: var(--ink-muted);
+    font-size: 1.02em;
+  }
+</style>

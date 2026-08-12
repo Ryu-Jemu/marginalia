@@ -1,0 +1,32 @@
+---
+/** Deployed is drawn in neutral ink. Green would read as "uptime is fine", and
+ *  nothing here is operated. Amber is reserved for things still open. */
+interface Props { status: 'deployed' | 'in-progress' | 'archived' | 'on-hold' }
+const { status } = Astro.props;
+const LABEL = {
+  deployed: 'Deployed',
+  'in-progress': 'In progress',
+  archived: 'Archived',
+  'on-hold': 'On hold',
+} as const;
+---
+<span class:list={['status', `status--${status}`]}>{LABEL[status]}</span>
+
+<style>
+  .status {
+    font-family: var(--family-mono);
+    font-size: 0.6875rem;
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    padding: 0.15em 0.5em;
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+  }
+  .status--in-progress,
+  .status--on-hold {
+    color: var(--boundary);
+    border-color: currentColor;
+  }
+</style>

@@ -41,7 +41,7 @@ function walk(dir) {
   for (const name of entries) {
     const full = join(dir, name);
     if (statSync(full).isDirectory()) out.push(...walk(full));
-    else if (['.mdx', '.md', '.astro', '.yaml'].includes(extname(name))) out.push(full);
+    else if (['.mdx', '.md', '.astro', '.yaml', '.ts'].includes(extname(name))) out.push(full);
   }
   return out;
 }
@@ -50,17 +50,21 @@ const sources = [
   ...walk(join(ROOT, 'src/content')),
   ...walk(join(ROOT, 'src/pages')),
   ...walk(join(ROOT, 'src/components')),
+  ...walk(join(ROOT, 'src/lib')),
 ].filter((f) => f !== notesFile);
+
+const count = (map, id) => map.set(id, (map.get(id) ?? 0) + 1);
 
 const used = new Map();
 for (const file of sources) {
   const text = readFileSync(file, 'utf8');
-  // <N id="..." /> in prose, and `notes: [...]` references in frontmatter/YAML
-  for (const m of text.matchAll(/<N\s+id=["']([\w-]+)["']/g)) {
-    used.set(m[1], (used.get(m[1]) ?? 0) + 1);
-  }
+  // <N id="…" /> in prose
+  for (const m of text.matchAll(/<N\s+id=["']([\w-]+)["']/g)) count(used, m[1]);
+  // note: '…' on a data object
+  for (const m of text.matchAll(/\bnotes?:\s*["']([\w-]+)["']/g)) count(used, m[1]);
+  // a bare list item under `notes:` in frontmatter or YAML
   for (const m of text.matchAll(/^\s*-\s*([\w-]+)\s*$/gm)) {
-    if (ids.includes(m[1])) used.set(m[1], (used.get(m[1]) ?? 0) + 1);
+    if (ids.includes(m[1])) count(used, m[1]);
   }
 }
 

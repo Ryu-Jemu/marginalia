@@ -1,0 +1,98 @@
+---
+import N from '../note/N.astro';
+import { site, standing } from '../../lib/site';
+---
+
+<header class="masthead">
+  <div class="column">
+    <p class="meta masthead__status">{site.status}</p>
+    <h1 class="masthead__name">{site.name}</h1>
+    <p class="masthead__lede">{site.lede}</p>
+
+    <dl class="standing">
+      {
+        standing.map((s) => (
+          <div class="standing__item">
+            <dt class="standing__value">{s.value}</dt>
+            <dd class="standing__label">{s.label}</dd>
+            <dd class="standing__detail">{s.detail}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <p class="masthead__scope">
+      Deployed means reachable and demonstrated, not operated.<N id="deployed-scope" />
+    </p>
+  </div>
+</header>
+
+<style>
+  .masthead {
+    padding-bottom: 2rem;
+  }
+  .masthead__status {
+    margin-bottom: 0.9rem;
+  }
+  .masthead__name {
+    /* Weight 400, not 800. A title page, not a poster. */
+    font-weight: 400;
+  }
+  .masthead__lede {
+    margin-top: 1rem;
+    font-size: var(--t-lede);
+    line-height: var(--lh-lede);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--ink-muted);
+    max-width: 32ch;
+  }
+
+  .standing {
+    margin-top: 2.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    display: grid;
+    gap: 1.5rem 2rem;
+    /* Two by two. Four across squeezes "Grand Prize" onto three lines at this
+       measure, and auto-fit orphans the fourth item on its own row. */
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 30rem) {
+    .standing {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .masthead__scope {
+    margin-top: 1.5rem;
+    font-size: 0.95em;
+    color: var(--ink-faint);
+  }
+  .standing__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  /* The figure itself stays in the serif — it is part of a sentence about the
+     work. Only the evidence in the margin becomes tabular mono. */
+  .standing__value {
+    font-size: 1.55rem;
+    line-height: 1.1;
+    font-weight: 600;
+  }
+  .standing__label {
+    font-family: var(--family-mono);
+    font-size: 0.6875rem;
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin: 0.2rem 0 0;
+  }
+  .standing__detail {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+  }
+</style>

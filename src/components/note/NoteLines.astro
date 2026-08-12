@@ -1,0 +1,62 @@
+---
+/**
+ * Overlay the leader lines sit in. Empty on the server: the geometry only
+ * exists once text has been laid out with the real fonts.
+ *
+ * Purely decorative in the accessibility sense — the marker, the note's role
+ * and their DOM adjacency already carry the relationship — so it is hidden
+ * from assistive technology.
+ */
+---
+
+<svg data-note-lines aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"></svg>
+
+<style is:global>
+  [data-annotated] {
+    position: relative;
+  }
+
+  [data-note-lines] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .note-line {
+    fill: none;
+    stroke: var(--rubric);
+    stroke-width: 1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.45;
+    transition: opacity 140ms ease, stroke-width 140ms ease;
+  }
+
+  .note-line.is-linked {
+    opacity: 1;
+    stroke-width: 1.75;
+  }
+
+  .note.is-linked {
+    background: var(--rubric-wash);
+    box-shadow: 0 0 0 0.4rem var(--rubric-wash);
+    border-radius: 1px;
+  }
+
+  /* Once the lines are drawn they carry the pairing, so the note's own number
+     is redundant. Without JS it stays, and does the job instead. */
+  [data-annotated].has-lines .note::before {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .note-line,
+    .note {
+      transition: none;
+    }
+  }
+</style>

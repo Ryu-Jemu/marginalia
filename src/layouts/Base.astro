@@ -55,7 +55,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 
     <script>
       import { initControls } from '../scripts/controls.ts';
+      import { initNoteLines } from '../scripts/note-lines.ts';
+
       initControls();
+      initNoteLines();
     </script>
   </body>
 </html>

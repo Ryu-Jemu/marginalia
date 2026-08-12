@@ -4,6 +4,7 @@
 import { getEntry, render } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Controls from '../components/chrome/Controls.astro';
+import NoteLines from '../components/note/NoteLines.astro';
 
 const entry = await getEntry('projects', 'dartoo');
 if (!entry) throw new Error('missing dartoo entry');
@@ -17,7 +18,9 @@ const p = entry.data;
   </div>
 
   <main class="shell">
-    <article class="document">
+    <article class="document" data-annotated>
+      <NoteLines />
+
       <header class="column entry-head">
         <p class="meta">§ 3.1 &nbsp;·&nbsp; {p.period} &nbsp;·&nbsp; {p.team}</p>
         <h1>{p.title}</h1>

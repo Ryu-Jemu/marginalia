@@ -1,0 +1,61 @@
+---
+/**
+ * Reading controls, styled like the settings strip on a proof sheet rather
+ * than app chrome. Rendered server-side with the default state; the inline
+ * head script has already corrected <html> before this paints, and
+ * controls.ts relabels the buttons on load.
+ *
+ * Hidden entirely without JavaScript — a control that cannot work should not
+ * advertise itself.
+ */
+---
+
+<div class="controls" role="group" aria-label="Reading controls">
+  <button type="button" data-control="theme" class="controls__btn">
+    <span data-control-value>Light</span>
+  </button>
+  <button type="button" data-control="notes" class="controls__btn">
+    <span data-control-value>Notes in margin</span>
+  </button>
+  <button type="button" data-control="motion" class="controls__btn">
+    <span data-control-value>Motion on</span>
+  </button>
+</div>
+
+<style>
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+  }
+
+  :global(.no-js) .controls {
+    display: none;
+  }
+
+  .controls__btn {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0.15rem 0;
+    font-family: var(--family-mono);
+    font-size: var(--t-meta);
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+    transition: color 120ms ease, border-color 120ms ease;
+  }
+
+  .controls__btn:hover {
+    color: var(--rubric);
+    border-bottom-color: var(--rubric);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .controls__btn {
+      transition: none;
+    }
+  }
+</style>

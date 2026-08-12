@@ -3,6 +3,7 @@
 // the measure is only worth judging against the sentences it has to carry.
 import { getEntry, render } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import Controls from '../components/chrome/Controls.astro';
 
 const entry = await getEntry('projects', 'dartoo');
 if (!entry) throw new Error('missing dartoo entry');
@@ -11,6 +12,10 @@ const p = entry.data;
 ---
 
 <Base title="Ryu Jemu — backend, verified in the margin">
+  <div class="shell page-top">
+    <Controls />
+  </div>
+
   <main class="shell">
     <article class="document">
       <header class="column entry-head">
@@ -28,8 +33,12 @@ const p = entry.data;
 </Base>
 
 <style>
+  .page-top {
+    padding-block: 1.75rem 0;
+  }
+
   main {
-    padding-block: 4rem 8rem;
+    padding-block: 3rem 8rem;
   }
 
   .entry-head {

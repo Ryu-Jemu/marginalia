@@ -1,23 +1,29 @@
 /* ── tokens ───────────────────────────────────────────────────────────────
- * Phase 1 ships the typographic and spatial scale only. Colours here are
- * placeholder greys; Phase 2 replaces the values and adds the dark block.
+ * Warm paper, warm graphite, and a single rubric red — the colour of a
+ * correcting pen. Contrast ratios against their own background are noted;
+ * every text token clears WCAG AA and most clear AAA.
+ *
+ * There is no green here on purpose. Green reads as "uptime is fine", and
+ * nothing on this site is operated. Deployed is drawn in neutral ink; the
+ * only status colour is amber, and it marks a limit.
  * ------------------------------------------------------------------------ */
 
 :root {
-  /* Colour — placeholders, replaced in Phase 2 */
-  --paper: #ffffff;
-  --paper-inset: #f4f4f4;
-  --ink: #111111;
-  --ink-muted: #4a4a4a;
-  --ink-faint: #707070;
-  --rule: #e4e4e4;
-  --rule-strong: #cfcfcf;
-  --rubric: #111111;
-  --rubric-hover: #000000;
-  --rubric-wash: rgba(0, 0, 0, 0.05);
-  --boundary: #4a4a4a;
-  --scope: #4a4a4a;
+  --paper: #fbfaf7;
+  --paper-inset: #f2f0e9;
+  --ink: #1b1a17; /* 16.67:1 AAA */
+  --ink-muted: #4a473f; /*  8.89:1 AAA */
+  --ink-faint: #6f6b62; /*  5.09:1 AA  */
+  --rule: #e3dfd6;
+  --rule-strong: #cfcabe;
+  --rubric: #a8322a; /*  6.38:1 AA  */
+  --rubric-hover: #872720; /*  8.59:1 AAA */
+  --rubric-wash: rgba(168, 50, 42, 0.06);
+  --boundary: #7e5210; /*  6.49:1 AA  */
+  --scope: #3d5a73; /*  6.92:1 AA  */
   --on-rubric: #ffffff;
+
+  color-scheme: light;
 
   /* Type families — provided by Astro's font pipeline (astro.config.mjs) */
   --family-serif: var(--font-serif), Georgia, 'Times New Roman', serif;
@@ -62,6 +68,46 @@
 
   --space-section: 4.5rem;
   --space-para: 1.15em;
+}
+
+/* Dark. Declared twice on purpose: the media query serves readers with no JS
+ * and a dark system preference, the attribute serves the toggle. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #161512;
+    --paper-inset: #1f1e1a;
+    --ink: #edeae2; /* 15.19:1 AAA */
+    --ink-muted: #c4bfb5; /*  9.97:1 AAA */
+    --ink-faint: #8e8a80; /*  5.30:1 AA  */
+    --rule: #2e2c27;
+    --rule-strong: #403d36;
+    --rubric: #ee7c67; /*  6.71:1 AA  */
+    --rubric-hover: #f59b87; /*  8.63:1 AAA */
+    --rubric-wash: rgba(238, 124, 103, 0.1);
+    --boundary: #d9a441; /*  8.12:1 AA  */
+    --scope: #8fb3ce; /*  8.27:1 AA  */
+    --on-rubric: #161512;
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --paper: #161512;
+  --paper-inset: #1f1e1a;
+  --ink: #edeae2;
+  --ink-muted: #c4bfb5;
+  --ink-faint: #8e8a80;
+  --rule: #2e2c27;
+  --rule-strong: #403d36;
+  --rubric: #ee7c67;
+  --rubric-hover: #f59b87;
+  --rubric-wash: rgba(238, 124, 103, 0.1);
+  --boundary: #d9a441;
+  --scope: #8fb3ce;
+  --on-rubric: #161512;
+
+  color-scheme: dark;
 }
 
 @media (min-width: 40rem) {

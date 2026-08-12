@@ -21,11 +21,40 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <link rel="canonical" href={canonical} />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#161512" media="(prefers-color-scheme: dark)" />
 
     <Font cssVariable="--font-serif" preload />
     <Font cssVariable="--font-mono" />
+
+    {/* Resolve reading state before first paint. Without this the page flashes
+        light before a dark reader's preference lands. */}
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        var read = function (k, fallback) {
+          try {
+            return localStorage.getItem(k) || fallback;
+          } catch (e) {
+            return fallback;
+          }
+        };
+        d.dataset.theme = read(
+          'theme',
+          window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+        );
+        d.dataset.motion = read('motion', 'on');
+        d.dataset.notes = read('notes', 'margin');
+        d.classList.remove('no-js');
+      })();
+    </script>
   </head>
   <body>
     <slot />
+
+    <script>
+      import { initControls } from '../scripts/controls.ts';
+      initControls();
+    </script>
   </body>
 </html>

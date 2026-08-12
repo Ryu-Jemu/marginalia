@@ -26,6 +26,16 @@ const n = entry.data;
 
 const commitHref =
   n.href && n.commit ? `${n.href.replace(/\/$/, '')}/commit/${n.commit}` : n.href;
+
+/**
+ * The margin carries what qualifies the number — the claim and the condition
+ * it was measured under. The full statement of what the evidence does *not*
+ * establish lives on /evidence, one link away.
+ *
+ * The link itself is not optional. Compressing the margin is a layout choice;
+ * letting a limit go unmentioned would be a different kind of choice.
+ */
+const hasLimits = Boolean(n.limits) && n.kind !== 'limit';
 ---
 
 <span
@@ -63,10 +73,10 @@ const commitHref =
       </a>
     )
   }{
-    n.limits && (
-      <span class="note__meta note__meta--limit">
-        <span class="note__meta-key">Does not show</span> {n.limits}
-      </span>
+    hasLimits && (
+      <a class="note__meta note__meta--limit" href={`/evidence/#note-${n.id}`}>
+        <span class="note__meta-key">Limits</span> <span class="note__more">read →</span>
+      </a>
     )
   }</span
 >

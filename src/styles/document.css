@@ -114,8 +114,26 @@ a.note__meta:hover {
   color: var(--rubric-hover);
 }
 
+/* The margin says a limit exists and where to read it; /evidence states it in
+ * full. Compressing the margin is a layout decision — dropping the limit
+ * entirely would have been a different kind of decision. */
+.note__meta--limit {
+  color: var(--boundary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  display: inline-block;
+}
+
 .note__meta--limit .note__meta-key {
   color: var(--boundary);
+}
+
+.note__meta--limit:hover {
+  border-bottom-color: currentColor;
+}
+
+.note__more {
+  color: var(--ink-faint);
 }
 
 /* ── notes: margin treatment (≥ 64rem, when the reader wants them there) ───

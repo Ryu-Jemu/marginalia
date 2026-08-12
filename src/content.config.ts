@@ -1,5 +1,8 @@
-import { defineCollection, reference, z } from 'astro:content';
+import { defineCollection, reference } from 'astro:content';
 import { file, glob } from 'astro/loaders';
+// `z` from 'astro:content' is deprecated and slated for removal; astro/zod is
+// the supported import in Astro 7.
+import { z } from 'astro/zod';
 
 /* ── notes ────────────────────────────────────────────────────────────────
  * Every claim on this site carries its evidence here. The refinements below

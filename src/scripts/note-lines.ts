@@ -11,6 +11,10 @@
  * settled: metrics computed against the fallback face are wrong by whole lines.
  */
 
+import { animate, createDrawable, utils } from 'animejs';
+import type { DrawableSVGGeometry } from 'animejs';
+import { motionOff, whenInView } from './observe';
+
 const BEND = 0.45; // where the elbow turns, as a fraction of the *gutter*
 const RADIUS = 8;
 const HOOK = 3; // radius of the little turn out of the marker
@@ -21,7 +25,18 @@ export interface NoteLink {
   ref: HTMLElement;
   note: HTMLElement;
   path: SVGPathElement;
+  /**
+   * `createDrawable` only writes the initial `draw` when the element's
+   * pathLength is not already its normalised 1000 — so calling it twice on one
+   * element silently skips initialisation. One proxy per path, made at build
+   * time and reused.
+   */
+  drawable: DrawableSVGGeometry;
 }
+
+/** `draw` is an attribute the proxy interprets, not a DOM property. */
+const setDraw = (d: DrawableSVGGeometry, value: `${number} ${number}`) =>
+  d.setAttribute('draw', value);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -100,8 +115,120 @@ export function initNoteLines(): () => void {
   let links: NoteLink[] = [];
   let frame = 0;
 
+  // A note is revealed once. A resize rebuilds the geometry, and replaying the
+  // draw every time the window moved would be noise, not information.
+  const revealed = new WeakSet<HTMLElement>();
+  let stopObserving: Array<() => void> = [];
+  // ResizeObserver fires once the moment you observe, and again for every
+  // layout change the reveal itself causes. Rebuilding on those restarts the
+  // geometry mid-draw and snaps every line to its finished state, so a rebuild
+  // only happens when the box actually changed size.
+  let lastBox = '';
+
+  /**
+   * The line is drawn first and the note follows it out into the margin: the
+   * evidence is pulled into view by the connection, not announced on its own.
+   */
+  function reveal(group: NoteLink[]): void {
+    if (!group.length) return;
+
+    if (motionOff()) {
+      // The line is information, not decoration. Only the drawing is skipped.
+      finish(group);
+      return;
+    }
+
+    utils.set(
+      group.map((l) => l.note),
+      { opacity: 0, translateX: -8 },
+    );
+
+    // Sequenced with delays rather than a timeline. In anime.js 4.5.0 a
+    // drawable proxy passed through `createTimeline().add()` does not tween —
+    // it jumps straight to the target value — while the same target through
+    // `animate()` interpolates normally. Measured on one path over 800ms:
+    // 96 distinct `draw` values via animate(), exactly 1 via the timeline.
+    group.forEach((link, i) => {
+      const at = i * 90;
+      // A single target value, not a from-to pair: `draw` tweens from whatever
+      // the proxy currently holds, which build() left at "0 0".
+      animate(link.drawable, {
+        draw: '0 1',
+        duration: 620,
+        ease: 'inOut(2)',
+        delay: at,
+      });
+      animate(link.note, {
+        opacity: [0, 1],
+        translateX: [-8, 0],
+        duration: 420,
+        ease: 'out(3)',
+        delay: at + 460,
+        // Marked done only once it has finished. Marking at the start would
+        // let a rebuild treat an in-flight reveal as already shown.
+        onComplete: () => revealed.add(link.note),
+      });
+    });
+  }
+
+  /** Put a group straight into its finished state, with nothing in flight. */
+  function finish(group: NoteLink[]): void {
+    if (!group.length) return;
+    utils.set(
+      group.map((l) => l.path),
+      { opacity: 0.45 },
+    );
+    for (const link of group) setDraw(link.drawable, '0 1');
+    utils.set(
+      group.map((l) => l.note),
+      { opacity: 1, translateX: 0 },
+    );
+    group.forEach((l) => revealed.add(l.note));
+  }
+
+  function scheduleReveal(): void {
+    for (const stop of stopObserving) stop();
+    stopObserving = [];
+
+    const pending = links.filter((l) => !revealed.has(l.note));
+    for (const link of pending) utils.set(link.path, { opacity: 0 });
+
+    // Group by paragraph so notes that belong to the same passage draw
+    // together, staggered, instead of one at a time.
+    const groups = new Map<Element, NoteLink[]>();
+    for (const link of pending) {
+      const key = link.ref.closest('p, li, h2, h3') ?? link.ref;
+      const list = groups.get(key);
+      if (list) list.push(link);
+      else groups.set(key, [link]);
+    }
+
+    for (const [anchor, group] of groups) {
+      stopObserving.push(
+        whenInView(anchor, () => {
+          utils.set(
+            group.map((l) => l.path),
+            { opacity: 0.45 },
+          );
+          reveal(group);
+        }),
+      );
+    }
+
+    // Anything already revealed keeps its finished state through the rebuild.
+    finish(links.filter((l) => revealed.has(l.note)));
+  }
+
   const clear = () => {
+    for (const stop of stopObserving) stop();
+    stopObserving = [];
     svg.replaceChildren();
+    // Notes were only ever hidden by JS, so JS puts them back.
+    for (const note of doc.querySelectorAll<HTMLElement>('[data-note]')) {
+      note.style.removeProperty('opacity');
+      note.style.removeProperty('transform');
+      note.style.removeProperty('translate');
+    }
     links = [];
     doc.classList.remove('has-lines');
   };
@@ -148,7 +275,9 @@ export function initNoteLines(): () => void {
       path.setAttribute('class', 'note-line');
       frag.appendChild(path);
 
-      built.push({ ref, note, path });
+      // Fresh element each rebuild, so this is the one and only proxy for it.
+      const [drawable] = createDrawable(path, 0, 0);
+      built.push({ ref, note, path, drawable });
     }
 
     svg!.appendChild(frag);
@@ -160,9 +289,12 @@ export function initNoteLines(): () => void {
       clear();
       return;
     }
+    for (const stop of stopObserving) stop();
+    stopObserving = [];
     svg!.replaceChildren();
     links = build();
     doc!.classList.toggle('has-lines', links.length > 0);
+    scheduleReveal();
     document.dispatchEvent(new CustomEvent('marginalia:lines', { detail: { links } }));
   }
 
@@ -194,11 +326,20 @@ export function initNoteLines(): () => void {
   doc.addEventListener('focusin', onPointerOver);
   doc.addEventListener('focusout', onPointerOut);
 
-  const ro = new ResizeObserver(schedule);
+  const ro = new ResizeObserver(() => {
+    const r = doc.getBoundingClientRect();
+    const key = `${Math.round(r.width)}x${Math.round(r.height)}`;
+    if (key === lastBox) return;
+    lastBox = key;
+    schedule();
+  });
   ro.observe(doc);
 
   const onControls = (e: Event) => {
-    if ((e as CustomEvent).detail?.control === 'notes') schedule();
+    const control = (e as CustomEvent).detail?.control;
+    if (control === 'notes') schedule();
+    // Turning motion off mid-reveal must not leave a half-drawn line behind.
+    if (control === 'motion' && motionOff() && links.length) finish(links);
   };
   window.addEventListener('marginalia:controls', onControls);
   mq.addEventListener('change', schedule);

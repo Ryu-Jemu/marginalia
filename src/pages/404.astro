@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../lib/site';
+---
+
+<Base title={`Not found — ${site.name}`}>
+  <main class="shell">
+    <div class="column">
+      <p class="meta">404</p>
+      <h1>No page here</h1>
+      <p class="lede">
+        Nothing at this address. The document starts at the top, and every claim it makes is
+        indexed on one page.
+      </p>
+      <ul class="links">
+        <li><a href="/">The document</a></li>
+        <li><a href="/evidence/">Evidence</a></li>
+        <li><a href="/colophon/">Colophon</a></li>
+      </ul>
+    </div>
+  </main>
+</Base>
+
+<style>
+  main { padding-block: 6rem 8rem; }
+  h1 { margin-top: 0.6rem; }
+  .lede {
+    margin-top: 1rem;
+    font-size: var(--t-lede);
+    line-height: var(--lh-lede);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--ink-muted);
+  }
+  .links {
+    margin-top: 2rem;
+    display: grid;
+    gap: 0.35rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+  }
+</style>

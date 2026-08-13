@@ -1,0 +1,224 @@
+---
+import Base from '../layouts/Base.astro';
+import Controls from '../components/chrome/Controls.astro';
+import Section from '../components/doc/Section.astro';
+import DecisionLog from '../components/work/DecisionLog.astro';
+import Boundary from '../components/doc/Boundary.astro';
+import { site } from '../lib/site';
+
+/**
+ * The site's own decision log. If every project here has to explain what it
+ * chose and what it turned down, the page making that demand should too.
+ */
+const decisions: Array<{
+  decision: string;
+  why: string;
+  rejected: string[];
+  notDone: string[];
+  notes: string[];
+}> = [
+  {
+    decision: 'Put the evidence in the margin, beside the claim.',
+    why:
+      'A portfolio is read looking for reasons to stop reading. Making the reader take a number on trust, and then go somewhere else to check it, is the moment that costs you. The condition sits next to the figure instead.',
+    rejected: [
+      'A references section at the bottom — correct, and nobody scrolls to it.',
+      'Tooltips on hover — invisible to keyboard users, invisible in print, invisible on a phone.',
+    ],
+    notDone: [
+      'A citation for prose that makes no numeric claim. Not every sentence needs a footnote.',
+    ],
+    notes: [],
+  },
+  {
+    decision: 'Make the content schema refuse an unconditioned number.',
+    why:
+      'The rule "always state the measurement conditions" is a good intention and intentions decay. A Zod refinement makes a measurement note without a condition fail the build, which is the version of the rule that still holds in six months.',
+    rejected: ['A linting convention, or a note in a contributing guide. Both are advisory.'],
+    notDone: ['Checking that the stated condition is true. No schema can do that.'],
+    notes: [],
+  },
+  {
+    decision: 'Draw a line from the marker to the note.',
+    why:
+      'A tall note under a short paragraph gets pushed down the margin — measured at up to 104px away from its own marker on this page. A number alone does not carry that distance, and the wrong note read against the wrong claim is worse than no note.',
+    rejected: [
+      'Forcing every note level with its marker by absolute positioning — which makes two adjacent notes overlap.',
+      'Shortening the notes until they always fit. The evidence would be the thing that got cut.',
+    ],
+    notDone: [
+      'Any line on a touch screen or a narrow window. Below 64rem the notes come back into the flow and no lines are drawn.',
+    ],
+    notes: [],
+  },
+  {
+    decision: 'Skip the smooth-scrolling library.',
+    why:
+      'A previous build used one, and its virtual scroll fought the animation library’s own scroll observer badly enough to need a timeout as a workaround. Native scrolling removed the conflict and the workaround together, and this is a document — hijacking its scrolling would be working against the reader.',
+    rejected: ['Keeping the library and tuning around the conflict.'],
+    notDone: [],
+    notes: [],
+  },
+  {
+    decision: 'Never animate a line whose failure would hide content.',
+    why:
+      'Anything that hides content in order to reveal it has to answer for the case where the reveal does not fire. Every observation here carries a 2500ms deadline, the initial hidden state is set in JavaScript rather than CSS, and with scripting off every note simply renders.',
+    rejected: ['Setting the initial opacity in CSS. Faster, and one script error away from a blank margin.'],
+    notDone: [],
+    notes: [],
+  },
+  {
+    decision: 'Draw "deployed" in neutral ink, not green.',
+    why:
+      'Green reads as a service somebody is keeping up. Nothing here is, so a green badge would assert exactly what section 7 spends its length retracting. Amber is reserved for limits, and status gets no colour of its own.',
+    rejected: ['A green deployed badge, which is what every portfolio does.'],
+    notDone: [],
+    notes: [],
+  },
+];
+---
+
+<Base title={`Colophon — ${site.name}`} description="How this site is built, and what it chose not to do.">
+  <div class="shell page-top">
+    <Controls />
+  </div>
+
+  <main class="shell">
+    <article class="document">
+      <header class="column head">
+        <p class="head__back"><a href="/">&larr; Back</a></p>
+        <h1>Colophon</h1>
+        <p class="head__lede">
+          Every project on this site has to say what it chose, what it turned down and what it left
+          undone. It would be inconsistent for the page making that demand to skip it.
+        </p>
+      </header>
+
+      <Section id="decisions" n="1" title="Decision log">
+        <div class="column">
+          <DecisionLog decisions={decisions} />
+        </div>
+      </Section>
+
+      <Section id="built" n="2" title="Built with">
+        <div class="column">
+          <dl class="spec">
+            <div><dt>Framework</dt><dd>Astro 7, static output, no client framework</dd></div>
+            <div><dt>Motion</dt><dd>anime.js 4 — leader lines and boundary frames only</dd></div>
+            <div><dt>Type</dt><dd>Source Serif 4 and IBM Plex Mono, self-hosted</dd></div>
+            <div><dt>Styling</dt><dd>Hand-written CSS. No utility framework</dd></div>
+            <div><dt>Hosting</dt><dd>Render static site</dd></div>
+            <div><dt>Analytics</dt><dd>None</dd></div>
+          </dl>
+          <p class="spec__after">
+            The whole JavaScript bundle, anime.js included, is 14.5&nbsp;KB gzipped. With scripting
+            disabled the page renders in full, notes and all — the margin layout is CSS, and the
+            lines are the only thing that needs a script.
+          </p>
+        </div>
+      </Section>
+
+      <Section id="limits" n="3" title="What this site does not do">
+        <div class="column">
+          <Boundary claim="It is not responsive to a design system.">
+            <p>
+              Every value here was chosen for this document and measured against this text. None of
+              it is a reusable token set, and it would not survive being lifted somewhere else.
+            </p>
+          </Boundary>
+          <Boundary claim="The leader lines are measured, so they cost layout reads.">
+            <p>
+              Geometry is recomputed after the fonts settle and whenever the article actually
+              changes size. It is cheap at this document length and would need rethinking at ten
+              times the number of notes.
+            </p>
+          </Boundary>
+          <Boundary claim="The claim gate checks phrasing, not truth.">
+            <p>
+              It refuses twelve specific overstatements that appeared in earlier drafts of my CV.
+              It cannot tell whether a stated measurement condition is accurate — only that one was
+              stated.
+            </p>
+          </Boundary>
+        </div>
+      </Section>
+
+      <Section id="contact" n="4" title="Contact">
+        <div class="column">
+          <ul class="contact">
+            <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+            <li><a href={site.links.github} rel="noopener">github.com/Ryu-Jemu</a></li>
+            <li><a href={site.links.blog} rel="noopener">velog.io/@muqqi_bba</a></li>
+          </ul>
+        </div>
+      </Section>
+    </article>
+  </main>
+</Base>
+
+<style>
+  .page-top {
+    padding-block: 1.75rem 0;
+  }
+  main {
+    padding-block: 2rem 8rem;
+  }
+  .head__back {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    margin-bottom: 1.75rem;
+  }
+  .head__back a {
+    color: var(--ink-faint);
+    text-decoration: none;
+  }
+  .head__back a:hover {
+    color: var(--rubric);
+  }
+  .head__lede {
+    margin-top: 1rem;
+    font-size: var(--t-lede);
+    line-height: var(--lh-lede);
+    font-weight: 300;
+    color: var(--ink-muted);
+  }
+
+  .spec {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .spec div {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: 1rem;
+    align-items: baseline;
+  }
+  @media (max-width: 32rem) {
+    .spec div {
+      grid-template-columns: 1fr;
+      gap: 0.1rem;
+    }
+  }
+  .spec dt {
+    font-family: var(--family-mono);
+    font-size: var(--t-meta);
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--scope);
+  }
+  .spec dd {
+    margin: 0;
+    font-size: 0.97em;
+  }
+  .spec__after {
+    margin-top: 1.4rem;
+    color: var(--ink-muted);
+    font-size: 0.95em;
+  }
+  .contact {
+    display: grid;
+    gap: 0.35rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+  }
+</style>

@@ -16,6 +16,36 @@ const CYCLE: Record<Control, readonly string[]> = {
   notes: ['margin', 'inline'],
 };
 
+/**
+ * Re-apply the stored reading state to <html>.
+ *
+ * The inline head script does this before the first paint, but a view
+ * transition swaps in the new document's own <html> attributes — which are the
+ * server-rendered defaults, with no data-theme and no data-notes. Left alone,
+ * the notes stop matching `[data-notes="margin"]` and silently fall out of the
+ * margin after the first client-side navigation.
+ *
+ * Called on astro:after-swap, which runs before the new page paints.
+ */
+export function applyReadingState(): void {
+  const d = document.documentElement;
+  const read = (key: Control, fallback: string) => {
+    try {
+      const v = localStorage.getItem(key);
+      return v && CYCLE[key].includes(v) ? v : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+  d.dataset.theme = read(
+    'theme',
+    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+  );
+  d.dataset.motion = read('motion', 'on');
+  d.dataset.notes = read('notes', 'margin');
+  d.classList.remove('no-js');
+}
+
 const LABEL: Record<Control, Record<string, string>> = {
   theme: { light: 'Light', dark: 'Dark' },
   motion: { on: 'Motion on', off: 'Motion off' },

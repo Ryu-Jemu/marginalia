@@ -125,7 +125,7 @@ function walk(dir) {
  */
 const CONTENT = new Set(['.md', '.mdx', '.yaml', '.yml']);
 const isSourceComment = (file, line) =>
-  !CONTENT.has(extname(file)) && /^\s*(\/\/|\/\*|\*(?!\/)|\*\/|<!--)/.test(line);
+  !CONTENT.has(extname(file)) && /^\s*(\{\s*\/\*|\/\/|\/\*|\*(?!\/)|\*\/|<!--)/.test(line);
 
 const files = DIRS.flatMap((d) => walk(join(ROOT, d)));
 const violations = [];

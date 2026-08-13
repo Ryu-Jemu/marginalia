@@ -1,0 +1,220 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Controls from '../components/chrome/Controls.astro';
+import Section from '../components/doc/Section.astro';
+import { site } from '../lib/site';
+
+/**
+ * The audit page. Every note on the site, in one place, with what it measures,
+ * what it was measured under, and what it does not establish.
+ *
+ * This is the page that makes the claim testable: if the margin notes were
+ * decoration, this table would be short.
+ */
+const notes = await getCollection('notes');
+
+const GROUPS = [
+  {
+    kind: 'measurement',
+    title: 'Measurements',
+    lede: 'A number, and the conditions under which it was taken. The schema refuses one without the other.',
+  },
+  {
+    kind: 'commit',
+    title: 'Commits',
+    lede: 'Changes you can open. The two on public repositories link straight through.',
+  },
+  {
+    kind: 'scope',
+    title: 'Scope',
+    lede: 'What a claim covers, and what it does not extend to.',
+  },
+  {
+    kind: 'limit',
+    title: 'Limits',
+    lede: 'Things that are unfinished, unmeasured or untested, stated as such.',
+  },
+  { kind: 'source', title: 'Sources', lede: 'External records.' },
+] as const;
+
+const commitHref = (n: { href?: string; commit?: string }) =>
+  n.href && n.commit ? `${n.href.replace(/\/$/, '')}/commit/${n.commit}` : n.href;
+
+const counts = {
+  total: notes.length,
+  measurement: notes.filter((n) => n.data.kind === 'measurement').length,
+  withLimits: notes.filter((n) => n.data.limits).length,
+};
+---
+
+<Base
+  title={`Evidence — ${site.name}`}
+  description="Every claim on this site, with the conditions it was measured under and what it does not establish."
+>
+  <div class="shell page-top">
+    <Controls />
+  </div>
+
+  <main class="shell">
+    <article class="document">
+      <header class="column head">
+        <p class="head__back"><a href="/">&larr; Back</a></p>
+        <h1>Evidence</h1>
+        <p class="head__lede">
+          Every claim on this site resolves to an entry here. {counts.total} notes,
+          {' '}{counts.measurement} of them measurements, {counts.withLimits} carrying an explicit
+          statement of what they do not establish.
+        </p>
+        <p class="head__note">
+          A measurement without a stated condition fails the build, as does a commit note with no
+          sha. That check lives in <code>src/content.config.ts</code>; a second script refuses a
+          note no claim cites.
+        </p>
+      </header>
+
+      {
+        GROUPS.map((group, gi) => {
+          const rows = notes.filter((n) => n.data.kind === group.kind);
+          if (rows.length === 0) return null;
+          return (
+            <Section id={group.kind} n={String(gi + 1)} title={group.title} lede={group.lede}>
+              <div class="column-wide">
+                <ul class="rows">
+                  {rows.map((n) => (
+                    <li class="row" id={`note-${n.data.id}`}>
+                      <p class="row__id">{n.data.id}</p>
+                      <div class="row__body">
+                        <p class="row__claim">{n.data.body}</p>
+                        {n.data.condition && (
+                          <p class="row__meta row__meta--scope">
+                            <span class="row__key">Measured</span> {n.data.condition}
+                          </p>
+                        )}
+                        {n.data.commit && (
+                          <p class="row__meta">
+                            <span class="row__key">Commit</span>{' '}
+                            {commitHref(n.data) ? (
+                              <a href={commitHref(n.data)} rel="noopener">
+                                <code>{n.data.commit}</code>
+                              </a>
+                            ) : (
+                              <code>{n.data.commit}</code>
+                            )}
+                          </p>
+                        )}
+                        {n.data.href && !n.data.commit && (
+                          <p class="row__meta">
+                            <span class="row__key">Source</span>{' '}
+                            <a href={n.data.href} rel="noopener">
+                              {n.data.href.replace(/^https?:\/\//, '')}
+                            </a>
+                          </p>
+                        )}
+                        {n.data.limits && (
+                          <p class="row__meta row__meta--limit">
+                            <span class="row__key">Does not show</span> {n.data.limits}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Section>
+          );
+        })
+      }
+    </article>
+  </main>
+</Base>
+
+<style>
+  .page-top {
+    padding-block: 1.75rem 0;
+  }
+  main {
+    padding-block: 2rem 8rem;
+  }
+  /* This page is a table, not prose — it uses the note column as width. */
+  .column-wide {
+    max-width: calc(var(--measure) + var(--gutter) + var(--note-w));
+  }
+
+  .head__back {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    margin-bottom: 1.75rem;
+  }
+  .head__back a {
+    color: var(--ink-faint);
+    text-decoration: none;
+  }
+  .head__back a:hover {
+    color: var(--rubric);
+  }
+  .head__lede {
+    margin-top: 1rem;
+    font-size: var(--t-lede);
+    line-height: var(--lh-lede);
+    font-weight: 300;
+    color: var(--ink-muted);
+  }
+  .head__note {
+    margin-top: 1rem;
+    font-size: 0.95em;
+    color: var(--ink-faint);
+  }
+
+  .rows {
+    display: grid;
+    gap: 1.4rem;
+  }
+  .row {
+    display: grid;
+    gap: 0.35rem 1.5rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--rule);
+    scroll-margin-top: 3rem;
+  }
+  @media (min-width: 52rem) {
+    .row {
+      grid-template-columns: 12rem 1fr;
+    }
+  }
+  .row:target {
+    background: var(--rubric-wash);
+    box-shadow: 0 0 0 0.6rem var(--rubric-wash);
+    border-radius: 1px;
+  }
+  .row__id {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    color: var(--rubric);
+    word-break: break-all;
+  }
+  .row__claim {
+    font-size: 0.98em;
+  }
+  .row__meta {
+    margin-top: 0.4rem;
+    font-family: var(--family-mono);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-faint);
+    text-wrap: pretty;
+  }
+  .row__key {
+    text-transform: uppercase;
+    letter-spacing: var(--ls-meta);
+    font-size: 0.9em;
+    color: var(--scope);
+  }
+  .row__meta--limit .row__key {
+    color: var(--boundary);
+  }
+  .row__meta code {
+    color: var(--rubric);
+  }
+</style>

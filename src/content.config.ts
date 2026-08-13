@@ -24,7 +24,7 @@ const notes = defineCollection({
         .string()
         .regex(/^[0-9a-f]{7,40}$/, 'commit must be a 7–40 char hex sha')
         .optional(),
-      href: z.string().url().optional(),
+      href: z.url().optional(),
       /** What this evidence does NOT establish. */
       limits: z.string().optional(),
       project: reference('projects').optional(),
@@ -62,7 +62,7 @@ const projects = defineCollection({
       .array(
         z.object({
           kind: z.enum(['repo', 'deployed', 'org', 'paper', 'doc']),
-          href: z.string().url(),
+          href: z.url(),
           label: z.string(),
           caveat: z.string().optional(),
         }),
@@ -123,7 +123,7 @@ const record = defineCollection({
     date: z.string(),
     detail: z.string().optional(),
     score: z.string().optional(),
-    href: z.string().url().optional(),
+    href: z.url().optional(),
     notes: z.array(z.string()).default([]),
   }),
 });

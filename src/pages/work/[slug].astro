@@ -1,0 +1,249 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Controls from '../../components/chrome/Controls.astro';
+import NoteLines from '../../components/note/NoteLines.astro';
+import Section from '../../components/doc/Section.astro';
+import Boundary from '../../components/doc/Boundary.astro';
+import DecisionLog from '../../components/work/DecisionLog.astro';
+import StatusLabel from '../../components/work/StatusLabel.astro';
+import { site } from '../../lib/site';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((entry) => ({
+    // tier-2 entries live in a subdirectory; the URL does not need to say so.
+    params: { slug: entry.id.replace(/^tier2\//, '') },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const p = entry.data;
+const { Content } = await render(entry);
+---
+
+<Base title={`${p.title} — ${site.name}`} description={p.tagline}>
+  <div class="shell page-top">
+    <Controls />
+  </div>
+
+  <main class="shell">
+    <article class="document" data-annotated>
+      <NoteLines />
+
+      <header class="column head">
+        <p class="head__back"><a href="/#work">&larr; Work</a></p>
+        <p class="meta head__meta">
+          <span>{p.period}</span>
+          <span class="head__sep">·</span>
+          <span>{p.team}</span>
+          <StatusLabel status={p.status} />
+        </p>
+        <h1>{p.title}</h1>
+        <p class="head__tagline">{p.tagline}</p>
+        <p class="meta head__role">{p.role}</p>
+
+        {
+          p.links.length > 0 && (
+            <p class="head__links">
+              {p.links.map((l) => (
+                <a href={l.href} rel="noopener">
+                  {l.label}
+                  {l.caveat && <span class="head__caveat"> — {l.caveat}</span>}
+                </a>
+              ))}
+            </p>
+          )
+        }
+      </header>
+
+      {/* Attribution by surface. See the boundary on commit share. */}
+      <Section id="scope" n="1" title="Scope">
+        <div class="column scope">
+          <div>
+            <p class="meta scope__key">What I owned</p>
+            <ul class="scope__list">
+              {p.ownership.owned.map((o) => <li>{o}</li>)}
+            </ul>
+          </div>
+          {
+            p.ownership.notOwned.length > 0 && (
+              <div>
+                <p class="meta scope__key scope__key--not">What I did not own</p>
+                <ul class="scope__list scope__list--not">
+                  {p.ownership.notOwned.map((o) => (
+                    <li>{o}</li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+        </div>
+      </Section>
+
+      <Section id="problem" n="2" title="What happened">
+        <div class="column prose">
+          <Content />
+        </div>
+      </Section>
+
+      {
+        p.decisions.length > 0 && (
+          <Section
+            id="decisions"
+            n="3"
+            title="Decision log"
+            lede="What was chosen, why, what was turned down, and what was left undone."
+          >
+            <div class="column">
+              <DecisionLog decisions={p.decisions} />
+            </div>
+          </Section>
+        )
+      }
+
+      {
+        p.boundaries.length > 0 && (
+          <Section id="limits" n="4" title="What this does not show">
+            <div class="column">
+              {p.boundaries.map((b) => (
+                <Boundary claim={b} />
+              ))}
+            </div>
+          </Section>
+        )
+      }
+
+      <Section id="stack" n="5" title="Built with">
+        <div class="column">
+          <ul class="stack">
+            {p.stack.map((s) => <li>{s}</li>)}
+          </ul>
+          <p class="stack__after">
+            <a href="/evidence/">Every claim on this site, with its evidence &rarr;</a>
+          </p>
+        </div>
+      </Section>
+    </article>
+  </main>
+</Base>
+
+<style>
+  .page-top {
+    padding-block: 1.75rem 0;
+  }
+  main {
+    padding-block: 2rem 8rem;
+  }
+
+  .head__back {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    margin-bottom: 1.75rem;
+  }
+  .head__back a {
+    color: var(--ink-faint);
+    text-decoration: none;
+  }
+  .head__back a:hover {
+    color: var(--rubric);
+  }
+  .head__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.7rem;
+  }
+  .head__sep {
+    color: var(--rule-strong);
+  }
+  .head__tagline {
+    margin-top: 0.9rem;
+    font-size: var(--t-lede);
+    line-height: var(--lh-lede);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--ink-muted);
+  }
+  .head__role {
+    margin-top: 1rem;
+  }
+  .head__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.2rem;
+    margin-top: 1rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+  }
+  .head__links a {
+    color: var(--ink-faint);
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .head__links a:hover {
+    color: var(--ink);
+  }
+  .head__caveat {
+    color: var(--boundary);
+  }
+
+  .scope {
+    display: grid;
+    gap: 1.5rem;
+  }
+  @media (min-width: 34rem) {
+    .scope {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+  }
+  .scope__key {
+    color: var(--scope);
+    margin-bottom: 0.45rem;
+  }
+  .scope__key--not {
+    color: var(--boundary);
+  }
+  .scope__list {
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.97em;
+  }
+  .scope__list li {
+    position: relative;
+    padding-left: 1rem;
+  }
+  .scope__list li::before {
+    content: '·';
+    position: absolute;
+    left: 0.15rem;
+    color: var(--rule-strong);
+  }
+  .scope__list--not {
+    color: var(--ink-faint);
+  }
+
+  .stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.5rem;
+  }
+  .stack li {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    color: var(--ink-muted);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.2em 0.6em;
+  }
+  .stack__after {
+    margin-top: 1.5rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+  }
+</style>

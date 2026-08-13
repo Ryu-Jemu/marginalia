@@ -1,5 +1,6 @@
 ---
 import { Font } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
 import '../styles/tokens.css';
 import '../styles/base.css';
 import '../styles/document.css';
@@ -28,6 +29,36 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <Font cssVariable="--font-serif" preload />
     <Font cssVariable="--font-mono" />
 
+    <ClientRouter />
+
+    <style is:global>
+      /* The default crossfade holds both documents half transparent at the same
+         time, which turns overlapping text into mush. These phases do not
+         overlap: the old page is gone before the new one starts. */
+      @keyframes doc-out {
+        to {
+          opacity: 0;
+        }
+      }
+      @keyframes doc-in {
+        from {
+          opacity: 0;
+        }
+      }
+      ::view-transition-old(root) {
+        animation: doc-out 170ms ease-in both;
+      }
+      ::view-transition-new(root) {
+        animation: doc-in 220ms ease-out 170ms both;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+          animation: none;
+        }
+      }
+    </style>
+
     {/* Resolve reading state before first paint. Without this the page flashes
         light before a dark reader's preference lands. */}
     <script is:inline>
@@ -54,11 +85,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <slot />
 
     <script>
-      import { initControls } from '../scripts/controls.ts';
-      import { initNoteLines } from '../scripts/note-lines.ts';
-
-      initControls();
-      initNoteLines();
+      import '../scripts/motion.ts';
     </script>
   </body>
 </html>

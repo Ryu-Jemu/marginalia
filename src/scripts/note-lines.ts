@@ -190,6 +190,14 @@ export function initNoteLines(): () => void {
     for (const stop of stopObserving) stop();
     stopObserving = [];
 
+    // With motion off there is nothing to wait for. The line is information,
+    // not an effect, so it is present immediately rather than gated behind a
+    // viewport trigger whose only purpose was to time an animation.
+    if (motionOff()) {
+      finish(links);
+      return;
+    }
+
     const pending = links.filter((l) => !revealed.has(l.note));
     for (const link of pending) utils.set(link.path, { opacity: 0 });
 

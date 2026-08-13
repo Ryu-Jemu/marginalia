@@ -20,6 +20,7 @@ export function initBoundaries(): () => void {
   // an element whose pathLength is already normalised.
   const drawables = rects.map((r) => createDrawable(r, 0, 0)[0]);
 
+  // Same rule as the leader lines: with motion off the frame is simply there.
   if (motionOff()) {
     for (const d of drawables) d.setAttribute('draw', '0 1');
     return () => {};

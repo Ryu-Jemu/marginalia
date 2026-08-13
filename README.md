@@ -65,6 +65,26 @@ Notes float into the margin above 64rem. Below that, with scripting off, or when
 the reader moves them, they return to the flow — which is also what print does,
 as real footnotes.
 
+### The figures
+
+Five diagrams, drawn in code rather than exported from anywhere: the two lanes
+of the Dartoo defect, the MAP write race before and after the rule, the paper's
+uplift by churn sensitivity, the three route stages, and the crime regression
+with the variable it ruled out.
+
+Every one of them animates something the surrounding prose already states —
+packets travel because the diagram is about packets not arriving, a bar grows
+from the baseline it is measured against, a strike-through is drawn because the
+variable failed. They take their colours from the same tokens as the text, and
+they carry `role="img"` with a description rather than being hidden, because a
+diagram that states a result is not decoration.
+
+A wide figure uses the note column, so it has to clear any note already
+floating there. Each `.column` is a block formatting context for that reason:
+without it a note escaping one section made the next section's figure clear
+notes it had nothing to do with, opening a 550px gap between the prose and its
+own plate.
+
 ### The leader lines
 
 A tall note under a short paragraph gets pushed down by `clear: right`, up to

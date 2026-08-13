@@ -15,6 +15,11 @@
 
 .column {
   max-width: var(--measure);
+  /* A block formatting context per passage. Without it a note floated at the
+     end of one section escapes into the next, and a figure that clears floats
+     ends up waiting for notes it has nothing to do with — which opened a gap
+     of several hundred pixels between the prose and its own plate. */
+  display: flow-root;
 }
 
 @media (min-width: 64rem) {

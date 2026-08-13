@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import Controls from '../components/chrome/Controls.astro';
+import Nav from '../components/chrome/Nav.astro';
 import Masthead from '../components/chrome/Masthead.astro';
 import NoteLines from '../components/note/NoteLines.astro';
 import N from '../components/note/N.astro';
@@ -9,6 +9,10 @@ import Section from '../components/doc/Section.astro';
 import Boundary from '../components/doc/Boundary.astro';
 import ProjectEntry from '../components/work/ProjectEntry.astro';
 import PaperEntry from '../components/research/PaperEntry.astro';
+import Figure from '../components/viz/Figure.astro';
+import RaceTimeline from '../components/viz/RaceTimeline.astro';
+import SilentLoss from '../components/viz/SilentLoss.astro';
+import PricingChart from '../components/viz/PricingChart.astro';
 import { site } from '../lib/site';
 
 const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) =>
@@ -34,9 +38,7 @@ const history = record.filter((r) =>
   title={`${site.name} — ${site.role}`}
   description="Backend and AI work, with the evidence for every claim in the margin beside it."
 >
-  <div class="shell page-top">
-    <Controls />
-  </div>
+  <Nav />
 
   <main class="shell">
     <article class="document" data-annotated>
@@ -64,6 +66,13 @@ const history = record.filter((r) =>
             an update. Three regression tests fix the orderings that used to break it — reversed
             arrival, duplicate key, and a failing retry.
           </p>
+          <Figure
+            n="1"
+            title="The same two writes, before and after the rule. Arrival order stops deciding the outcome."
+            wide
+          >
+            <RaceTimeline />
+          </Figure>
           <p class="aside">
             Most of what follows is a student's work, deployed and demonstrated rather than
             operated. That commit is the shortest way to check whether the way I describe it
@@ -87,6 +96,14 @@ const history = record.filter((r) =>
             returned 200 — visible only by reconciling rows persisted against events
             published.<N id="dartoo-publisher-gap" />
           </p>
+
+          <Figure
+            n="2"
+            title="One service, two lanes. Every request returned 200, and only one of the lanes was delivering."
+            wide
+          >
+            <SilentLoss />
+          </Figure>
 
           <h3 class="habit">Treat a classification as a hypothesis</h3>
           <p>
@@ -146,12 +163,24 @@ const history = record.filter((r) =>
         lede="Author position is stored as a number and rendered from it, so it cannot drift."
       >
         <div class="column">
+          <Figure
+            n="3"
+            title="Uplift over the max-price baseline by churn sensitivity. The m=1 bar is faint because it is not significant."
+            wide
+          >
+            <PricingChart />
+          </Figure>
           {research.map((entry) => <PaperEntry entry={entry} />)}
         </div>
       </Section>
 
       {/* ── § 6 ─────────────────────────────────────────────────────── */}
-      <Section id="record" n="6" title="Record">
+      <Section
+        id="about"
+        n="6"
+        title="About me"
+        lede="Awards, certifications, and the path here."
+      >
         <div class="column">
           <h3 class="record__group">Awards and selections</h3>
           <ul class="record">

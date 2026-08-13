@@ -1,0 +1,95 @@
+---
+/**
+ * The regression, and the variable the project expected to matter.
+ *
+ * Five inputs, one model, R² 0.843. The two significant ones are drawn in the
+ * accent; CCTV — the premise the project started from — is struck through. The
+ * point of the figure is that the expected answer is the one that failed.
+ */
+const VARS = [
+  { name: 'entertainment venues', p: 'p < 0.001', sig: true },
+  { name: 'population', p: 'p = 0.001', sig: true },
+  { name: 'income', p: '', sig: false },
+  { name: 'streetlights', p: 'partly estimated', sig: false },
+  { name: 'CCTV count', p: 'not significant', sig: false, struck: true },
+];
+
+const W = 620;
+const ROW = 26;
+const TOP = 26;
+const LX = 8;
+const LW = 190;
+const MX = 330;
+---
+
+<svg
+  class="viz"
+  data-viz="crime"
+  viewBox={`0 0 ${W} ${TOP + VARS.length * ROW + 40}`}
+  role="img"
+  aria-label="Five variables enter an OLS model with R squared 0.843. Entertainment venue density and population are significant; CCTV count is not."
+>
+  <text class="viz-label" x={LX} y="14">inputs</text>
+  <text class="viz-label" x={MX + 30} y="14">model</text>
+
+  {
+    VARS.map((v, i) => {
+      const cy = TOP + i * ROW + 8;
+      return (
+        <g data-var={i} opacity="0">
+          <text
+            class="viz-value"
+            x={LX}
+            y={cy + 4}
+            style={`font-size:12px; fill: var(${v.sig ? '--ink' : '--ink-faint'})`}
+          >
+            {v.name}
+          </text>
+          {v.struck && (
+            <line
+              class="viz-limit"
+              data-strike
+              x1={LX - 2}
+              y1={cy}
+              x2={LX + 78}
+              y2={cy}
+              stroke-width="1"
+            />
+          )}
+          {v.p && (
+            <text
+              class="viz-label"
+              x={LX + LW}
+              y={cy + 4}
+              text-anchor="end"
+              style={v.sig ? 'fill: var(--rubric)' : 'fill: var(--ink-faint)'}
+            >
+              {v.p}
+            </text>
+          )}
+          <path
+            class={v.sig ? 'viz-accent' : 'viz-track'}
+            data-edge
+            d={`M ${LX + LW + 12} ${cy} C ${MX - 40} ${cy} ${MX - 40} ${TOP + 2 * ROW + 8} ${MX} ${TOP + 2 * ROW + 8}`}
+          />
+        </g>
+      );
+    })
+  }
+
+  <rect class="viz-box" x={MX} y={TOP + ROW + 2} width="150" height="52" rx="2"></rect>
+  <text class="viz-value" x={MX + 75} y={TOP + ROW + 24} text-anchor="middle">R² 0.843</text>
+  <text class="viz-label" x={MX + 75} y={TOP + ROW + 40} text-anchor="middle">adjusted 0.801</text>
+
+  <path
+    class="viz-ink"
+    d={`M ${MX + 150} ${TOP + 2 * ROW + 8} L ${W - 130} ${TOP + 2 * ROW + 8}`}></path>
+  <text class="viz-value" x={W - 122} y={TOP + 2 * ROW + 4} style="font-size:12px">
+    crime rate
+  </text>
+  <text class="viz-label" x={W - 122} y={TOP + 2 * ROW + 18}>25 districts</text>
+
+  <text class="viz-label" x={LX} y={TOP + VARS.length * ROW + 26}>
+    VIF &lt; 5 for every variable · cross-checked with LassoCV and RidgeCV · n = 25
+  </text>
+</svg>

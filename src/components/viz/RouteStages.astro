@@ -1,0 +1,81 @@
+---
+/**
+ * Where the model is allowed to act, and where it is not.
+ *
+ * Three stages. The first two are deterministic and produce a route; the model
+ * only adjusts the ordering it is handed. Drawing it this way makes the budget
+ * legible: the expensive, unbounded component is the last and smallest step.
+ */
+const W = 620;
+const H = 200;
+const STOPS = [
+  { x: 40, y: 132 },
+  { x: 96, y: 62 },
+  { x: 150, y: 116 },
+  { x: 196, y: 48 },
+];
+const path = (order: number[]) =>
+  order.map((i, k) => `${k === 0 ? 'M' : 'L'} ${STOPS[i].x} ${STOPS[i].y}`).join(' ');
+---
+
+<svg
+  class="viz"
+  data-viz="route"
+  viewBox={`0 0 ${W} ${H}`}
+  role="img"
+  aria-label="Three stages: a haversine distance matrix under one millisecond, an exhaustive tour search under eight stops, then at most three model calls that only reorder what the first two produced."
+>
+  {
+    [
+      { x: 0, n: '1', title: 'distance matrix', sub: 'haversine N×N · under 1ms', order: [0, 1, 2, 3] },
+      { x: 210, n: '2', title: 'tour search', sub: 'exhaustive under 8 stops', order: [0, 2, 1, 3] },
+      { x: 420, n: '3', title: 'model pass', sub: 'at most 3 calls', order: [0, 2, 3, 1] },
+    ].map((stage, si) => (
+      <g transform={`translate(${stage.x} 0)`} data-stage={si}>
+        <text class="viz-label" x="8" y="18">
+          stage {stage.n}
+        </text>
+        <text class="viz-value" x="8" y="36" style="font-size:12px">
+          {stage.title}
+        </text>
+        <text class="viz-label" x="8" y="50">
+          {stage.sub}
+        </text>
+
+        {/* every pair, faint — the matrix stage shows all of them */}
+        {si === 0 &&
+          STOPS.flatMap((a, i) =>
+            STOPS.slice(i + 1).map((b) => (
+              <line class="viz-track" data-pair x1={a.x} y1={a.y} x2={b.x} y2={b.y} opacity="0" />
+            )),
+          )}
+
+        {si > 0 && (
+          <path
+            class={si === 2 ? 'viz-accent' : 'viz-ink'}
+            data-tour
+            d={path(stage.order)}
+            stroke-linejoin="round"
+          />
+        )}
+
+        {STOPS.map((s) => (
+          <circle class="viz-fill-ink" cx={s.x} cy={s.y} r="3.5" />
+        ))}
+      </g>
+    ))
+  }
+
+  {
+    [190, 400].map((x) => (
+      <path class="viz-rule" d={`M ${x} 96 l 12 0 m -4 -4 l 4 4 l -4 4`} />
+    ))
+  }
+
+  <text class="viz-label" x="8" y={H - 6}>
+    deterministic
+  </text>
+  <text class="viz-label" x="428" y={H - 6} style="fill: var(--rubric)">
+    model — bounded to reordering what it was given
+  </text>
+</svg>

@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import Controls from '../components/chrome/Controls.astro';
+import Nav from '../components/chrome/Nav.astro';
 import Section from '../components/doc/Section.astro';
 import DecisionLog from '../components/work/DecisionLog.astro';
 import Boundary from '../components/doc/Boundary.astro';
@@ -79,9 +79,7 @@ const decisions: Array<{
 ---
 
 <Base title={`Colophon — ${site.name}`} description="How this site is built, and what it chose not to do.">
-  <div class="shell page-top">
-    <Controls />
-  </div>
+  <Nav base="/" />
 
   <main class="shell">
     <article class="document">

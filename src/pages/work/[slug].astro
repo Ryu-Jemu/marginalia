@@ -1,12 +1,13 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Controls from '../../components/chrome/Controls.astro';
+import Nav from '../../components/chrome/Nav.astro';
 import NoteLines from '../../components/note/NoteLines.astro';
 import Section from '../../components/doc/Section.astro';
 import Boundary from '../../components/doc/Boundary.astro';
 import DecisionLog from '../../components/work/DecisionLog.astro';
 import StatusLabel from '../../components/work/StatusLabel.astro';
+import ProjectFigures from '../../components/viz/ProjectFigures.astro';
 import { site } from '../../lib/site';
 
 export const prerender = true;
@@ -26,9 +27,7 @@ const { Content } = await render(entry);
 ---
 
 <Base title={`${p.title} — ${site.name}`} description={p.tagline}>
-  <div class="shell page-top">
-    <Controls />
-  </div>
+  <Nav base="/" />
 
   <main class="shell">
     <article class="document" data-annotated>
@@ -87,6 +86,9 @@ const { Content } = await render(entry);
       <Section id="problem" n="2" title="What happened">
         <div class="column prose">
           <Content />
+        </div>
+        <div class="column">
+          <ProjectFigures slug={entry.id.replace(/^tier2\//, '')} />
         </div>
       </Section>
 

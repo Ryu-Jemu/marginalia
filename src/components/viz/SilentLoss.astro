@@ -1,0 +1,82 @@
+---
+/**
+ * The Dartoo defect, drawn.
+ *
+ * Two lanes leaving the same service. The upper one persists and every packet
+ * arrives; the lower one publishes and the packets stop at a break that emits
+ * nothing. That is the whole bug: the success path and the delivery path
+ * disagreed, and only the delivery path was broken.
+ *
+ * Counts are the measured ones — 959 persisted, 805 published, 154 missing.
+ */
+const W = 700; // room for the difference annotation on the right
+const H = 190;
+const X0 = 118; // where a lane starts
+const X1 = 545; // where it ends
+const BREAK = 372; // where the publisher dropped everything
+---
+
+<svg
+  class="viz"
+  data-viz="silent-loss"
+  viewBox={`0 0 ${W} ${H}`}
+  role="img"
+  aria-label="Two lanes leaving the disclosure service. The persist lane delivers 959 rows; the publish lane stops at a disabled publisher after 805 events, losing 154 with no log line."
+>
+  <!-- the service both lanes leave from -->
+  <rect class="viz-box" x="8" y="52" width="96" height="86" rx="2"></rect>
+  <text class="viz-label" x="56" y="86" text-anchor="middle">disclosure</text>
+  <text class="viz-label" x="56" y="100" text-anchor="middle">service</text>
+  <text class="viz-value viz-value--rubric" x="56" y="126" text-anchor="middle">200 OK</text>
+
+  <!-- lane A: persisted -->
+  <text class="viz-label" x={X0} y="34">persisted → database</text>
+  <line class="viz-track" x1={X0} y1="52" x2={X1} y2="52"></line>
+  <g data-lane="persist">
+    {
+      Array.from({ length: 9 }).map((_, i) => (
+        <circle class="viz-fill-ink" data-packet={i} cx={X0} cy="52" r="3" opacity="0" />
+      ))
+    }
+  </g>
+  <text class="viz-value" x={X1 + 8} y="56">959</text>
+
+  <!-- lane B: published, with the break -->
+  <text class="viz-label" x={X0} y="122">published → broker</text>
+  <line class="viz-track" x1={X0} y1="140" x2={BREAK} y2="140"></line>
+  <line class="viz-track" x1={BREAK + 26} y1="140" x2={X1} y2="140" stroke-dasharray="2 4"></line>
+
+  <!-- the disabled publisher: an open gap, not an error -->
+  <g data-break>
+    <line class="viz-limit" x1={BREAK + 5} y1="130" x2={BREAK + 21} y2="150"></line>
+    <line class="viz-limit" x1={BREAK + 21} y1="130" x2={BREAK + 5} y2="150"></line>
+  </g>
+  <text class="viz-label" x={BREAK + 13} y="168" text-anchor="middle" style="fill: var(--boundary)">
+    enabled = false
+  </text>
+  <text class="viz-label" x={BREAK + 13} y="180" text-anchor="middle">no log line</text>
+
+  <g data-lane="publish">
+    {
+      Array.from({ length: 9 }).map((_, i) => (
+        <circle class="viz-fill-ink" data-packet={i} cx={X0} cy="140" r="3" opacity="0" />
+      ))
+    }
+  </g>
+  <text class="viz-value" x={X1 + 8} y="144">805</text>
+
+  <!-- the difference, which is the only thing that made it visible -->
+  <g data-gap opacity="0">
+    <line class="viz-limit" x1={X1 + 56} y1="52" x2={X1 + 56} y2="140" stroke-dasharray="3 3"></line>
+    <line class="viz-limit" x1={X1 + 52} y1="52" x2={X1 + 60} y2="52"></line>
+    <line class="viz-limit" x1={X1 + 52} y1="140" x2={X1 + 60} y2="140"></line>
+    <text class="viz-value viz-value--boundary" x={X1 + 66} y="100">154</text>
+    <text class="viz-label" x={X1 + 66} y="113">missing</text>
+  </g>
+</svg>
+
+<style>
+  .viz {
+    max-width: 100%;
+  }
+</style>

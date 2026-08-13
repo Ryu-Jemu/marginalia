@@ -38,7 +38,20 @@ export const sections = [
   { id: 'work', n: '3', title: 'Work' },
   { id: 'also', n: '4', title: 'Also built' },
   { id: 'research', n: '5', title: 'Research' },
-  { id: 'record', n: '6', title: 'Record' },
+  { id: 'about', n: '6', title: 'About me' },
   { id: 'boundaries', n: '7', title: 'Boundaries' },
   { id: 'contact', n: '8', title: 'Contact' },
+] as const;
+
+/**
+ * The bar at the top. Awards and education sit eight screens down the
+ * document; a reader who wants them should not have to scroll for them, so
+ * every section is one click away instead.
+ */
+export const nav = [
+  { href: '#work', label: 'Work', watches: 'work' },
+  { href: '#research', label: 'Research', watches: 'research' },
+  { href: '#about', label: 'About me', watches: 'about' },
+  { href: '#boundaries', label: 'Boundaries', watches: 'boundaries' },
+  { href: '/evidence/', label: 'Evidence', watches: null },
 ] as const;

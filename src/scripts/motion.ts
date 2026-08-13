@@ -2,6 +2,8 @@ import { createScope, type Scope } from 'animejs';
 import { applyReadingState, initControls } from './controls';
 import { initNoteLines } from './note-lines';
 import { initBoundaries } from './boundaries';
+import { initNav } from './nav';
+import { initViz } from './viz';
 
 /**
  * Lifecycle for everything scripted on the page.
@@ -32,7 +34,7 @@ function stop(): void {
 function start(): void {
   stop();
   scope = createScope({ root: document.body }).add(() => {
-    teardown = [initControls(), initNoteLines(), initBoundaries()];
+    teardown = [initControls(), initNav(), initNoteLines(), initBoundaries(), initViz()];
   });
 }
 

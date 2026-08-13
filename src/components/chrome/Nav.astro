@@ -1,0 +1,152 @@
+---
+import Controls from './Controls.astro';
+import { nav, site } from '../../lib/site';
+
+interface Props {
+  /** On a detail page the anchors have to go back to the document first. */
+  base?: string;
+}
+const { base = '' } = Astro.props;
+---
+
+<nav class="nav" aria-label="Sections">
+  <div class="shell nav__inner">
+    <a class="nav__home" href={base || '/'}>
+      <span class="nav__name">{site.name}</span>
+      <span class="nav__role">{site.role}</span>
+    </a>
+
+    <ul class="nav__list">
+      {
+        nav.map((item) => (
+          <li>
+            <a
+              class="nav__link"
+              href={item.href.startsWith('#') ? `${base}${item.href}` : item.href}
+              data-nav-link
+              data-watches={item.watches}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="nav__controls">
+      <Controls />
+    </div>
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+  /* color-mix is well supported, but a solid fallback costs one line. */
+  @supports not (backdrop-filter: blur(1px)) {
+    .nav {
+      background: var(--paper);
+    }
+  }
+
+  /* Wider than the reading column: the document is 55.5rem, and the bar has a
+     name, five links and three controls to fit on one row. */
+  .nav__inner {
+    max-width: 74rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    flex-wrap: wrap;
+    padding-block: 0.65rem;
+  }
+
+  .nav__home {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    text-decoration: none;
+    margin-right: auto;
+  }
+  .nav__name {
+    font-weight: 600;
+    font-size: 1.02rem;
+    letter-spacing: -0.01em;
+  }
+  .nav__role {
+    font-family: var(--family-mono);
+    font-size: 0.6875rem;
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .nav__list {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem 1.15rem;
+    flex-wrap: wrap;
+  }
+  .nav__link {
+    display: inline-block;
+    font-family: var(--family-mono);
+    font-size: var(--t-meta);
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-decoration: none;
+    padding-block: 0.35rem;
+    border-bottom: 1px solid transparent;
+    transition: color 120ms ease, border-color 120ms ease;
+  }
+  .nav__link:hover {
+    color: var(--ink);
+  }
+  /* The rubric marks where you are, the same colour that marks evidence. */
+  .nav__link[aria-current='true'] {
+    color: var(--rubric);
+    border-bottom-color: currentColor;
+  }
+
+  .nav__controls {
+    display: flex;
+  }
+
+  @media (max-width: 60rem) {
+    .nav__inner {
+      gap: 0.5rem 1rem;
+      padding-block: 0.55rem;
+    }
+    .nav__role {
+      display: none;
+    }
+    .nav__controls {
+      order: 3;
+      width: 100%;
+      border-top: 1px solid var(--rule);
+      padding-top: 0.45rem;
+    }
+  }
+
+  @media (max-width: 34rem) {
+    .nav__list {
+      order: 2;
+      width: 100%;
+      gap: 0 0.9rem;
+    }
+    .nav__home {
+      margin-right: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav__link {
+      transition: none;
+    }
+  }
+</style>

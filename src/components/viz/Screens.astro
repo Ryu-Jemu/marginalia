@@ -1,0 +1,66 @@
+---
+import { Image } from 'astro:assets';
+
+/**
+ * Screenshots of a deployed service.
+ *
+ * Framed like plates rather than dropped in as decoration — a thin rule, a
+ * caption, and the phone aspect kept. These exist because "deployed" is a
+ * claim, and a picture of the running thing is the cheapest evidence for it.
+ */
+interface Shot {
+  src: ImageMetadata;
+  alt: string;
+  caption: string;
+}
+interface Props {
+  shots: Shot[];
+}
+const { shots } = Astro.props;
+---
+
+<div class="screens">
+  {
+    shots.map((shot) => (
+      <figure class="screens__item">
+        <Image
+          class="screens__img"
+          src={shot.src}
+          alt={shot.alt}
+          widths={[220, 440]}
+          sizes="(max-width: 34rem) 45vw, 11rem"
+          loading="lazy"
+        />
+        <figcaption class="screens__caption">{shot.caption}</figcaption>
+      </figure>
+    ))
+  }
+</div>
+
+<style>
+  .screens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin-block: 1.75rem;
+  }
+  .screens__item {
+    margin: 0;
+    max-width: 11rem;
+  }
+  .screens__img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--rule-strong);
+    border-radius: 3px;
+    background: var(--paper-inset);
+  }
+  .screens__caption {
+    margin-top: 0.5rem;
+    font-family: var(--family-mono);
+    font-size: 0.6875rem;
+    line-height: 1.45;
+    color: var(--ink-faint);
+    text-wrap: pretty;
+  }
+</style>

@@ -1,12 +1,26 @@
 ---
+import { Image } from 'astro:assets';
 import N from '../note/N.astro';
 import { site, standing } from '../../lib/site';
+import photo from '../../assets/profile/photo.jpg';
 ---
 
 <header class="masthead">
   <div class="column">
-    <p class="meta masthead__status">{site.status}</p>
-    <h1 class="masthead__name">{site.name}</h1>
+    <div class="masthead__top">
+      <Image
+        class="masthead__photo"
+        src={photo}
+        alt="Ryu Jemu"
+        widths={[176, 352]}
+        sizes="8.5rem"
+        loading="eager"
+      />
+      <div>
+        <p class="meta masthead__status">{site.status}</p>
+        <h1 class="masthead__name">{site.name}</h1>
+      </div>
+    </div>
     <p class="masthead__lede">{site.lede}</p>
 
     <dl class="standing">
@@ -31,8 +45,33 @@ import { site, standing } from '../../lib/site';
   .masthead {
     padding-bottom: 2rem;
   }
+  .masthead__top {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  /* Squared off, not a circle: this is a document, and the photo is a plate in
+     it rather than an avatar. */
+  .masthead__photo {
+    width: 8.5rem;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    object-position: 50% 22%;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    flex: none;
+  }
+  @media (max-width: 30rem) {
+    .masthead__top {
+      gap: 1.1rem;
+    }
+    .masthead__photo {
+      width: 6rem;
+    }
+  }
   .masthead__status {
-    margin-bottom: 0.9rem;
+    margin-bottom: 0.5rem;
   }
   .masthead__name {
     /* Weight 400, not 800. A title page, not a poster. */

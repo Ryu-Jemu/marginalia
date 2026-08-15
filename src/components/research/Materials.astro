@@ -1,0 +1,172 @@
+---
+import { Image } from 'astro:assets';
+import type { ResolvedMaterial } from '../../lib/materials';
+
+/**
+ * The paper, readable on this page.
+ *
+ * Figures render inline as plates. A PDF gets an embedded reader with a plain
+ * link underneath, because an embedded object is blocked or unsupported often
+ * enough that it cannot be the only way through to the file.
+ */
+interface Props {
+  items: ResolvedMaterial[];
+}
+const { items } = Astro.props;
+
+const figures = items.filter((m) => m.kind === 'figure' || m.kind === 'poster');
+const docs = items.filter((m) => m.kind === 'pdf');
+const links = items.filter((m) => m.kind === 'link');
+---
+
+{
+  figures.length > 0 && (
+    <div class="plates" data-notes-inline>
+      {figures.map((f) => (
+        <figure class="plate" data-plate>
+          <Image
+            class="plate__img"
+            src={f.image}
+            alt={f.label}
+            widths={[520, 1040]}
+            sizes="(max-width: 46rem) 92vw, 30rem"
+            loading="lazy"
+          />
+          <figcaption class="plate__caption">
+            <span class="plate__label">{f.label}</span>
+            {f.caption && <span class="plate__note">{f.caption}</span>}
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  )
+}
+
+{
+  docs.map((d) => (
+    <div class="doc">
+      <p class="meta doc__key">{d.label}</p>
+      <object class="doc__frame" data={d.href} type="application/pdf" aria-label={d.label}>
+        <p class="doc__fallback">
+          This browser will not display the file inline.{' '}
+          <a href={d.href} rel="noopener">
+            Open it in a new tab
+          </a>
+          .
+        </p>
+      </object>
+      <p class="doc__after">
+        {d.caption && <span>{d.caption} </span>}
+        <a href={d.href} rel="noopener">
+          Open the full document ↗
+        </a>
+      </p>
+    </div>
+  ))
+}
+
+{
+  links.length > 0 && (
+    <p class="links">
+      {links.map((l) => (
+        <a class="links__item" href={l.src ?? ''} rel="noopener">
+          {l.label} ↗
+        </a>
+      ))}
+    </p>
+  )
+}
+
+<style>
+  .plates {
+    display: grid;
+    gap: 1.25rem;
+    margin-block: 1.25rem;
+  }
+  @media (min-width: 52rem) {
+    .plates {
+      grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+      gap: 1.5rem;
+    }
+  }
+  .plate {
+    margin: 0;
+  }
+  .plate__img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--paper-inset);
+  }
+  .plate__caption {
+    margin-top: 0.5rem;
+    display: grid;
+    gap: 0.15rem;
+  }
+  .plate__label {
+    font-family: var(--family-mono);
+    font-size: 0.6875rem;
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .plate__note {
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--ink-faint);
+    text-wrap: pretty;
+  }
+
+  .doc {
+    margin-top: 1.5rem;
+  }
+  .doc__key {
+    color: var(--scope);
+    margin-bottom: 0.5rem;
+  }
+  .doc__frame {
+    display: block;
+    width: 100%;
+    height: min(78vh, 46rem);
+    border: 1px solid var(--rule-strong);
+    border-radius: 3px;
+    background: var(--paper-inset);
+  }
+  .doc__fallback {
+    padding: 2rem;
+    font-size: 0.9375rem;
+    color: var(--ink-muted);
+  }
+  .doc__after {
+    margin-top: 0.5rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    color: var(--ink-faint);
+  }
+  .doc__after a {
+    color: var(--rubric);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .doc__after a:hover {
+    border-bottom-color: currentColor;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin-top: 1rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+  }
+  .links__item {
+    color: var(--ink-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .links__item:hover {
+    color: var(--ink);
+  }
+</style>

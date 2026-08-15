@@ -5,21 +5,28 @@ import RaceTimeline from './RaceTimeline.astro';
 import RouteStages from './RouteStages.astro';
 import PricingChart from './PricingChart.astro';
 import CrimeModel from './CrimeModel.astro';
+import CrimeFit from './CrimeFit.astro';
 
 /**
  * Which plates belong to which project. Kept out of the content files so the
  * MDX stays prose, and out of the schema so a figure is a rendering decision
  * rather than a data one.
+ *
+ * `startAt` continues the page's figure numbering past whatever came before,
+ * so a page with a pipeline plate above does not restart at one.
  */
 interface Props {
   slug: string;
+  startAt?: number;
 }
-const { slug } = Astro.props;
+const { slug, startAt = 0 } = Astro.props;
+let n = startAt;
+const next = () => String(++n);
 ---
 
 {
   slug === 'dartoo' && (
-    <Figure n="1" title="One service, two lanes. Every request returned 200 and only one lane delivered.">
+    <Figure n={next()} title="One service, two lanes. Every request returned 200 and only one lane delivered.">
       <SilentLoss />
     </Figure>
   )
@@ -28,10 +35,10 @@ const { slug } = Astro.props;
 {
   slug === 'map' && (
     <>
-      <Figure n="1" title="The same two writes, before and after the rule.">
+      <Figure n={next()} title="The same two writes, before and after the rule.">
         <RaceTimeline />
       </Figure>
-      <Figure n="2" title="Three stages. The model only reorders a route the deterministic stages produced.">
+      <Figure n={next()} title="Three stages. The model only reorders a route the deterministic stages produced.">
         <RouteStages />
       </Figure>
     </>
@@ -40,7 +47,7 @@ const { slug } = Astro.props;
 
 {
   slug === 'network-pricing' && (
-    <Figure n="1" title="Revenue over the max-price baseline, by churn sensitivity. The m=1 bar is faint because it is not significant.">
+    <Figure n={next()} title="Revenue over the max-price baseline, by churn sensitivity. The m=1 bar is faint because it is not significant.">
       <PricingChart />
     </Figure>
   )
@@ -48,8 +55,13 @@ const { slug } = Astro.props;
 
 {
   slug === 'crime-analysis' && (
-    <Figure n="1" title="Five inputs, one model. The variable the project set out to confirm is the one that failed.">
-      <CrimeModel />
-    </Figure>
+    <>
+      <Figure n={next()} title="Five inputs, one model. The variable the project set out to confirm is the one that failed.">
+        <CrimeModel />
+      </Figure>
+      <Figure n={next()} title="What five variables account for, and what they do not.">
+        <CrimeFit />
+      </Figure>
+    </>
   )
 }

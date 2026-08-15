@@ -1,0 +1,122 @@
+---
+/**
+ * Test counts by surface, drawn to scale.
+ *
+ * A bar chart rather than a list, because the useful fact is the shape: which
+ * surface carries the coverage and which does not. Bars grow from zero when the
+ * block comes into view; the numbers are printed either way.
+ */
+interface Item {
+  surface: string;
+  count: number;
+  detail?: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+
+const max = Math.max(...items.map((i) => i.count), 1);
+const total = items.reduce((sum, i) => sum + i.count, 0);
+---
+
+<div class="verify" data-verify>
+  <p class="verify__total">
+    <span class="verify__total-value" data-countup>{total.toLocaleString('en-US')}</span>
+    <span class="meta verify__total-label">automated tests, counted in the repositories</span>
+  </p>
+
+  <ul class="verify__list">
+    {
+      items.map((it) => (
+        <li class="verify__row">
+          <span class="verify__surface">{it.surface}</span>
+          <span class="verify__bar">
+            <span
+              class="verify__fill"
+              data-verify-bar
+              style={`--w:${((it.count / max) * 100).toFixed(1)}%`}
+            />
+          </span>
+          <span class="verify__count">{it.count}</span>
+          {it.detail && <span class="verify__detail">{it.detail}</span>}
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .verify__total {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .verify__total-value {
+    font-size: 1.75rem;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .verify__list {
+    display: grid;
+    gap: 0.7rem;
+  }
+  .verify__row {
+    display: grid;
+    grid-template-columns: 11rem minmax(6rem, 22rem) 3rem;
+    align-items: center;
+    gap: 0.25rem 0.9rem;
+  }
+  @media (max-width: 40rem) {
+    .verify__row {
+      grid-template-columns: 1fr 3rem;
+    }
+    .verify__bar {
+      grid-column: 1 / -1;
+      order: 3;
+    }
+  }
+  .verify__surface {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    color: var(--ink);
+  }
+  .verify__bar {
+    display: block;
+    height: 7px;
+    background: var(--paper-inset);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .verify__fill {
+    display: block;
+    height: 100%;
+    width: var(--w);
+    background: var(--rubric);
+    transform-origin: 0 50%;
+  }
+  .verify__count {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--ink);
+  }
+  .verify__detail {
+    grid-column: 1 / -1;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--ink-faint);
+    text-wrap: pretty;
+  }
+  @media (min-width: 40.0625rem) {
+    .verify__detail {
+      grid-column: 2 / -1;
+    }
+  }
+</style>

@@ -1,8 +1,15 @@
 ---
 /** Deployed is drawn in neutral ink. Green would read as "uptime is fine", and
- *  nothing here is operated. Amber is reserved for things still open. */
-interface Props { status: 'deployed' | 'in-progress' | 'archived' | 'on-hold' }
-const { status } = Astro.props;
+ *  nothing here is operated. Amber is reserved for things still open.
+ *
+ *  `hosting` is a separate fact from `status`. A service can have been
+ *  deployed and demonstrated and have its servers powered down now; saying
+ *  only "deployed" would let a reader assume they can open it. */
+interface Props {
+  status: 'deployed' | 'in-progress' | 'archived' | 'on-hold';
+  hosting?: 'offline' | 'reachable' | 'none';
+}
+const { status, hosting = 'none' } = Astro.props;
 const LABEL = {
   deployed: 'Deployed',
   'in-progress': 'In progress',
@@ -10,9 +17,18 @@ const LABEL = {
   'on-hold': 'On hold',
 } as const;
 ---
-<span class:list={['status', `status--${status}`]}>{LABEL[status]}</span>
+
+<span class="status-set">
+  <span class:list={['status', `status--${status}`]}>{LABEL[status]}</span>
+  {hosting === 'offline' && <span class="status status--offline">Servers off</span>}
+</span>
 
 <style>
+  .status-set {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
   .status {
     font-family: var(--family-mono);
     font-size: 0.6875rem;
@@ -28,5 +44,11 @@ const LABEL = {
   .status--on-hold {
     color: var(--boundary);
     border-color: currentColor;
+  }
+  /* Powered down is a fact about now, drawn as a struck-through rule rather
+     than a colour, so it does not compete with the limit colour. */
+  .status--offline {
+    color: var(--ink-faint);
+    border-style: dashed;
   }
 </style>

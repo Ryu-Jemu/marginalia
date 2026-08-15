@@ -1,0 +1,175 @@
+---
+/**
+ * The whole pipeline in one plate.
+ *
+ * A row of stages on a single track, each naming the service that runs it and
+ * the store or upstream it writes to, with the feeds that supply the first
+ * stage collected on a bus above. Records travel the track and pass behind the
+ * stage boxes, so a record visibly enters a stage and comes out the other side.
+ *
+ * The diagram is generated from the project's own `pipeline` data, so it cannot
+ * describe a stage the content file does not claim.
+ */
+interface Stage {
+  name: string;
+  service: string;
+  store?: string;
+  model?: boolean;
+}
+interface Props {
+  from: string;
+  to: string;
+  feeds?: string[];
+  stages: Stage[];
+}
+const { from, to, feeds = [], stages } = Astro.props;
+
+const W = 1000;
+const PAD = 4;
+const GAP = 14;
+const BOX_H = 38;
+
+const hasFeeds = feeds.length > 0;
+const FEED_Y = hasFeeds ? 13 : 0;
+const BUS_Y = hasFeeds ? 30 : 0;
+const HEAD_Y = hasFeeds ? 52 : 14;
+const BOX_Y = HEAD_Y + 16;
+const TRACK_Y = BOX_Y + BOX_H / 2;
+const SERVICE_Y = BOX_Y + BOX_H + 16;
+const STORE_Y = SERVICE_Y + 15;
+const H = STORE_Y + 8;
+
+const boxW = (W - 2 * PAD - GAP * (stages.length - 1)) / stages.length;
+const boxes = stages.map((s, i) => {
+  const x = PAD + i * (boxW + GAP);
+  return { ...s, x, cx: x + boxW / 2 };
+});
+
+/** Feed labels are spread across the left two thirds and hang off one bus. */
+const feedSpan = W * 0.62;
+const feedSlot = feedSpan / feeds.length;
+const feedMarks = feeds.map((label, i) => ({
+  label,
+  x: PAD + feedSlot * i + feedSlot / 2,
+}));
+
+const trackFrom = PAD;
+const trackTo = W - PAD;
+---
+
+<svg
+  class="viz flow"
+  data-viz="flow"
+  viewBox={`0 0 ${W} ${H}`}
+  role="img"
+  aria-hidden="true"
+  data-x0={trackFrom}
+  data-x1={trackTo}
+>
+  {
+    hasFeeds && (
+      <g data-feeds>
+        {feedMarks.map((f) => (
+          <>
+            <text class="viz-label flow__feed" x={f.x} y={FEED_Y} text-anchor="middle">
+              {f.label}
+            </text>
+            <path class="viz-track" d={`M${f.x} ${FEED_Y + 5} V${BUS_Y}`} />
+          </>
+        ))}
+        <path class="viz-track" d={`M${PAD} ${BUS_Y} H${PAD + feedSpan - feedSlot / 2}`} />
+        <path class="viz-track" d={`M${PAD} ${BUS_Y} V${TRACK_Y}`} />
+      </g>
+    )
+  }
+
+  <text class="viz-label" x={trackFrom} y={HEAD_Y}>{from}</text>
+  <text class="viz-label" x={trackTo} y={HEAD_Y} text-anchor="end">{to}</text>
+
+  <line class="viz-track" x1={trackFrom} y1={TRACK_Y} x2={trackTo} y2={TRACK_Y}></line>
+  <path class="viz-rule" d={`M${trackTo} ${TRACK_Y - 7} V${TRACK_Y + 7}`}></path>
+
+  {/* records in flight; behind the boxes on purpose */}
+  <g data-packets>
+    {
+      Array.from({ length: 8 }).map((_, i) => (
+        <rect
+          data-packet
+          x={trackFrom - 3}
+          y={TRACK_Y - 3}
+          width="6"
+          height="6"
+          rx="1"
+          class="viz-fill-accent"
+          opacity="0"
+          style={`--k:${i}`}
+        />
+      ))
+    }
+  </g>
+
+  {
+    boxes.map((b, i) => (
+      <g data-stage style={`--k:${i}`}>
+        <rect
+          class:list={['viz-box', b.model && 'flow__box--model']}
+          x={b.x}
+          y={BOX_Y}
+          width={boxW}
+          height={BOX_H}
+          rx="3"
+        />
+        <text class="flow__name" x={b.cx} y={TRACK_Y + 4} text-anchor="middle">
+          {b.name}
+        </text>
+        <text class="viz-label flow__service" x={b.cx} y={SERVICE_Y} text-anchor="middle">
+          {b.service}
+        </text>
+        {b.store && (
+          <text
+            class:list={['flow__store', b.model && 'flow__store--model']}
+            x={b.cx}
+            y={STORE_Y}
+            text-anchor="middle"
+          >
+            {b.store}
+          </text>
+        )}
+      </g>
+    ))
+  }
+</svg>
+
+<style>
+  .flow {
+    display: block;
+  }
+  .flow :global(.flow__name) {
+    font-size: 11.5px;
+    letter-spacing: 0.02em;
+    fill: var(--ink);
+  }
+  .flow :global(.flow__service) {
+    font-size: 8px;
+    letter-spacing: 0.05em;
+    text-transform: none;
+  }
+  .flow :global(.flow__feed) {
+    font-size: 8px;
+    letter-spacing: 0.05em;
+    text-transform: none;
+  }
+  .flow :global(.flow__store) {
+    font-size: 8.5px;
+    fill: var(--scope);
+    letter-spacing: 0.02em;
+  }
+  /* A stage where a model is called is marked, because it is the one place the
+     output is not determined by the input. */
+  .flow :global(.flow__box--model) {
+    stroke: var(--rubric);
+  }
+  .flow :global(.flow__store--model) {
+    fill: var(--rubric);
+  }
+</style>

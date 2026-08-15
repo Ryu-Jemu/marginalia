@@ -1,0 +1,82 @@
+---
+/**
+ * What the model accounts for, and what is left over.
+ *
+ * One bar rather than a coefficient table: the useful fact is that a sixth of
+ * the variation is still unexplained, and that the adjusted figure — the one
+ * that pays for five variables across twenty-five rows — sits below the raw
+ * one. Both numbers are drawn from the same fit; nothing here is interpolated.
+ */
+const W = 700;
+const H = 140;
+const BAR_X = 8;
+const BAR_W = W - 16;
+/* The adjusted-figure marker gets its own band above the bar. Sharing the row
+   under it put its label on top of the method line. */
+const BAR_Y = 56;
+const BAR_H = 34;
+
+const R2 = 0.843;
+const ADJ = 0.801;
+
+const fillW = BAR_W * R2;
+const adjX = BAR_X + BAR_W * ADJ;
+---
+
+<svg class="viz fit" data-viz="fit" viewBox={`0 0 ${W} ${H}`} role="img" aria-hidden="true">
+  <text class="viz-label" x={BAR_X} y="16">Variation in crime across 25 districts</text>
+
+  <!-- the whole quantity, then the part the model accounts for -->
+  <rect class="viz-box" x={BAR_X} y={BAR_Y} width={BAR_W} height={BAR_H} rx="2"></rect>
+  <rect
+    data-fit-fill
+    class="viz-fill-accent"
+    x={BAR_X}
+    y={BAR_Y}
+    width={fillW}
+    height={BAR_H}
+    rx="2"
+    style="transform-origin: 8px 0"></rect>
+
+  <text class="fit__value" x={BAR_X + 12} y={BAR_Y + 23}>84.3%</text>
+  <text class="fit__on-fill" x={BAR_X + 76} y={BAR_Y + 23}>explained — R² 0.843</text>
+  <text class="fit__left" x={BAR_X + BAR_W - 10} y={BAR_Y + 23} text-anchor="end">15.7%</text>
+
+  <!-- the adjusted figure, which is what five variables over 25 rows actually buys -->
+  <g data-fit-mark>
+    <path class="viz-limit" d={`M${adjX} ${BAR_Y - 22} V${BAR_Y + BAR_H}`} stroke-dasharray="3 3"
+    ></path>
+    <text class="viz-value viz-value--boundary" x={adjX - 8} y={BAR_Y - 26} text-anchor="end">
+      adjusted 0.801
+    </text>
+  </g>
+
+  <text class="viz-label" x={BAR_X} y={BAR_Y + BAR_H + 22}>
+    OLS · cross-checked with LassoCV and RidgeCV at 5 folds · VIF &lt; 5 on every variable
+  </text>
+  <text class="viz-label" x={BAR_X + BAR_W} y={BAR_Y + BAR_H + 22} text-anchor="end">
+    unexplained
+  </text>
+</svg>
+
+<style>
+  .fit {
+    display: block;
+  }
+  .fit :global(.fit__value) {
+    font-size: 15px;
+    font-weight: 600;
+    fill: var(--on-rubric);
+    font-variant-numeric: tabular-nums;
+  }
+  .fit :global(.fit__on-fill) {
+    font-size: 11px;
+    fill: var(--on-rubric);
+    opacity: 0.85;
+  }
+  .fit :global(.fit__left) {
+    font-size: 13px;
+    fill: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

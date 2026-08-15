@@ -1,5 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import Bullets from '../doc/Bullets.astro';
+import Actions from '../work/Actions.astro';
 
 interface Props {
   entry: CollectionEntry<'research'>;
@@ -24,9 +26,11 @@ const STATUS = {
   accepted: 'Accepted',
   'under-review': 'Under review',
   revision: 'In revision',
-  'submission-in-progress': 'Submission in progress',
   assisting: 'Lab work',
 } as const;
+
+/** Two lines of what I did — the rest is on the paper's own page. */
+const role = r.role.slice(0, 2);
 ---
 
 <article class="paper">
@@ -38,8 +42,9 @@ const STATUS = {
     <span>{r.date}</span>
   </p>
 
-  <h3 class="paper__title">{r.title}</h3>
+  <h3 class="paper__title"><a href={`/research/${entry.id}/`}>{r.title}</a></h3>
   <p class="paper__venue">{r.venue}</p>
+
   {
     r.contribution && (
       <p class="paper__contribution">
@@ -48,17 +53,8 @@ const STATUS = {
       </p>
     )
   }
-  {r.summary && <p class="paper__summary">{r.summary}</p>}
 
-  {
-    r.highlights.length > 0 && (
-      <ul class="paper__points">
-        {r.highlights.map((h) => (
-          <li>{h}</li>
-        ))}
-      </ul>
-    )
-  }
+  {role.length > 0 && <div class="paper__role"><Bullets items={role} /></div>}
 
   {
     (r.manuscriptId || r.grant || r.award) && (
@@ -69,11 +65,15 @@ const STATUS = {
       </p>
     )
   }
+
+  <Actions
+    actions={[{ href: `/research/${entry.id}/`, label: 'Read the paper', kind: 'detail' }]}
+  />
 </article>
 
 <style>
   .paper {
-    padding-block: 1rem;
+    padding-block: 1.1rem;
     border-top: 1px solid var(--rule);
   }
   .paper:first-child {
@@ -94,15 +94,22 @@ const STATUS = {
   }
   /* Anything not yet peer reviewed is marked as such, at the top. */
   .paper__status[data-status='under-review'],
-  .paper__status[data-status='submission-in-progress'],
   .paper__status[data-status='revision'] {
     color: var(--boundary);
   }
   .paper__title {
-    font-size: 1.0625rem;
-    line-height: 1.35;
-    letter-spacing: -0.015em;
+    font-size: 1.125rem;
+    line-height: 1.3;
+    letter-spacing: -0.016em;
     font-weight: 600;
+  }
+  .paper__title a {
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .paper__title a:hover {
+    color: var(--rubric);
+    border-bottom-color: currentColor;
   }
   .paper__venue {
     margin-top: 0.25rem;
@@ -111,7 +118,7 @@ const STATUS = {
   }
   /* On a seven-author paper the useful line is which part is his. */
   .paper__contribution {
-    margin-top: 0.45rem;
+    margin-top: 0.5rem;
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
@@ -126,34 +133,14 @@ const STATUS = {
     text-transform: uppercase;
     color: var(--rubric);
   }
-
-  .paper__summary {
-    margin-top: 0.4rem;
-    color: var(--ink-muted);
-    font-size: 0.875rem;
-  }
-  .paper__points {
-    margin-top: 0.45rem;
-    display: grid;
-    gap: 0.25rem;
-    font-size: 0.875rem;
-    color: var(--ink-muted);
-  }
-  .paper__points li {
-    padding-left: 1rem;
-    position: relative;
-  }
-  .paper__points li::before {
-    content: '—';
-    position: absolute;
-    left: 0;
-    color: var(--rule-strong);
+  .paper__role {
+    margin-top: 0.6rem;
   }
   .paper__ids {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem 1rem;
-    margin-top: 0.5rem;
+    margin-top: 0.6rem;
     font-family: var(--family-mono);
     font-size: var(--t-data);
     color: var(--ink-faint);

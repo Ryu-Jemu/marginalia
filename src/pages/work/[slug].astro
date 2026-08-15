@@ -4,11 +4,16 @@ import Base from '../../layouts/Base.astro';
 import Nav from '../../components/chrome/Nav.astro';
 import NoteLines from '../../components/note/NoteLines.astro';
 import Section from '../../components/doc/Section.astro';
+import Bullets from '../../components/doc/Bullets.astro';
+import DataPanel from '../../components/doc/DataPanel.astro';
 import StatusLabel from '../../components/work/StatusLabel.astro';
 import Actions from '../../components/work/Actions.astro';
 import FixList from '../../components/work/FixList.astro';
-import DataPanel from '../../components/doc/DataPanel.astro';
+import SafetyList from '../../components/work/SafetyList.astro';
+import Verification from '../../components/work/Verification.astro';
 import Devices from '../../components/viz/Devices.astro';
+import Figure from '../../components/viz/Figure.astro';
+import SystemFlow from '../../components/viz/SystemFlow.astro';
 import ProjectFigures from '../../components/viz/ProjectFigures.astro';
 import { site } from '../../lib/site';
 
@@ -39,6 +44,8 @@ const backTo =
 
 let n = 0;
 const next = () => String(++n);
+let fig = 0;
+const nextFig = () => String(++fig);
 ---
 
 <Base title={`${p.title} — ${site.name}`} description={p.tagline}>
@@ -48,21 +55,37 @@ const next = () => String(++n);
     <article class="document" data-annotated>
       <NoteLines />
 
-      <header class="column head">
+      <header class="column column--wide head">
         <p class="head__back"><a href={`/${backTo}`}>&larr; Back</a></p>
         <p class="meta head__meta">
           <span>{p.period}</span>
           <span class="head__sep">·</span>
           <span>{p.team}</span>
-          <StatusLabel status={p.status} />
+          <StatusLabel status={p.status} hosting={p.hosting} />
         </p>
         <h1>{p.title}</h1>
         <p class="head__tagline">{p.tagline}</p>
         <p class="meta head__role">{p.role}</p>
 
         {
+          p.hosting === 'offline' && (
+            <p class="head__hosting">
+              Deployed and demonstrated. The servers are powered down, so the addresses below
+              record where it ran rather than somewhere to visit.
+            </p>
+          )
+        }
+
+        {
           p.links.length > 0 && (
-            <Actions actions={p.links.map((l) => ({ href: l.href, label: l.label, kind: l.kind }))} />
+            <Actions
+              actions={p.links.map((l) => ({
+                href: l.href,
+                label: l.label,
+                // A filled button says "this is running". Nothing here is.
+                kind: p.hosting === 'offline' && l.kind === 'deployed' ? 'doc' : l.kind,
+              }))}
+            />
           )
         }
       </header>
@@ -75,7 +98,29 @@ const next = () => String(++n);
         )
       }
 
-      <Section id="scope" n={next()} title="Scope">
+      {
+        p.pipeline && (
+          <Section id="pipeline" n={next()} title="The pipeline">
+            <div class="column column--wide">
+              <Figure n={nextFig()} title={`${p.title} — every stage, and the service that runs it.`}>
+                <SystemFlow
+                  from={p.pipeline.from}
+                  to={p.pipeline.to}
+                  feeds={p.pipeline.feeds}
+                  stages={p.pipeline.stages}
+                />
+              </Figure>
+            </div>
+            {p.summary.length > 0 && (
+              <div class="column column--wide summary">
+                <Bullets items={p.summary} tone="ink" />
+              </div>
+            )}
+          </Section>
+        )
+      }
+
+      <Section id="scope" n={next()} title="My scope">
         <div class="column column--wide scope">
           <div>
             <p class="meta scope__key">What I owned</p>
@@ -98,15 +143,30 @@ const next = () => String(++n);
         </div>
       </Section>
 
-      <Section id="what" n={next()} title="What it does">
+      <Section id="what" n={next()} title="How it works">
         <div class="column prose">
           <Content />
         </div>
-        <div class="column column--wide">
+        <div class="column column--wide media">
           <Devices slug={slug} />
-          <ProjectFigures slug={slug} />
+          <ProjectFigures slug={slug} startAt={fig} />
         </div>
       </Section>
+
+      {
+        p.safety.length > 0 && (
+          <Section
+            id="safety"
+            n={next()}
+            title="What keeps it standing up"
+            lede="Mechanisms rather than intentions — each one makes a specific failure impossible, or makes it visible."
+          >
+            <div class="column column--wide">
+              <SafetyList items={p.safety} />
+            </div>
+          </Section>
+        )
+      }
 
       {
         p.fixes.length > 0 && (
@@ -118,6 +178,21 @@ const next = () => String(++n);
           >
             <div class="column column--wide">
               <FixList fixes={p.fixes} />
+            </div>
+          </Section>
+        )
+      }
+
+      {
+        p.verification.length > 0 && (
+          <Section
+            id="verification"
+            n={next()}
+            title="Verification"
+            lede="Test counts by surface, read out of the repositories rather than remembered."
+          >
+            <div class="column column--wide">
+              <Verification items={p.verification} />
             </div>
           </Section>
         )
@@ -167,12 +242,30 @@ const next = () => String(++n);
     line-height: var(--lh-lede);
     font-weight: 400;
     color: var(--ink-muted);
+    max-width: 72ch;
+    text-wrap: pretty;
   }
   .head__role {
     margin-top: 0.9rem;
   }
+  /* Stated where the links are, because that is where the assumption forms. */
+  .head__hosting {
+    margin-top: 0.9rem;
+    padding-left: 0.85rem;
+    border-left: 2px solid var(--boundary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--ink-muted);
+    max-width: 62ch;
+  }
   .head__panel {
     margin-top: 1.5rem;
+  }
+  .summary {
+    margin-top: 1.25rem;
+  }
+  .media {
+    margin-top: 1.25rem;
   }
 
   .scope {

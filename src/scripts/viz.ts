@@ -190,8 +190,24 @@ function route(svg: SVGSVGElement): void {
   animate(tours, { draw: '0 1', duration: 700, delay: stagger(420, { start: 500 }), ease: 'inOut(2)' });
 }
 
+/* ── the regression's explained share, grown from zero ───────────────────── */
+function fit(svg: SVGSVGElement): void {
+  const bar = svg.querySelector<SVGRectElement>('[data-fit-fill]');
+  const mark = svg.querySelector<SVGGElement>('[data-fit-mark]');
+  if (!bar) return;
+
+  if (motionOff()) {
+    if (mark) utils.set(mark, { opacity: 1 });
+    return;
+  }
+
+  animate(bar, { scaleX: [0, 1], duration: 820, ease: 'out(3)' });
+  if (mark) animate(mark, { opacity: [0, 1], duration: 420, delay: 760, ease: 'out(3)' });
+}
+
 const RUNNERS: Record<string, (svg: SVGSVGElement) => void> = {
   flow,
+  fit,
   'silent-loss': silentLoss,
   pricing,
   race,
@@ -275,6 +291,50 @@ function revealFixes(list: Element): void {
   });
 }
 
+/* ── bullet lists: the rule draws in before the line is read ─────────────── */
+function revealBullets(list: Element): void {
+  const items = [...list.querySelectorAll<HTMLElement>('[data-bullet]')];
+  if (motionOff()) return;
+
+  utils.set(items, { opacity: 0 });
+  animate(items, {
+    opacity: [0, 1],
+    translateX: [-6, 0],
+    duration: 380,
+    delay: stagger(70),
+    ease: 'out(3)',
+  });
+}
+
+/* ── safety cards ────────────────────────────────────────────────────────── */
+function revealSafety(list: Element): void {
+  const items = [...list.querySelectorAll<HTMLElement>('[data-safety-item]')];
+  if (motionOff()) return;
+
+  utils.set(items, { opacity: 0 });
+  animate(items, {
+    opacity: [0, 1],
+    translateY: [8, 0],
+    duration: 420,
+    delay: stagger(60),
+    ease: 'out(3)',
+  });
+}
+
+/* ── verification bars, grown from their own zero ────────────────────────── */
+function revealVerification(block: Element): void {
+  const bars = [...block.querySelectorAll<HTMLElement>('[data-verify-bar]')];
+  if (motionOff()) return;
+
+  utils.set(bars, { scaleX: 0 });
+  animate(bars, {
+    scaleX: [0, 1],
+    duration: 700,
+    delay: stagger(80),
+    ease: 'out(3)',
+  });
+}
+
 /* ── device frames ───────────────────────────────────────────────────────── */
 function revealPhones(group: Element): void {
   const phones = [...group.querySelectorAll<HTMLElement>('[data-phone]')];
@@ -303,6 +363,9 @@ export function initViz(): Teardown {
   const groups: Array<[string, (el: Element) => void]> = [
     ['[data-panel]', revealPanel],
     ['[data-fixes]', revealFixes],
+    ['[data-bullets]', revealBullets],
+    ['[data-safety]', revealSafety],
+    ['[data-verify]', revealVerification],
     ['.devices', revealPhones],
   ];
   for (const [selector, reveal] of groups) {
@@ -319,6 +382,9 @@ export function initViz(): Teardown {
     utils.set('[data-fix]', { opacity: 1, translateY: 0 });
     utils.set('.fix__rail', { scaleY: 1 });
     utils.set('[data-phone]', { opacity: 1, translateY: 0 });
+    utils.set('[data-bullet]', { opacity: 1, translateX: 0 });
+    utils.set('[data-safety-item]', { opacity: 1, translateY: 0 });
+    utils.set('[data-verify-bar]', { scaleX: 1 });
     restoreFigures();
   };
   window.addEventListener('marginalia:controls', onControls);

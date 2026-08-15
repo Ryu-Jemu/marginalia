@@ -22,8 +22,8 @@ export const site = {
  * is the point of putting them here rather than in a sentence.
  */
 export const standing = [
-  { value: '9', label: 'data services owned', detail: 'across two team products' },
-  { value: '319', label: 'automated tests written', detail: 'on the three Dartoo services' },
+  { value: '10', label: 'data services owned', detail: 'across two team products' },
+  { value: '1,300', label: 'automated tests written', detail: 'counted in the repositories' },
   { value: '2', label: 'papers', detail: 'first author · IEEE TAI co-author' },
   { value: '5', label: 'awards and selections', detail: 'Silver at ASK 2026 · Grand Prize' },
 ] as const;

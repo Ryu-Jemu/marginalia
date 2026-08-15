@@ -1,61 +1,130 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import ProjectEntry from './ProjectEntry.astro';
-import FixList from './FixList.astro';
+import StatusLabel from './StatusLabel.astro';
+import Actions from './Actions.astro';
+import Bullets from '../doc/Bullets.astro';
 import DataPanel from '../doc/DataPanel.astro';
 import Devices from '../viz/Devices.astro';
+import Figure from '../viz/Figure.astro';
+import SystemFlow from '../viz/SystemFlow.astro';
 
 /**
- * One product, in the order a reviewer reads it: what it looks like, what it
- * is, what it is measured in, and what I fixed in it.
+ * A product on the overview page.
  *
- * The phones and the stack take the left column so the figures and the
- * headline sit beside them rather than under a band of empty page.
+ * The whole pipeline first, then what it is in four bullets, then the figures
+ * and the phones. Nothing here explains how a defect was fixed — that is a
+ * click away, which is what keeps this page scannable.
  */
 interface Props {
   entry: CollectionEntry<'projects'>;
+  n: string;
 }
-const { entry } = Astro.props;
+const { entry, n } = Astro.props;
 const p = entry.data;
 const slug = entry.id.replace(/^tier2\//, '');
+const href = `/work/${slug}/`;
+
+/* The one filled button points at the write-up, not at an address whose
+   servers are off. */
+const actions = [
+  { href, label: 'How it was built', kind: 'deployed' as const },
+  ...p.links.map((l) => ({
+    href: l.href,
+    label: l.label,
+    kind: p.hosting === 'offline' && l.kind === 'deployed' ? ('doc' as const) : l.kind,
+  })),
+];
 ---
 
 <div class="project">
-  <div class="column column--wide project__top">
+  <div class="column column--wide project__head">
+    <p class="meta project__meta">
+      <span>{p.period}</span>
+      <span class="project__sep">·</span>
+      <span>{p.team}</span>
+      <StatusLabel status={p.status} hosting={p.hosting} />
+    </p>
+    <h3 class="project__title"><a href={href}>{p.title}</a></h3>
+    <p class="project__tagline">{p.tagline}</p>
+  </div>
+
+  {
+    p.pipeline && (
+      <div class="column column--wide project__flow">
+        <Figure n={n} title={`${p.title} — the pipeline end to end.`}>
+          <SystemFlow
+            from={p.pipeline.from}
+            to={p.pipeline.to}
+            feeds={p.pipeline.feeds}
+            stages={p.pipeline.stages}
+          />
+        </Figure>
+      </div>
+    )
+  }
+
+  <div class="column column--wide project__body">
     <div class="project__side">
       <Devices slug={slug} />
-      <ul class="project__stack">
-        {p.stack.map((s) => <li>{s}</li>)}
-      </ul>
     </div>
 
     <div class="project__lead">
-      <ProjectEntry entry={entry} />
+      <Bullets items={p.summary} />
+      <Actions actions={actions} />
       <div class="project__panel">
         <DataPanel items={p.data} />
       </div>
     </div>
   </div>
-
-  <div class="column column--wide project__fixes">
-    <p class="meta project__key">Defects I found and fixed</p>
-    <FixList fixes={p.fixes} />
-  </div>
 </div>
 
 <style>
   .project + .project {
-    margin-top: 2.25rem;
-    padding-top: 1.5rem;
+    margin-top: 2.5rem;
+    padding-top: 1.75rem;
     border-top: 1px solid var(--rule);
   }
+  .project__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+  }
+  .project__sep {
+    color: var(--rule-strong);
+  }
+  .project__title {
+    font-size: 1.4375rem;
+    line-height: 1.2;
+    letter-spacing: -0.022em;
+  }
+  .project__title a {
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .project__title a:hover {
+    color: var(--rubric);
+    border-bottom-color: currentColor;
+  }
+  .project__tagline {
+    margin-top: 0.4rem;
+    color: var(--ink-muted);
+    font-size: 0.9375rem;
+    max-width: 78ch;
+    text-wrap: pretty;
+  }
+  .project__flow {
+    margin-top: 0.9rem;
+  }
 
-  .project__top {
+  .project__body {
+    margin-top: 1.1rem;
     display: grid;
     gap: 1.5rem;
   }
   @media (min-width: 52rem) {
-    .project__top {
+    .project__body {
       grid-template-columns: 15.5rem minmax(0, 1fr);
       gap: 2rem;
       align-items: start;
@@ -66,29 +135,7 @@ const slug = entry.id.replace(/^tier2\//, '');
     gap: 1rem;
     align-content: start;
   }
-  .project__stack {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-  }
-  .project__stack li {
-    font-family: var(--family-mono);
-    font-size: 0.6875rem;
-    color: var(--ink-faint);
-    border: 1px solid var(--rule);
-    border-radius: 999px;
-    padding: 0.2em 0.65em;
-  }
-
   .project__panel {
     margin-top: 1.1rem;
-  }
-
-  .project__fixes {
-    margin-top: 1.6rem;
-  }
-  .project__key {
-    color: var(--rubric);
-    margin-bottom: 0.75rem;
   }
 </style>

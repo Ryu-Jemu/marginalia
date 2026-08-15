@@ -6,6 +6,7 @@ team: 6-person founding team
 role: Backend — owned four of the services
 domain: pipeline
 status: deployed
+hosting: offline
 tier: 1
 order: 1
 stack:
@@ -22,10 +23,92 @@ stack:
 links:
   - kind: deployed
     href: https://dartoo.co.kr
-    label: Open dartoo.co.kr
+    label: dartoo.co.kr
   - kind: org
     href: https://github.com/team-dartoo
     label: team-dartoo
+summary:
+  - Four of the six backend services are mine, end to end — collection, storage and search, summarisation, and the whole delivery path.
+  - Regulatory filings are polled, their archives decoded out of three legacy encodings, stored as objects, summarised, and pushed to whoever was watching that company.
+  - Delivery is idempotent by content hash, with staged backoff for transient upstream failures and a dead-letter queue for permanent ones.
+  - 319 automated tests across the three services I own.
+pipeline:
+  from: Regulatory filing system
+  to: Push notification
+  feeds:
+    - Filing index API
+    - Source document archives
+  stages:
+    - name: Poll
+      service: ingestion · producer
+      store: task queue
+    - name: Decode
+      service: ingestion · consumer
+      store: MinIO
+    - name: Store
+      service: disclosure
+      store: PostgreSQL 16
+    - name: Fan out
+      service: disclosure · publisher
+      store: RabbitMQ
+    - name: Summarise
+      service: summary
+      store: OpenAI
+      model: true
+    - name: Deliver
+      service: notification
+      store: Firebase FCM
+verification:
+  - surface: notification
+    count: 156
+    detail: orchestration, delivery, schedulers, mocks and the end-to-end skeleton
+  - surface: ingestion
+    count: 110
+    detail: polling, decoding, storage, dispatch and the retry policy
+  - surface: disclosure
+    count: 53
+    detail: CRUD, search, caching, rate limiting and event fan-out
+safety:
+  - title: Delivery is idempotent by content hash
+    detail: >-
+      A sha256 key derived from the notification's own content makes a repeated
+      event a no-op rather than a second push, so a redelivery after a consumer
+      restart cannot reach a phone twice.
+  - title: A failed message reaches the dead-letter queue
+    detail: >-
+      The consumer acknowledges on outcome, not on delivery, so a message that
+      raises is negatively acknowledged and routed to the dead-letter exchange
+      with a seven-day time to live — long enough to inspect and replay.
+  - title: Transient and permanent upstream failures are separated
+    detail: >-
+      A staged backoff waits out documents the upstream has not published yet;
+      anything still failing after that is isolated in the dead-letter path
+      instead of being retried into the daily API quota.
+  - title: The publisher reconnects rather than switching itself off
+    detail: >-
+      A broker unavailable at startup no longer disables publishing for the
+      lifetime of the process. Publishing reconnects lazily on first use with
+      exponential backoff and a guard against concurrent connection attempts.
+  - title: Two counts are reconciled on a schedule
+    detail: >-
+      A scheduled job compares rows persisted against events published. It is
+      how the 154-event gap was found, and it runs whether or not anyone is
+      watching a status code.
+  - title: The daily model spend cap is atomic
+    detail: >-
+      One Lua script performs the increment and the expiry together, so the
+      counter cannot be left without an expiry and stop resetting. The day
+      boundary is Asia/Seoul, not the container clock.
+  - title: One identifier follows a filing across four services
+    detail: >-
+      A correlation id is carried from the event into every log line, so a
+      single delivery can be traced from collection through summarisation to the
+      push without joining timestamps by hand.
+  - title: The summariser distrusts its own input and its own output
+    detail: >-
+      Filing text is defended against prompt injection before it reaches the
+      model, the response is validated rather than assumed, and XML is parsed
+      with an external-entity-safe parser.
 ownership:
   owned:
     - ingestion — polling, decoding, object storage, task dispatch

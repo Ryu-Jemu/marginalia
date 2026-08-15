@@ -44,6 +44,12 @@ const projects = defineCollection({
     team: z.string(),
     role: z.string(),
     status: z.enum(['deployed', 'in-progress', 'archived', 'on-hold']),
+    /**
+     * Where the deployment stands right now. `offline` is its own state: the
+     * service was deployed and demonstrated and its servers are powered down,
+     * which is not the same claim as "running".
+     */
+    hosting: z.enum(['offline', 'reachable', 'none']).default('none'),
     /** Drives which section the entry renders in. */
     domain: z.enum(['pipeline', 'research', 'analysis', 'other']),
     tier: z.union([z.literal(1), z.literal(2)]),
@@ -75,6 +81,36 @@ const projects = defineCollection({
           detail: z.string().optional(),
         }),
       )
+      .default([]),
+    /**
+     * The pipeline drawn as it is: a row of stages, each naming the service
+     * that runs it and the store it writes to, with the feeds that supply it.
+     */
+    pipeline: z
+      .object({
+        from: z.string(),
+        to: z.string(),
+        feeds: z.array(z.string()).default([]),
+        stages: z.array(
+          z.object({
+            name: z.string(),
+            service: z.string(),
+            store: z.string().optional(),
+            /** Stages where a model is called are drawn in the accent. */
+            model: z.boolean().default(false),
+          }),
+        ),
+      })
+      .optional(),
+    /** Bullets — what the thing is, in four lines or fewer. */
+    summary: z.array(z.string()).default([]),
+    /** What keeps the pipeline standing up: the mechanisms, not the intentions. */
+    safety: z
+      .array(z.object({ title: z.string(), detail: z.string() }))
+      .default([]),
+    /** Automated test counts by surface. */
+    verification: z
+      .array(z.object({ surface: z.string(), count: z.number(), detail: z.string().optional() }))
       .default([]),
     /**
      * Defects I found and fixed, each stated as symptom → cause → fix. This is
@@ -111,6 +147,30 @@ const research = defineCollection({
     award: z.string().optional(),
     summary: z.string().optional(),
     highlights: z.array(z.string()).default([]),
+    /** What I did on it, as bullets. Separate from what the paper says. */
+    role: z.array(z.string()).default([]),
+    /** What the paper found, as bullets. */
+    findings: z.array(z.string()).default([]),
+    method: z.array(z.string()).default([]),
+    /**
+     * Readable material held on the site itself.
+     *
+     * `pdf` resolves against /public (put the file at public/papers/<name>);
+     * `figure` resolves against src/assets/papers via a glob, so it is
+     * optimised at build time. A material whose file is missing is skipped
+     * rather than failing the build — the page has to survive the gap between
+     * writing the entry and adding the file.
+     */
+    materials: z
+      .array(
+        z.object({
+          kind: z.enum(['pdf', 'figure', 'poster', 'link']),
+          src: z.string(),
+          label: z.string(),
+          caption: z.string().optional(),
+        }),
+      )
+      .default([]),
     notes: z.array(z.string()).default([]),
   }),
 });

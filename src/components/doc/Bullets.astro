@@ -1,0 +1,59 @@
+---
+/**
+ * A short list, marked with a rule rather than a dot.
+ *
+ * Bullets are the default here because most of what a reviewer needs is a
+ * claim per line. The rules draw in from the left when the list appears.
+ */
+interface Props {
+  items: string[];
+  /** `key` prints a small label above the list. */
+  key?: string;
+  tone?: 'ink' | 'muted';
+}
+const { items, key, tone = 'muted' } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <div class="bullets" data-bullets>
+      {key && <p class="meta bullets__key">{key}</p>}
+      <ul class:list={['bullets__list', `bullets__list--${tone}`]}>
+        {items.map((item) => (
+          <li data-bullet>{item}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+<style>
+  .bullets__key {
+    color: var(--scope);
+    margin-bottom: 0.45rem;
+  }
+  .bullets__list {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .bullets__list li {
+    position: relative;
+    padding-left: 1.15rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+  .bullets__list--muted li {
+    color: var(--ink-muted);
+  }
+  .bullets__list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 0.5rem;
+    height: 1px;
+    background: var(--rubric);
+    transform-origin: 0 50%;
+  }
+</style>

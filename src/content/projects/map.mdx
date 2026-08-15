@@ -1,11 +1,12 @@
 ---
 title: MAP
-tagline: A travel data pipeline — five external feeds behind one gateway, cached and pre-loaded, filtered by a deterministic rule engine, and only then handed to a model.
+tagline: A travel itinerary pipeline. Five external feeds are polled and cached behind one gateway, filtered by a deterministic rule engine, planned by a fourteen-node agent, and routed on self-hosted road data.
 period: "2026.03 – present"
 team: 5 people
-role: Backend and AI — gateway, agent, infrastructure, and the Java BFF
+role: Backend and AI — gateway, agent, vision, infrastructure, admin, and the Java BFF
 domain: pipeline
 status: in-progress
+hosting: offline
 tier: 1
 order: 2
 stack:
@@ -17,40 +18,148 @@ stack:
   - Redis Streams
   - Java 17
   - Spring Boot 3.4
+  - STOMP
   - OSRM
+  - YOLO
+  - Prometheus
+  - Grafana
   - Docker
 links:
   - kind: deployed
     href: https://map-project-cbd94.web.app
-    label: Open the web build
+    label: Web build
   - kind: org
     href: https://github.com/we-meet-trip
     label: we-meet-trip
+summary:
+  - Six services I own — gateway, agent, vision, infrastructure, admin console, and the Java BFF — plus a Flutter client I contribute features to.
+  - A request is accepted in 202 and answered on a stream, so a slow model call is never a client timeout.
+  - The model chooses among candidates a rule engine has already filtered; visit order and travel legs are computed from coordinates, not asked for.
+  - 981 automated tests across the services I own.
+pipeline:
+  from: Five external feeds
+  to: Itinerary on the phone
+  feeds:
+    - Weather and air quality
+    - Places and photos
+    - Blog reviews
+    - Subway and shared mobility
+    - Road network
+  stages:
+    - name: Poll
+      service: hub · scheduler
+      store: PostGIS
+    - name: Cache
+      service: hub · gateway
+      store: Redis L1
+    - name: Accept
+      service: user · Java BFF
+      store: PostgreSQL
+    - name: Filter
+      service: hub · rule engine
+      store: forbidden zones
+    - name: Choose
+      service: agent · LangGraph
+      store: Gemini
+      model: true
+    - name: Route
+      service: agent · OSRM
+      store: 2-opt
+    - name: Publish
+      service: agent · Streams
+      store: job payload
 ownership:
   owned:
-    - hub — the external data gateway, its cache, its poller and its rule engine
-    - agent — the LangGraph recommendation pipeline and its contract checks
-    - infra — compose topology, health gating, self-hosted routing
-    - user — the Java BFF and its stream consumer
+    - hub — the external data gateway, its poller, its cache and its rule engine
+    - agent — the fourteen-node LangGraph recommendation pipeline and its contract checks
+    - user — the Java BFF, its stream consumer, chat and the reuse cache
+    - vision — the camera recognition service, detection through identification
+    - infra — compose topology, health gating, self-hosted routing, Prometheus and Grafana
+    - admin — the operations console and its internal APIs
   notOwned:
     - the Flutter client, where I contributed features rather than owning it
     - product design and the itinerary interface
 data:
-  - value: "5"
-    label: external feeds behind one gateway
-    detail: weather, air quality, places, reviews, transit
+  - value: "6"
+    label: services owned
+    detail: gateway · agent · BFF · vision · infra · admin
+  - value: "981"
+    label: automated tests
+    detail: BFF 429 · gateway 301 · agent 220 · vision 17 · admin 14
+  - value: "14"
+    label: nodes in the agent graph
+    detail: two of them call a model
   - value: "243"
-    label: district grid points seeded
+    label: district grid points polled
     detail: forecast coverage for the whole country
-  - value: "3"
-    label: model calls per recommendation, at most
-    detail: rules filter the candidates first
-  - value: "5,040"
-    label: visit orders searched exhaustively
-    detail: under eight stops; heuristic above it
+verification:
+  - surface: user — Java BFF
+    count: 429
+    detail: controller, service, repository, STOMP and contract-freeze tests
+  - surface: hub — gateway
+    count: 301
+    detail: grid selection, polling, rules, guards and every upstream client
+  - surface: agent — LangGraph
+    count: 220
+    detail: graph routing, output validation, injection, timeline and rate limit
+  - surface: vision
+    count: 17
+  - surface: admin
+    count: 14
+safety:
+  - title: A terminal state is never walked back
+    detail: >-
+      The acceptance write happens only when no row exists, and a primary-key
+      collision on that path is ignored rather than retried as an update. Three
+      regression tests pin reversed arrival, duplicate key and a failing retry.
+  - title: The model is bounded to three calls, and uses two
+    detail: >-
+      Selection and reasoning are one call each. Visit order and travel legs are
+      computed from coordinates. The third call is held in reserve so a format
+      violation upstream can be corrected once rather than failing the request.
+  - title: The output is checked as a contract before anyone sees it
+    detail: >-
+      Visit order must be a permutation of the selected places, legs must
+      connect end to end, and every coordinate must fall inside the country's
+      latitude and longitude range. The same range check exists on both the
+      gateway and the agent so the two cannot drift apart.
+  - title: Any node's error short-circuits to the payload
+    detail: >-
+      A node that sets an error skips the rest of the graph and goes straight to
+      building a payload. The publish node always runs, so a failed job emits a
+      failure event rather than leaving the client polling a row that never
+      changes.
+  - title: A missing feed degrades rather than fails
+    detail: >-
+      An upstream that does not answer produces a warning on the itinerary, not
+      a 5xx. A missing forecast should not take down a trip that has nothing to
+      do with the weather.
+  - title: Re-recommendation is capped at the day boundary
+    detail: >-
+      Three per itinerary per day, counted by a Redis Lua INCR and EXPIREAT that
+      expires at midnight Korean time rather than on a rolling window, so the
+      limit means what the person reading it thinks it means.
+  - title: The rate-limit key cannot be chosen by the caller
+    detail: >-
+      The forwarded-address header is read only when the immediate peer falls
+      inside a configured trusted-proxy range, and only the single-valued header
+      the edge always overwrites is trusted.
+  - title: Internal guards fail closed
+    detail: >-
+      The internal token is compared as bytes, so a non-ASCII header returns 403
+      rather than raising and returning 500. Failure falls to the closed side.
+  - title: The reuse cache never stores a failure
+    detail: >-
+      Only a successful recommendation enters the cache, a hit rewrites the
+      current job id onto its copy, and background refresh runs on a bounded
+      queue.
+  - title: Coordinates stay out of the logs
+    detail: >-
+      Origin and destination were being written to the access log in plain text,
+      and rejection responses quoted place names. Both were removed.
 fixes:
   - title: A finished job walked backwards into "in progress"
-    area: user (Java BFF)
+    area: user · Java BFF
     symptom: >-
       A recommendation would complete, and the client would keep polling
       forever. The job row said in_progress for a job that had finished seconds
@@ -65,7 +174,7 @@ fixes:
       terminal state is never walked back. Three regression tests pin the
       orderings that used to break it.
   - title: Forecast lookups asked for grids nothing was ever stored for
-    area: hub (gateway)
+    area: hub · gateway
     symptom: >-
       Short-term forecasts came back empty for most districts. Asking for a
       district that did not exist returned data, because the miss fell through
@@ -81,7 +190,7 @@ fixes:
       worse than none. The rule is a pure function, pinned by tests, and both
       the forecast and the observation paths now call it.
   - title: The poller died silently and left the day empty
-    area: hub (gateway)
+    area: hub · scheduler
     symptom: >-
       Whole release cycles arrived with no forecast stored. Because the work ran
       as a background task nobody awaited, the failure left no trace at all, and
@@ -95,15 +204,28 @@ fixes:
       filtering before the write, one query to decide what is already stored
       instead of one per grid, and a duplicate guard that the boot-time run and
       a manual run can both see.
+  - title: Two regional forecast codes were swapped
+    area: hub · gateway
+    symptom: >-
+      Medium-range land forecasts for two southern regions were each returning
+      the other's outlook. Every response was well formed, and the only way to
+      see it was to know the weather.
+    cause: >-
+      The region-code table had the two identifiers transposed at the point they
+      were seeded.
+    fix: >-
+      Corrected the mapping and covered the region table with tests, because a
+      transposition inside valid-looking data is invisible to every check that
+      only inspects shape.
   - title: The rate limiter let the caller choose its own counter
-    area: user (Java BFF) · edge proxy
+    area: user · Java BFF · edge proxy
     symptom: >-
       A caller could send the same endpoint as many requests as it liked. The
       limit was in place and simply never bound.
     cause: >-
       The filter read the forwarded-address header no matter who the immediate
-      sender was, so the value that keys the counter was attacker-controlled.
-      A comment said the edge made spoofing impossible; that assumption had been
+      sender was, so the value that keys the counter was attacker-controlled. A
+      comment said the edge made spoofing impossible; that assumption had been
       withdrawn some time earlier.
     fix: >-
       Read the header only when the immediate peer falls inside a configured
@@ -111,7 +233,7 @@ fixes:
       overwrites rather than the appendable one. Requests arriving from outside
       that range are keyed by their actual source address.
   - title: Long itineraries silently lost their road geometry
-    area: user (Java BFF)
+    area: user · Java BFF
     symptom: >-
       Itineraries above a certain size drew straight lines between every stop
       instead of following roads. Nothing surfaced in the interface; there was
@@ -128,8 +250,8 @@ fixes:
   - title: One database restart killed a run of recommendation jobs
     area: agent
     symptom: >-
-      After the database came back, recommendation jobs failed consecutively,
-      as many in a row as the pool held, then recovered on their own.
+      After the database came back, recommendation jobs failed consecutively, as
+      many in a row as the pool held, then recovered on their own.
     cause: >-
       The checkpointer pool lent out connections severed by the restart. A dead
       connection was only detected when its first query failed, which is to say
@@ -137,24 +259,43 @@ fixes:
     fix: >-
       Check the connection at the point it is borrowed. That adds one round trip
       per checkout, which a recommendation performs a handful of times.
+  - title: An internal guard answered 500 where it should have answered 403
+    area: hub · gateway
+    symptom: >-
+      A request carrying a non-ASCII internal token raised inside the guard and
+      returned a server error instead of a refusal.
+    cause: >-
+      The token was compared as a string, and the comparison function raises on
+      a non-ASCII operand.
+    fix: >-
+      Encode both sides to bytes before comparing, and refuse with 403 when the
+      value is absent or different. An authentication failure has to fall to the
+      closed side, not the error side.
 ---
 
 import N from '../../components/note/N.astro';
 
-MAP is a gateway with a model at the end of it. Five external feeds — weather,
-air quality, places, reviews, transit — are polled, cached and normalised behind
-one service, then filtered by a deterministic rule engine, and only what
-survives is shown to the model.<N id="map-ownership" />
+MAP is a gateway with an agent behind it. Five external feeds — weather and air
+quality, places and photos, blog reviews, subway and shared mobility, and the
+road network — are polled on a schedule, cached and normalised behind one
+service. A request for an itinerary is accepted immediately, planned on a
+stream, and answered when it is done.<N id="map-ownership" />
 
-That order is the design. A model asked to pick places from an open field
-invents them; given a candidate list already filtered by travel radius, weather
-and exclusion zones, the worst it can do is choose a bad real
-place.<N id="map-llm-budget" /> Its output is then checked as a contract — visit
-order a permutation, legs connected, coordinates inside the country — before
-anything downstream sees it. Visit order itself is solved exhaustively while
-that is cheap.<N id="map-tsp" />
+The order is the design. A model asked to pick places from an open field invents
+them; given a candidate list a deterministic engine has already filtered by
+travel radius, weather and exclusion zones, the worst it can do is choose a bad
+real place.<N id="map-llm-budget" /> Visit order and travel legs are not asked
+for at all — they are computed from coordinates, exhaustively while that is
+cheap.<N id="map-tsp" /> Of the agent's fourteen nodes, two call a
+model.<N id="map-graph" />
 
-The data side is where the defects were. Forecasts only accumulate on the grid
+The graph is written so that a failure anywhere in it still produces an answer.
+Any node that sets an error skips the rest and goes straight to building a
+payload, and the publish node always runs, so a failed job emits a failure event
+rather than leaving a client polling a row that will never change. There are 981
+automated tests behind that behaviour.<N id="map-test-count" />
+
+The data side is where the defects were. Forecasts accumulate only on the grid
 points the poller subscribes to, and the lookup path was asking for a different
 set entirely, so most districts returned nothing while a malformed request
 returned a usable answer.<N id="map-grid-coverage" /> The road-routing batch had
@@ -162,7 +303,6 @@ a ceiling the caller did not know about, and crossing it cost the whole
 itinerary rather than the excess.<N id="map-batch-cap" />
 
 In front of all of it: a Redis tier over a scheduled prefetch, so the external
-feed is warm before anyone asks,<N id="map-cache-tiers" /> a failed upstream
-degrading to an empty result rather than a 5xx, and a re-recommendation cap that
-expires at midnight local time instead of on a rolling
-window.<N id="map-rate-limit" />
+feed is warm before anyone asks,<N id="map-cache-tiers" /> and a
+re-recommendation cap that expires at midnight local time instead of on a
+rolling window.<N id="map-rate-limit" />

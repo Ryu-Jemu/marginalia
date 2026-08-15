@@ -131,8 +131,8 @@
 - id: map-ownership
   kind: scope
   body: >-
-    I owned the gateway, the recommendation agent, the infrastructure topology
-    and the Java BFF. On the Flutter client I contributed features.
+    Six services are mine — gateway, agent, Java BFF, vision, infrastructure and
+    the admin console. On the Flutter client I contributed features.
 
 # ── Reinforcement learning for 5G pricing ─────────────────────────────────
 
@@ -241,21 +241,13 @@
     assignments written and graded, exams invigilated.
   href: https://www.hanyang.ac.kr/
 
-# ── Masthead ──────────────────────────────────────────────────────────────
-
-- id: deployed-scope
-  kind: scope
-  body: >-
-    Dartoo and MAP are both mobile products with a team behind them. Deployed
-    here means reachable and demonstrated.
-
 # ── Additional work ───────────────────────────────────────────────────────
 
 - id: repo-spread
   kind: measurement
   body: >-
     Twelve repositories of my own across Python, Java, C# and JavaScript, plus
-    the four Dartoo services and five MAP repositories owned inside team
+    the four Dartoo services and six MAP services owned inside team
     organisations.
   condition: >-
     Non-fork repositories under github.com/Ryu-Jemu, counted 2026-08-13. Team
@@ -274,6 +266,21 @@
     A six-person Java project run on GitHub Actions and Jira. I held features
     rather than the lead, and it is the first place I worked to someone else's
     review.
+
+- id: map-test-count
+  kind: measurement
+  body: >-
+    981 automated tests across the six MAP services I own — 429 on the Java BFF,
+    301 on the gateway, 220 on the agent, 17 on vision and 14 on admin.
+  condition: >-
+    JUnit @Test annotations under src/test for the Java service, and def test_
+    functions under tests/ for the Python services, measured 2026-08-16.
+
+- id: map-graph
+  kind: scope
+  body: >-
+    The recommendation agent is a fourteen-node LangGraph. Two nodes call a
+    model; visit order and travel legs are computed from coordinates.
 
 - id: examiner-determinism
   kind: scope

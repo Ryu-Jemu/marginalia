@@ -2,21 +2,20 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Nav from '../components/chrome/Nav.astro';
-import Masthead from '../components/chrome/Masthead.astro';
+import Hero from '../components/chrome/Hero.astro';
 import NoteLines from '../components/note/NoteLines.astro';
 import N from '../components/note/N.astro';
 import Section from '../components/doc/Section.astro';
+import Bullets from '../components/doc/Bullets.astro';
 import ProjectEntry from '../components/work/ProjectEntry.astro';
 import PipelineProject from '../components/work/PipelineProject.astro';
 import CompactList from '../components/work/CompactList.astro';
 import PaperEntry from '../components/research/PaperEntry.astro';
 import Figure from '../components/viz/Figure.astro';
-import PipelineFlow from '../components/viz/PipelineFlow.astro';
-import RaceTimeline from '../components/viz/RaceTimeline.astro';
-import SilentLoss from '../components/viz/SilentLoss.astro';
-import PricingChart from '../components/viz/PricingChart.astro';
 import CrimeModel from '../components/viz/CrimeModel.astro';
+import CrimeFit from '../components/viz/CrimeFit.astro';
 import { site } from '../lib/site';
+import { reportMissingMaterials } from '../lib/materials';
 
 const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) =>
   a.data.order - b.data.order;
@@ -31,7 +30,14 @@ const researchBuilds = inDomain('research');
 const analysis = inDomain('analysis');
 const other = inDomain('other');
 
-const research = await getCollection('research');
+/* Peer-reviewed first, then under review, then lab work. Collection order is
+   the loader's, which is not the order a reviewer wants to read them in. */
+const STATUS_RANK = { accepted: 0, revision: 1, 'under-review': 2, assisting: 3 } as const;
+const research = (await getCollection('research')).sort(
+  (a, b) =>
+    STATUS_RANK[a.data.status] - STATUS_RANK[b.data.status] ||
+    b.data.date.localeCompare(a.data.date),
+);
 const record = await getCollection('record');
 
 /** Most recent first. The dates are `YYYY.MM` strings, which sort lexically. */
@@ -44,6 +50,9 @@ const certifications = byKind('certification');
 const history = record
   .filter((r) => ['education', 'service', 'lab', 'teaching', 'writing'].includes(r.data.kind))
   .sort(newestFirst);
+
+// Reported once per build, after every page has resolved its own materials.
+reportMissingMaterials();
 ---
 
 <Base
@@ -52,107 +61,30 @@ const history = record
 >
   <Nav />
 
+  <Hero />
+
   <main class="shell">
     <article class="document" data-annotated>
       <NoteLines />
-
-      <Masthead />
-
-      {/* Three domains, stated once, so the rest of the page has a shape. */}
-      <section class="intro">
-        <div class="column column--wide">
-          <ol class="domains">
-            <li>
-              <a href="#pipelines"><span class="domains__n">01</span> Data pipelines</a>
-              <p>
-                Two products where I owned the path the data takes — collected, decoded, cached,
-                modelled and delivered.
-              </p>
-            </li>
-            <li>
-              <a href="#research"><span class="domains__n">02</span> Research</a>
-              <p>
-                Two papers. First author on a pricing paper that took a silver award; the beam
-                prediction section of a survey under review at IEEE TAI.
-              </p>
-            </li>
-            <li>
-              <a href="#analysis"><span class="domains__n">03</span> Data analysis</a>
-              <p>
-                Two studies where the data contradicted the premise the project started from —
-                Seoul crime, and multiplex revenue.
-              </p>
-            </li>
-          </ol>
-        </div>
-      </section>
 
       {/* ── § 1 ─────────────────────────────────────────────────────── */}
       <Section
         id="pipelines"
         n="1"
         title="Data pipelines"
-        lede="Two team products, nine services owned between them. Each one is a path data takes from an external source to a phone, and the parts of it that broke quietly are listed with what fixed them."
+        lede="Two team products. Each is a path data takes from an external source to a phone, and I own most of that path on both. Both were deployed and demonstrated; their servers are powered down now."
       >
-        <div class="column">
-          <p class="aside aside--lead">
+        <PipelineProject entry={dartoo} n="1" />
+        <PipelineProject entry={map} n="2" />
+
+        <div class="column follow">
+          <p class="aside">
             The defects worth opening with were all quiet ones. A publisher that reported success
             while delivering nothing; a finished job that walked backwards into “in
             progress”;<N id="map-terminal-state" /> source archives arriving in three encodings,
-            some declaring none at all.<N id="dartoo-normaliser" /> None of them showed in a status
-            code.
+            some declaring none at all.<N id="dartoo-normaliser" /> Each project page carries what
+            broke, why, and what fixed it.
           </p>
-        </div>
-
-        <div class="column column--wide">
-          <Figure n="1" title="Dartoo — five stages from the filing system to a push notification.">
-            <PipelineFlow
-              from="Regulatory filing system"
-              to="Phone"
-              stages={[
-                { name: 'Poll', detail: 'ingestion' },
-                { name: 'Decode', detail: 'normalise' },
-                { name: 'Store', detail: 'disclosure' },
-                { name: 'Summarise', detail: 'summary' },
-                { name: 'Deliver', detail: 'notification' },
-              ]}
-            />
-          </Figure>
-        </div>
-
-        <PipelineProject entry={dartoo} />
-
-        <div class="column column--wide">
-          <Figure
-            n="2"
-            title="One service, two lanes. Every request returned 200 and only one lane delivered."
-          >
-            <SilentLoss />
-          </Figure>
-        </div>
-
-        <div class="column column--wide project-gap">
-          <Figure n="3" title="MAP — five external feeds, filtered before the model sees them.">
-            <PipelineFlow
-              from="Five external feeds"
-              to="Itinerary"
-              stages={[
-                { name: 'Poll', detail: 'scheduled prefetch' },
-                { name: 'Cache', detail: 'Redis L1' },
-                { name: 'Filter', detail: 'rule engine' },
-                { name: 'Choose', detail: 'model' },
-                { name: 'Verify', detail: 'contract check' },
-              ]}
-            />
-          </Figure>
-        </div>
-
-        <PipelineProject entry={map} />
-
-        <div class="column column--wide">
-          <Figure n="4" title="The same two writes, before and after the rule.">
-            <RaceTimeline />
-          </Figure>
         </div>
       </Section>
 
@@ -161,27 +93,13 @@ const history = record
         id="research"
         n="2"
         title="Research"
-        lede="Author position is stored as a number and rendered from it, so it cannot drift into a stronger claim."
+        lede="Two papers and the lab work behind one of them. Author position is stored as a number and rendered from it, so it cannot drift into a stronger claim. Each paper opens on its own page with the manuscript on it."
       >
-        <div class="column">
+        <div class="column column--wide">
           {research.map((entry) => <PaperEntry entry={entry} />)}
         </div>
 
-        <div class="column column--wide">
-          <Figure n="5" title="Revenue over the max-price baseline, by churn sensitivity. The m=1 bar is faint because it is not significant.">
-            <PricingChart />
-          </Figure>
-        </div>
-
-        <div class="column">
-          <p class="aside aside--lead">
-            The figure I would defend is not the largest one. It is the control: the same policy
-            trained without foresight lands level with the baseline at every
-            setting.<N id="rl-myopic" />
-          </p>
-        </div>
-
-        <div class="column">
+        <div class="column column--wide research__builds">
           {researchBuilds.map((entry) => <ProjectEntry entry={entry} compact />)}
         </div>
       </Section>
@@ -191,16 +109,31 @@ const history = record
         id="analysis"
         n="3"
         title="Data analysis"
-        lede="Collection, cleaning, the model, and the check that the model is worth reading."
+        lede="Collection, cleaning, the model, and the check that the model is worth reading. Both studies set out to confirm something and did not."
       >
-        <div class="column">
-          {analysis.map((entry) => <ProjectEntry entry={entry} compact />)}
+        <div class="column column--wide">
+          <Bullets
+            key="Seoul crime, twenty-five districts"
+            items={[
+              'Five variables explain 84% of the variation between districts — R² 0.843, adjusted 0.801.',
+              'Population and the density of entertainment venues carry it. CCTV count, the variable the project started from, is not significant.',
+              'Variance inflation was checked before any coefficient was read, and the fit was repeated with cross-validated Lasso and Ridge.',
+              'Residuals were mapped by district rather than predictions, so where the model is wrong is named.',
+            ]}
+          />
         </div>
 
-        <div class="column column--wide">
-          <Figure n="6" title="Five inputs, one model. The variable the project set out to confirm is the one that failed.">
+        <div class="column column--wide analysis__figures">
+          <Figure n="3" title="Five inputs, one model. The variable the project set out to confirm is the one that failed.">
             <CrimeModel />
           </Figure>
+          <Figure n="4" title="What five variables account for, and what they do not.">
+            <CrimeFit />
+          </Figure>
+        </div>
+
+        <div class="column column--wide analysis__entries">
+          {analysis.map((entry) => <ProjectEntry entry={entry} compact />)}
         </div>
       </Section>
 
@@ -309,64 +242,28 @@ const history = record
 
 <style>
   main {
-    padding-block: 1.5rem 4rem;
+    padding-block: 0.5rem 4rem;
   }
 
-  /* ── the three domains, as a table of contents ─────────────────────── */
-  .intro {
-    padding-top: 1.1rem;
-    border-top: 1px solid var(--rule);
+  .follow {
+    margin-top: 1.6rem;
   }
-  .domains {
-    display: grid;
-    gap: 1rem 1.75rem;
-  }
-  @media (min-width: 40rem) {
-    .domains {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0 2rem;
-    }
-  }
-  .domains a {
-    display: flex;
-    align-items: baseline;
-    gap: 0.45rem;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
-    letter-spacing: -0.015em;
-  }
-  .domains a:hover {
-    color: var(--rubric);
-  }
-  .domains__n {
-    font-family: var(--family-mono);
-    font-size: 0.6875rem;
-    color: var(--rubric);
-    letter-spacing: 0;
-  }
-  .domains p {
-    margin-top: 0.3rem;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--ink-faint);
-    text-wrap: pretty;
-  }
-
-  .project-gap {
-    margin-top: 2.25rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--rule);
-  }
-
   .aside {
-    margin-top: 1rem;
     color: var(--ink-faint);
     font-size: 0.9375rem;
   }
   .aside--lead {
-    margin-top: 0;
     margin-bottom: 1.1rem;
+  }
+
+  .research__builds,
+  .analysis__entries {
+    margin-top: 1.5rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--rule);
+  }
+  .analysis__figures {
+    margin-top: 1.25rem;
   }
 
   /* ── record ────────────────────────────────────────────────────────── */

@@ -1,0 +1,65 @@
+---
+/**
+ * What holds the pipeline up.
+ *
+ * These are mechanisms, not intentions: each one names a thing in the code that
+ * makes a specific failure impossible or visible. A two-column card grid,
+ * because they are read by scanning for the one that matters rather than in
+ * order.
+ */
+interface Item {
+  title: string;
+  detail: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+---
+
+<ul class="safety" data-safety>
+  {
+    items.map((s, i) => (
+      <li class="safety__item" data-safety-item>
+        <p class="meta safety__n">{String(i + 1).padStart(2, '0')}</p>
+        <h4 class="safety__title">{s.title}</h4>
+        <p class="safety__detail">{s.detail}</p>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .safety {
+    display: grid;
+    gap: 0.9rem;
+  }
+  @media (min-width: 46rem) {
+    .safety {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem 1.75rem;
+    }
+  }
+  .safety__item {
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--rule);
+  }
+  .safety__n {
+    color: var(--scope);
+    margin-bottom: 0.25rem;
+  }
+  .safety__title {
+    font-size: 0.9375rem;
+    line-height: 1.35;
+    letter-spacing: -0.012em;
+    font-weight: 600;
+    text-wrap: pretty;
+  }
+  .safety__detail {
+    margin-top: 0.3rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--ink-muted);
+    text-wrap: pretty;
+  }
+</style>

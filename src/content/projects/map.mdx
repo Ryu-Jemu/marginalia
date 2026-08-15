@@ -92,6 +92,43 @@ data:
   - value: "243"
     label: district grid points polled
     detail: forecast coverage for the whole country
+architecture:
+  externalLabel: Five external feeds, one integration point
+  external:
+    - name: KMA — forecast · observation
+    - name: Air quality index
+    - name: Kakao — places and photos
+    - name: Naver — blog reviews
+    - name: Subway and shared mobility
+    - name: OSRM — road network, self-hosted
+  services:
+    - name: hub — gateway
+      detail: 6 upstream clients · cache · rules
+      mine: true
+    - name: agent
+      detail: 14-node graph · contract checks
+      mine: true
+    - name: user — Java BFF
+      detail: accept · streams · chat · cache
+      mine: true
+    - name: vision
+      detail: camera recognition · WebSocket
+      mine: true
+    - name: admin
+      detail: operations console · internal APIs
+      mine: true
+    - name: infrastructure
+      detail: compose · health gating · metrics
+      mine: true
+  clients:
+    - name: Flutter app
+    - name: Admin web
+      mine: true
+  stores:
+    - PostGIS
+    - Redis L1
+    - PostgreSQL
+    - Redis Streams
 verification:
   - surface: user — Java BFF
     count: 429

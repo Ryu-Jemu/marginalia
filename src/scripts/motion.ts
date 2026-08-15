@@ -3,6 +3,7 @@ import { applyReadingState, initControls } from './controls';
 import { initNoteLines } from './note-lines';
 import { initNav } from './nav';
 import { initViz } from './viz';
+import { initDeck } from './deck';
 
 /**
  * Lifecycle for everything scripted on the page.
@@ -33,7 +34,7 @@ function stop(): void {
 function start(): void {
   stop();
   scope = createScope({ root: document.body }).add(() => {
-    teardown = [initControls(), initNav(), initNoteLines(), initViz()];
+    teardown = [initControls(), initNav(), initNoteLines(), initViz(), initDeck()];
   });
 }
 

@@ -1,0 +1,114 @@
+---
+import { nav } from '../../lib/site';
+
+/**
+ * Where you are in the document, held at the left edge.
+ *
+ * The bar at the top already marks the current section, but it scrolls out of
+ * a reader's attention. This is the same state in the place a reader looks
+ * when they lose their bearings: a fixed contents list beside the text, with a
+ * rule that grows on the section being read.
+ *
+ * It uses the same `data-nav-link` / `data-watches` contract as the bar, so
+ * one observer drives both and they cannot disagree.
+ *
+ * Only shown where there is margin outside the reading column to put it. On a
+ * narrower window the bar is the whole answer.
+ */
+---
+
+<nav class="rail" aria-label="Document sections">
+  <ol class="rail__list">
+    {
+      nav.map((item) => (
+        <li>
+          <a class="rail__link" href={item.href} data-nav-link data-watches={item.watches}>
+            <span class="rail__mark" aria-hidden="true" />
+            <span class="rail__label">{item.label}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  .rail {
+    display: none;
+  }
+
+  /* The shell tops out at 63.25rem. Below this width the rail would either
+     overlap the text or hang off the viewport, so it simply is not there. */
+  @media (min-width: 86rem) {
+    .rail {
+      display: block;
+      position: fixed;
+      left: 1.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 15;
+    }
+  }
+  @media (min-width: 100rem) {
+    .rail {
+      left: 2.75rem;
+    }
+  }
+
+  .rail__list {
+    display: grid;
+    gap: 0.55rem;
+  }
+  .rail__link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    font-family: var(--family-mono);
+    font-size: var(--t-meta);
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    opacity: 0.62;
+    transition:
+      color 160ms ease,
+      opacity 160ms ease;
+  }
+  .rail__mark {
+    display: block;
+    width: 1.25rem;
+    height: 1px;
+    background: var(--rule-strong);
+    transform-origin: 0 50%;
+    transition:
+      width 220ms ease,
+      background-color 160ms ease;
+  }
+  .rail__link:hover {
+    color: var(--ink);
+    opacity: 1;
+  }
+  /* The current section takes the rubric and a longer rule — the same two
+     signals the bar uses, so the page never says two different things. */
+  .rail__link[aria-current='true'] {
+    color: var(--rubric);
+    opacity: 1;
+  }
+  .rail__link[aria-current='true'] .rail__mark {
+    width: 2.5rem;
+    background: var(--rubric);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rail__link,
+    .rail__mark {
+      transition: none;
+    }
+  }
+
+  @media print {
+    .rail {
+      display: none;
+    }
+  }
+</style>

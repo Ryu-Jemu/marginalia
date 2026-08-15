@@ -3,7 +3,7 @@
   title: Silver award, paper competition
   issuer: KIPS ASK 2026 spring conference
   date: "2026.05"
-  detail: First author.
+  detail: For the 5G slice pricing paper. First author of two.
   notes:
     - rl-award
 
@@ -12,7 +12,7 @@
   title: Grand Prize, IT/CSE applied research and development
   issuer: Hanyang University SW/ICT/AI conference
   date: "2025.12"
-  detail: For Dartoo.
+  detail: For Dartoo — the disclosure pipeline.
   notes:
     - dartoo-award
 
@@ -21,21 +21,21 @@
   title: Finalist, AI_TOP_100 CAMPUS
   issuer: Kakao Impact and Brian Impact
   date: "2026.04"
-  detail: One of 100 selected.
+  detail: For MAP — the travel itinerary pipeline. One of 100 selected.
 
 - id: tourism-data
   kind: award
   title: Passed service review, tourism data competition
   issuer: Korea Tourism Organization and Kakao
   date: "2026.05"
-  detail: Web service category, for MAP.
+  detail: For MAP. Web service category.
 
 - id: ai-rookie
   kind: award
   title: One of 100 teams selected, AI ROOKIE
   issuer: Ministry of Science and ICT
   date: "2026.05"
-  detail: For MAP.
+  detail: For MAP — the travel itinerary pipeline.
 
 - id: aws-clf
   kind: certification

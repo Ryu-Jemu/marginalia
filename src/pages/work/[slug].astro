@@ -11,7 +11,8 @@ import Actions from '../../components/work/Actions.astro';
 import FixList from '../../components/work/FixList.astro';
 import SafetyList from '../../components/work/SafetyList.astro';
 import Verification from '../../components/work/Verification.astro';
-import Devices from '../../components/viz/Devices.astro';
+import ProductDeck from '../../components/viz/ProductDeck.astro';
+import Architecture from '../../components/viz/Architecture.astro';
 import Figure from '../../components/viz/Figure.astro';
 import SystemFlow from '../../components/viz/SystemFlow.astro';
 import ProjectFigures from '../../components/viz/ProjectFigures.astro';
@@ -116,6 +117,23 @@ const nextFig = () => String(++fig);
                 <Bullets items={p.summary} tone="ink" />
               </div>
             )}
+
+            {p.architecture && (
+              <div class="column column--wide arch">
+                <Figure
+                  n={nextFig()}
+                  title={`${p.title} — the system as designed. Everything outlined in the accent is mine.`}
+                >
+                  <Architecture
+                    external={p.architecture.external}
+                    services={p.architecture.services}
+                    clients={p.architecture.clients}
+                    stores={p.architecture.stores}
+                    externalLabel={p.architecture.externalLabel}
+                  />
+                </Figure>
+              </div>
+            )}
           </Section>
         )
       }
@@ -148,7 +166,7 @@ const nextFig = () => String(++fig);
           <Content />
         </div>
         <div class="column column--wide media">
-          <Devices slug={slug} />
+          <ProductDeck slug={slug} />
           <ProjectFigures slug={slug} startAt={fig} />
         </div>
       </Section>
@@ -265,6 +283,9 @@ const nextFig = () => String(++fig);
     margin-top: 1.25rem;
   }
   .media {
+    margin-top: 1.25rem;
+  }
+  .arch {
     margin-top: 1.25rem;
   }
 

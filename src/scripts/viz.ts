@@ -335,21 +335,6 @@ function revealVerification(block: Element): void {
   });
 }
 
-/* ── device frames ───────────────────────────────────────────────────────── */
-function revealPhones(group: Element): void {
-  const phones = [...group.querySelectorAll<HTMLElement>('[data-phone]')];
-  if (motionOff()) return;
-
-  utils.set(phones, { opacity: 0 });
-  animate(phones, {
-    opacity: [0, 1],
-    translateY: [14, 0],
-    duration: 620,
-    delay: stagger(120),
-    ease: 'out(3)',
-  });
-}
-
 export function initViz(): Teardown {
   const figures = [...document.querySelectorAll<SVGSVGElement>('svg[data-viz]')];
   const stops = figures.map((svg) => {
@@ -366,7 +351,6 @@ export function initViz(): Teardown {
     ['[data-bullets]', revealBullets],
     ['[data-safety]', revealSafety],
     ['[data-verify]', revealVerification],
-    ['.devices', revealPhones],
   ];
   for (const [selector, reveal] of groups) {
     for (const el of document.querySelectorAll(selector)) {
@@ -381,7 +365,6 @@ export function initViz(): Teardown {
     for (const svg of figures) RUNNERS[svg.dataset.viz ?? '']?.(svg);
     utils.set('[data-fix]', { opacity: 1, translateY: 0 });
     utils.set('.fix__rail', { scaleY: 1 });
-    utils.set('[data-phone]', { opacity: 1, translateY: 0 });
     utils.set('[data-bullet]', { opacity: 1, translateX: 0 });
     utils.set('[data-safety-item]', { opacity: 1, translateY: 0 });
     utils.set('[data-verify-bar]', { scaleX: 1 });

@@ -102,6 +102,22 @@ const projects = defineCollection({
         ),
       })
       .optional(),
+    /**
+     * The system as designed: who supplies it, what runs, who consumes it,
+     * and which of those I built. Separate from `pipeline`, which is about a
+     * record's journey rather than about ownership.
+     */
+    architecture: z
+      .object({
+        externalLabel: z.string().optional(),
+        external: z.array(z.object({ name: z.string() })),
+        services: z.array(
+          z.object({ name: z.string(), detail: z.string().optional(), mine: z.boolean().default(false) }),
+        ),
+        clients: z.array(z.object({ name: z.string(), mine: z.boolean().default(false) })),
+        stores: z.array(z.string()).default([]),
+      })
+      .optional(),
     /** Bullets — what the thing is, in four lines or fewer. */
     summary: z.array(z.string()).default([]),
     /** What keeps the pipeline standing up: the mechanisms, not the intentions. */

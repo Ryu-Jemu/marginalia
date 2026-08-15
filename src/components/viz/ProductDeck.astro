@@ -1,5 +1,5 @@
 ---
-import Phone from './Phone.astro';
+import PhoneScroll from './PhoneScroll.astro';
 
 import dartooStart from '../../assets/projects/dartoo/screen-start.png';
 import dartooHome from '../../assets/projects/dartoo/screen-home.png';
@@ -12,17 +12,13 @@ import mapItinerary from '../../assets/projects/map/screen-itinerary.png';
 import mapPlace from '../../assets/projects/map/screen-place.png';
 
 /**
- * The phones for a given product, kept out of the content files so a device
- * frame stays a rendering decision rather than a data one.
- *
- * `limit` trims the row where the column is narrow; the full set shows on the
- * project's own page.
+ * Which screens belong to which product, kept out of the content files so a
+ * device frame stays a rendering decision rather than a data one.
  */
 interface Props {
   slug: string;
-  limit?: number;
 }
-const { slug, limit } = Astro.props;
+const { slug } = Astro.props;
 
 const SETS: Record<string, Array<{ src: ImageMetadata; alt: string; screen: string }>> = {
   dartoo: [
@@ -39,24 +35,7 @@ const SETS: Record<string, Array<{ src: ImageMetadata; alt: string; screen: stri
   ],
 };
 
-const shots = (SETS[slug] ?? []).slice(0, limit ?? undefined);
+const shots = SETS[slug] ?? [];
 ---
 
-{
-  shots.length > 0 && (
-    <div class="devices" data-notes-inline>
-      {shots.map((s, i) => (
-        <Phone src={s.src} alt={s.alt} screen={s.screen} i={i} />
-      ))}
-    </div>
-  )
-}
-
-<style>
-  .devices {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 1.25rem;
-  }
-</style>
+{shots.length > 0 && <PhoneScroll shots={shots} />}

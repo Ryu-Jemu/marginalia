@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Nav from '../components/chrome/Nav.astro';
 import Hero from '../components/chrome/Hero.astro';
+import SectionRail from '../components/chrome/SectionRail.astro';
 import NoteLines from '../components/note/NoteLines.astro';
 import N from '../components/note/N.astro';
 import Section from '../components/doc/Section.astro';
@@ -63,6 +64,7 @@ reportMissingMaterials();
   description="Data pipelines, wireless-optimisation research, and statistical analysis — with the measurement conditions in the margin beside every figure."
 >
   <Nav />
+  <SectionRail />
 
   <Hero />
 

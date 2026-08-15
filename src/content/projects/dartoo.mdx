@@ -58,6 +58,42 @@ pipeline:
     - name: Deliver
       service: notification
       store: Firebase FCM
+architecture:
+  externalLabel: External providers
+  external:
+    - name: DART filing index API
+    - name: DART document archives
+    - name: OpenAI
+    - name: Firebase Cloud Messaging
+  services:
+    - name: ingestion
+      detail: poll · decode · store · dispatch
+      mine: true
+    - name: disclosure
+      detail: CRUD · search · fan-out · cache
+      mine: true
+    - name: summary
+      detail: model call · spend cap
+      mine: true
+    - name: notification
+      detail: orchestration · idempotency · DLQ
+      mine: true
+    - name: user
+      detail: accounts · subscriptions
+    - name: gateway · discovery
+      detail: routing · service registry
+    - name: chat
+      detail: assistant surface
+    - name: infrastructure
+      detail: CI/CD · monitoring
+  clients:
+    - name: Mobile client
+    - name: Web client
+  stores:
+    - PostgreSQL 16
+    - MinIO
+    - RabbitMQ
+    - Redis
 verification:
   - surface: notification
     count: 156

@@ -1,0 +1,245 @@
+---
+/**
+ * The system as designed, with my part of it marked.
+ *
+ * The pipeline plate answers "what happens to a record". This one answers
+ * "what did you build" — external providers on the left, the services in the
+ * middle, the clients on the right, and the stores underneath. Everything I
+ * own carries the accent outline; everything a teammate owns is drawn in the
+ * same weight but plain, because a diagram that shrinks other people's work to
+ * make mine look bigger is a lie told with a rectangle.
+ *
+ * The lines from the left converge on one service on purpose: on both products
+ * the integration point is a single gateway, and that is the shape of the
+ * claim.
+ */
+interface Node {
+  name: string;
+  detail?: string;
+  mine?: boolean;
+}
+interface Props {
+  /** Upstream providers, drawn feeding the gateway. */
+  external: Node[];
+  /** The services. The first one is the integration point the feeds converge on. */
+  services: Node[];
+  clients: Node[];
+  stores: string[];
+  externalLabel?: string;
+}
+const {
+  external,
+  services,
+  clients,
+  stores,
+  externalLabel = 'External providers',
+} = Astro.props;
+
+const W = 1020;
+
+const EX_X = 4;
+const EX_W = 232;
+const EX_H = 30;
+const EX_GAP = 9;
+
+const SV_X = 300;
+const SV_W = 220;
+const SV_H = 46;
+const SV_GAP_X = 14;
+const SV_GAP_Y = 12;
+const SV_COLS = 2;
+
+const CL_X = 812;
+const CL_W = 204;
+const CL_H = 38;
+const CL_GAP = 10;
+
+const TOP = 30;
+
+const exBoxes = external.map((n, i) => ({ ...n, y: TOP + i * (EX_H + EX_GAP) }));
+const svRows = Math.ceil(services.length / SV_COLS);
+const svBoxes = services.map((n, i) => ({
+  ...n,
+  x: SV_X + (i % SV_COLS) * (SV_W + SV_GAP_X),
+  y: TOP + Math.floor(i / SV_COLS) * (SV_H + SV_GAP_Y),
+}));
+const svBottom = TOP + svRows * (SV_H + SV_GAP_Y) - SV_GAP_Y;
+const exBottom = TOP + external.length * (EX_H + EX_GAP) - EX_GAP;
+
+const clBoxes = clients.map((n, i) => ({ ...n, y: TOP + i * (CL_H + CL_GAP) }));
+const clBottom = TOP + clients.length * (CL_H + CL_GAP) - CL_GAP;
+
+/** The feeds land on the first service — the gateway. */
+const gate = svBoxes[0];
+const gateX = gate.x;
+const gateY = gate.y + SV_H / 2;
+
+const STORE_Y = Math.max(svBottom, exBottom) + 34;
+const H = STORE_Y + 54;
+
+const mineCount = services.filter((s) => s.mine).length;
+---
+
+<svg class="viz arc" data-viz="arc" viewBox={`0 0 ${W} ${H}`} role="img"
+  aria-label={`Architecture: ${external.length} external providers feeding a gateway, ${services.length} services of which ${mineCount} are mine, ${clients.length} clients, and ${stores.length} stores.`}>
+  <text class="viz-label" x={EX_X} y="14">{externalLabel}</text>
+  <text class="viz-label" x={SV_X} y="14">Services</text>
+  <text class="viz-label" x={CL_X + CL_W} y="14" text-anchor="end">Clients</text>
+
+  <!-- feeds converging on the integration point -->
+  <g data-arc-feeds>
+    {
+      exBoxes.map((b) => (
+        <path
+          class="arc__feed"
+          data-arc-feed
+          d={`M${EX_X + EX_W} ${b.y + EX_H / 2} C${EX_X + EX_W + 54} ${b.y + EX_H / 2} ${gateX - 54} ${gateY} ${gateX} ${gateY}`}
+        />
+      ))
+    }
+  </g>
+
+  {
+    exBoxes.map((b) => (
+      <g data-arc-node>
+        <rect class="arc__box arc__box--ext" x={EX_X} y={b.y} width={EX_W} height={EX_H} rx="3" />
+        <text class="arc__name arc__name--ext" x={EX_X + 12} y={b.y + EX_H / 2 + 4}>
+          {b.name}
+        </text>
+      </g>
+    ))
+  }
+
+  {
+    svBoxes.map((b) => (
+      <g data-arc-node>
+        <rect
+          class:list={['arc__box', b.mine ? 'arc__box--mine' : 'arc__box--theirs']}
+          x={b.x}
+          y={b.y}
+          width={SV_W}
+          height={SV_H}
+          rx="3"
+        />
+        <text class:list={['arc__name', !b.mine && 'arc__name--muted']} x={b.x + 12} y={b.y + 20}>
+          {b.name}
+        </text>
+        {b.detail && (
+          <text class="arc__detail" x={b.x + 12} y={b.y + 35}>
+            {b.detail}
+          </text>
+        )}
+      </g>
+    ))
+  }
+
+  <!-- services out to the clients -->
+  {
+    clBoxes.map((b) => (
+      <g data-arc-node>
+        <path
+          class="arc__feed"
+          d={`M${SV_X + SV_W * 2 + SV_GAP_X} ${gateY} C${CL_X - 48} ${gateY} ${CL_X - 48} ${b.y + CL_H / 2} ${CL_X} ${b.y + CL_H / 2}`}
+        />
+        <rect
+          class:list={['arc__box', b.mine ? 'arc__box--mine' : 'arc__box--theirs']}
+          x={CL_X}
+          y={b.y}
+          width={CL_W}
+          height={CL_H}
+          rx="3"
+        />
+        <text class:list={['arc__name', !b.mine && 'arc__name--muted']} x={CL_X + 12} y={b.y + CL_H / 2 + 4}>
+          {b.name}
+        </text>
+      </g>
+    ))
+  }
+
+  <!-- stores, under the services they belong to -->
+  <g data-arc-stores>
+    <text class="viz-label" x={SV_X} y={STORE_Y - 10}>Stores and brokers</text>
+    {
+      stores.map((s, i) => (
+        <>
+          <rect
+            class="arc__store"
+            x={SV_X + i * 116}
+            y={STORE_Y}
+            width={106}
+            height={24}
+            rx="12"
+          />
+          <text class="arc__store-t" x={SV_X + i * 116 + 53} y={STORE_Y + 16} text-anchor="middle">
+            {s}
+          </text>
+        </>
+      ))
+    }
+  </g>
+
+  <g data-arc-key>
+    <rect class="arc__box arc__box--mine" x={EX_X} y={STORE_Y} width="18" height="12" rx="2" />
+    <text class="viz-label" x={EX_X + 26} y={STORE_Y + 10}>built by me</text>
+    <rect class="arc__box arc__box--theirs" x={EX_X} y={STORE_Y + 20} width="18" height="12" rx="2" />
+    <text class="viz-label" x={EX_X + 26} y={STORE_Y + 30}>teammate</text>
+    <rect class="arc__box arc__box--ext" x={EX_X} y={STORE_Y + 40} width="18" height="12" rx="2" />
+    <text class="viz-label" x={EX_X + 26} y={STORE_Y + 50}>third party</text>
+  </g>
+</svg>
+
+<style>
+  .arc {
+    display: block;
+  }
+  .arc :global(.arc__box) {
+    fill: var(--paper-inset);
+    stroke: var(--rule-strong);
+    stroke-width: 1;
+  }
+  /* Mine takes the accent outline and a wash of it. Nothing else changes size
+     or weight — the difference is ownership, not importance. */
+  .arc :global(.arc__box--mine) {
+    stroke: var(--rubric);
+    fill: var(--rubric-wash);
+  }
+  .arc :global(.arc__box--theirs) {
+    stroke: var(--rule-strong);
+  }
+  .arc :global(.arc__box--ext) {
+    fill: transparent;
+    stroke: var(--scope);
+    stroke-dasharray: 3 3;
+  }
+  .arc :global(.arc__feed) {
+    stroke: var(--rule-strong);
+    stroke-width: 1;
+    fill: none;
+  }
+  .arc :global(.arc__name) {
+    font-family: var(--family-mono);
+    font-size: 11.5px;
+    fill: var(--ink);
+  }
+  .arc :global(.arc__name--muted) {
+    fill: var(--ink-faint);
+  }
+  .arc :global(.arc__name--ext) {
+    font-size: 10px;
+    fill: var(--scope);
+  }
+  .arc :global(.arc__detail) {
+    font-family: var(--family-mono);
+    font-size: 8px;
+    fill: var(--ink-faint);
+  }
+  .arc :global(.arc__store) {
+    fill: none;
+    stroke: var(--rule);
+  }
+  .arc :global(.arc__store-t) {
+    font-family: var(--family-mono);
+    font-size: 9px;
+    fill: var(--ink-muted);
+  }
+</style>

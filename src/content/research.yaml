@@ -58,8 +58,8 @@
   venue: IEEE Transactions on Artificial Intelligence
   authorPosition: { index: 4, of: 7 }
   status: under-review
-  date: "2026"
-  manuscriptId: TAI-2026-Mar-R-00629
+  date: "2026.08"
+  manuscriptId: TAI-2026-Aug-R-01847
   contribution: Section III.E — Beam Prediction
   summary: >-
     A survey of language-model approaches to wireless resource problems, covering

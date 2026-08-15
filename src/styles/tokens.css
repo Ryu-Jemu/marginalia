@@ -25,49 +25,60 @@
 
   color-scheme: light;
 
-  /* Type families — provided by Astro's font pipeline (astro.config.mjs) */
-  --family-serif: var(--font-serif), Georgia, 'Times New Roman', serif;
-  --family-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Type — the Apple system stack.
+   *
+   * SF Pro cannot be shipped as a web font: it is not on any font CDN and its
+   * licence does not cover redistribution. `-apple-system` and
+   * `BlinkMacSystemFont` resolve to SF Pro on Apple platforms — Display at
+   * large sizes, Text at reading sizes, switched by the OS — with no files
+   * served at all. `ui-monospace` resolves to SF Mono the same way.
+   *
+   * Elsewhere the stack falls through to each platform's own UI face, which is
+   * the intended behaviour rather than a compromise: the page then looks native
+   * wherever it is read. */
+  --family-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --family-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
   /* Type scale.
    * Display is weight 400, not 800. This is a title page, not a poster —
    * the deliberate break from the previous site's display weight. */
-  --t-display: clamp(2.25rem, 3.5vw + 1rem, 3.75rem);
-  --lh-display: 1.06;
-  --ls-display: -0.015em;
+  --t-display: clamp(2rem, 2.6vw + 1rem, 2.875rem);
+  --lh-display: 1.05;
+  --ls-display: -0.022em;
 
-  --t-lede: clamp(1.25rem, 1vw + 0.9rem, 1.5rem);
-  --lh-lede: 1.45;
+  --t-lede: clamp(1.0625rem, 0.5vw + 0.9rem, 1.1875rem);
+  --lh-lede: 1.5;
 
-  --t-h2: clamp(1.5rem, 1.2vw + 1rem, 1.9375rem);
-  --lh-h2: 1.2;
-  --ls-h2: -0.01em;
+  --t-h2: clamp(1.3125rem, 0.7vw + 1rem, 1.5rem);
+  --lh-h2: 1.22;
+  --ls-h2: -0.018em;
 
-  --t-h3: 1.375rem;
-  --lh-h3: 1.3;
+  --t-h3: 1.125rem;
+  --lh-h3: 1.32;
 
-  --t-body: clamp(1.0625rem, 0.25vw + 1rem, 1.1875rem);
-  --lh-body: 1.62;
+  --t-body: clamp(0.9375rem, 0.15vw + 0.9rem, 1rem);
+  --lh-body: 1.58;
 
-  --t-note: 0.875rem;
+  --t-note: 0.8125rem;
   --lh-note: 1.5;
 
-  --t-meta: 0.75rem;
-  --ls-meta: 0.09em;
+  --t-meta: 0.6875rem;
+  --ls-meta: 0.055em;
 
-  --t-data: 0.8125rem;
+  --t-data: 0.75rem;
 
   /* Measure and margin.
    * 38rem of Source Serif 4 at the body size lands around 68 characters.
    * The note column is a fixed length, not Tufte's percentage offsets — a
    * predictable gutter is what makes the leader lines computable. */
   --measure: 100%;
-  --note-w: 15rem;
-  --gutter: 2.5rem;
+  --note-w: 14rem;
+  --gutter: 2rem;
   --rail: 0rem;
 
-  --space-section: 4.5rem;
-  --space-para: 1.15em;
+  --space-section: 2.75rem;
+  --space-para: 0.85em;
 }
 
 /* Dark. Declared twice on purpose: the media query serves readers with no JS
@@ -112,20 +123,20 @@
 
 @media (min-width: 40rem) {
   :root {
-    --measure: 34rem;
+    --measure: 33rem;
   }
 }
 
 @media (min-width: 64rem) {
   :root {
-    --measure: 38rem;
-    --rail: 2rem;
+    --measure: 35rem;
+    --rail: 0rem;
   }
 }
 
 @media (min-width: 90rem) {
   :root {
-    --note-w: 17rem;
-    --gutter: 3rem;
+    --note-w: 16rem;
+    --gutter: 2.25rem;
   }
 }

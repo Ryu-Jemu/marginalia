@@ -5,7 +5,7 @@ export const site = {
   role: 'Backend · AI',
   /** The one line. Everything else on the page is evidence for it. */
   lede:
-    'I look for the failures that do not announce themselves, and I publish what the evidence does not cover.',
+    'Backend services, wireless-optimisation research, and analysis that argues with its own premise.',
   status: 'Graduating February 2027 · Hanyang University ERICA',
   email: 'decemryu77@gmail.com',
   links: {
@@ -33,14 +33,12 @@ export const standing = [
 ] as const;
 
 export const sections = [
-  { id: 'start', n: '1', title: 'Start here' },
-  { id: 'how', n: '2', title: 'How I work' },
-  { id: 'work', n: '3', title: 'Work' },
+  { id: 'backend', n: '1', title: 'Backend' },
+  { id: 'research', n: '2', title: 'Research' },
+  { id: 'analysis', n: '3', title: 'Analysis' },
   { id: 'also', n: '4', title: 'Also built' },
-  { id: 'research', n: '5', title: 'Research' },
-  { id: 'about', n: '6', title: 'About me' },
-  { id: 'boundaries', n: '7', title: 'Boundaries' },
-  { id: 'contact', n: '8', title: 'Contact' },
+  { id: 'about', n: '5', title: 'About me' },
+  { id: 'boundaries', n: '6', title: 'Boundaries' },
 ] as const;
 
 /**
@@ -49,9 +47,10 @@ export const sections = [
  * every section is one click away instead.
  */
 export const nav = [
-  { href: '#work', label: 'Work', watches: 'work' },
+  { href: '#backend', label: 'Backend', watches: 'backend' },
   { href: '#research', label: 'Research', watches: 'research' },
-  { href: '#about', label: 'About me', watches: 'about' },
+  { href: '#analysis', label: 'Analysis', watches: 'analysis' },
+  { href: '#about', label: 'About', watches: 'about' },
   { href: '#boundaries', label: 'Boundaries', watches: 'boundaries' },
   { href: '/evidence/', label: 'Evidence', watches: null },
 ] as const;

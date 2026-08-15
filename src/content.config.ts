@@ -55,6 +55,8 @@ const projects = defineCollection({
     team: z.string(),
     role: z.string(),
     status: z.enum(['deployed', 'in-progress', 'archived', 'on-hold']),
+    /** The three things this person does. Drives which section it renders in. */
+    domain: z.enum(['backend', 'research', 'analysis', 'other']),
     tier: z.union([z.literal(1), z.literal(2)]),
     order: z.number(),
     stack: z.array(z.string()),
@@ -104,6 +106,8 @@ const research = defineCollection({
       'assisting',
     ]),
     date: z.string(),
+    /** The specific part of a multi-author work that is his. */
+    contribution: z.string().optional(),
     manuscriptId: z.string().optional(),
     grant: z.string().optional(),
     award: z.string().optional(),

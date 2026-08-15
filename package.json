@@ -12,7 +12,8 @@
     "preview": "astro preview",
     "verify": "node scripts/check-claims.mjs && node scripts/check-notes.mjs",
     "check": "astro check",
-    "astro": "astro"
+    "astro": "astro",
+    "postbuild": "node scripts/check-spacing.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",

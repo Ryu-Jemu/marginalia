@@ -8,19 +8,24 @@ import N from '../components/note/N.astro';
 import Section from '../components/doc/Section.astro';
 import Boundary from '../components/doc/Boundary.astro';
 import ProjectEntry from '../components/work/ProjectEntry.astro';
+import CompactList from '../components/work/CompactList.astro';
 import PaperEntry from '../components/research/PaperEntry.astro';
 import Figure from '../components/viz/Figure.astro';
 import RaceTimeline from '../components/viz/RaceTimeline.astro';
 import SilentLoss from '../components/viz/SilentLoss.astro';
 import PricingChart from '../components/viz/PricingChart.astro';
+import CrimeModel from '../components/viz/CrimeModel.astro';
 import { site } from '../lib/site';
 
 const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) =>
   a.data.order - b.data.order;
 
 const projects = (await getCollection('projects')).sort(byOrder);
-const tier1 = projects.filter((p) => p.data.tier === 1);
-const tier2 = projects.filter((p) => p.data.tier === 2);
+const inDomain = (d: string) => projects.filter((p) => p.data.domain === d);
+const backend = inDomain('backend');
+const analysis = inDomain('analysis');
+const researchBuilds = inDomain('research');
+const other = inDomain('other');
 
 const research = await getCollection('research');
 const record = await getCollection('record');
@@ -36,7 +41,7 @@ const history = record.filter((r) =>
 
 <Base
   title={`${site.name} — ${site.role}`}
-  description="Backend and AI work, with the evidence for every claim in the margin beside it."
+  description="Backend services, wireless-optimisation research, and data analysis — with the evidence for every claim in the margin beside it."
 >
   <Nav />
 
@@ -46,122 +51,90 @@ const history = record.filter((r) =>
 
       <Masthead />
 
-      {/* ── § 1 ─────────────────────────────────────────────────────── */}
-      <Section
-        id="start"
-        n="1"
-        title="Start here"
-        lede="One commit, in a public repository, that you can open before reading anything else."
-      >
-        <div class="column">
-          <p>
-            A recommendation would finish, and the client would keep waiting. The completion
-            event was reaching the database before the record of the job that produced it, so
-            the late <code>in_progress</code> write overwrote the terminal state and the job
-            looked unfinished forever.<N id="map-terminal-state" />
-          </p>
-          <p>
-            The fix stops treating the two writes as ordered: the first record is only written
-            when no row exists, and a primary key collision on the completion path is retried as
-            an update. Three regression tests fix the orderings that used to break it — reversed
-            arrival, duplicate key, and a failing retry.
-          </p>
-          <Figure
-            n="1"
-            title="The same two writes, before and after the rule. Arrival order stops deciding the outcome."
-            wide
-          >
-            <RaceTimeline />
-          </Figure>
-          <p class="aside">
-            Most of what follows is a student's work, deployed and demonstrated rather than
-            operated. That commit is the shortest way to check whether the way I describe it
-            matches what I actually did.
+      {/* Three domains, stated once, so the rest of the page has a shape. */}
+      <section class="intro">
+        <div class="column column--wide">
+          <ol class="domains">
+            <li>
+              <a href="#backend"><span class="domains__n">01</span> Backend</a>
+              <p>
+                Four services on one product and five repositories on another, taken from what
+                the thing should do through to the pipeline that does it.
+              </p>
+            </li>
+            <li>
+              <a href="#research"><span class="domains__n">02</span> Research</a>
+              <p>
+                Two papers. First author on a pricing paper that took a silver award; the beam
+                prediction section of a survey under review at IEEE TAI.
+              </p>
+            </li>
+            <li>
+              <a href="#analysis"><span class="domains__n">03</span> Analysis</a>
+              <p>
+                Two studies where the finding contradicted the premise the project started from
+                — Seoul crime, and multiplex revenue.
+              </p>
+            </li>
+          </ol>
+
+          <p class="intro__check column">
+            <span class="intro__key">Start with this one</span>
+            A completion event reaching the database before its own job record let the
+            late{' '}<code>in_progress</code> write overwrite the terminal state, and the client
+            waited forever.<N id="map-terminal-state" /> It is public, it is three regression tests long,
+            and it is the fastest way to check whether the way I describe my work matches what I
+            actually did.
           </p>
         </div>
-      </Section>
+      </section>
 
-      {/* ── § 2 ─────────────────────────────────────────────────────── */}
+      {/* ── § 1 ─────────────────────────────────────────────────────── */}
       <Section
-        id="how"
-        n="2"
-        title="How I work"
-        lede="Four habits, each with the case that produced it."
+        id="backend"
+        n="1"
+        title="Backend"
+        lede="From what the service should do, to the pipeline that does it. Every detail page carries the decisions, what was rejected, and what was left undone."
       >
         <div class="column">
-          <h3 class="habit">Count the same thing twice</h3>
-          <p>
-            Success responses describe what a service did, not what it delivered. On Dartoo the
-            publisher had been silently disabled for a whole run and every request still
-            returned 200 — visible only by reconciling rows persisted against events
-            published.<N id="dartoo-publisher-gap" />
-          </p>
+          {backend.map((entry) => <ProjectEntry entry={entry} />)}
+        </div>
 
+        <div class="column">
           <Figure
-            n="2"
+            n="1"
             title="One service, two lanes. Every request returned 200, and only one of the lanes was delivering."
             wide
           >
             <SilentLoss />
           </Figure>
-
-          <h3 class="habit">Treat a classification as a hypothesis</h3>
-          <p>
-            A retry counter had written off a batch of responses as permanent failures.
-            Re-fetching four of them a week later returned all four normally, which made the
-            classification wrong rather than the data.<N id="dartoo-not-ready-experiment" /> The
-            experiment cost an afternoon and changed the retry policy.
-          </p>
-
-          <h3 class="habit">Build the control, not just the result</h3>
-          <p>
-            A learned pricing policy beating a fixed baseline says very little on its own. The
-            same policy trained without foresight, and landing level with the baseline, is what
-            identifies where the advantage comes from.<N id="rl-myopic" /> The control is the
-            part I would defend.
-          </p>
-
-          <h3 class="habit">Distrust a test that passes</h3>
-          <p>
-            Changing the last character of a signature and asserting rejection looked like a
-            valid tamper test. base64url encodes the final characters with spare bits, so the
-            token had not actually changed — the test passed for the wrong reason, and the
-            failure it was supposed to catch would have gone straight through.
-          </p>
-
           <p class="aside">
-            What is not on this list: operating anything. I have written tests, not pipelines;
-            manifests, not clusters.<N id="k8s-scope" />
+            Both of the bugs I would talk about first were silent. Neither showed up in a status
+            code, and both were only visible by counting the same thing in two places and finding
+            the numbers different.<N id="dartoo-publisher-gap" />
           </p>
+
+          <Figure
+            n="2"
+            title="The same two writes, before and after the rule. Arrival order stops deciding the outcome."
+            wide
+          >
+            <RaceTimeline />
+          </Figure>
         </div>
       </Section>
 
-      {/* ── § 3 ─────────────────────────────────────────────────────── */}
-      <Section
-        id="work"
-        n="3"
-        title="Work"
-        lede="Five projects. Each detail page carries the decisions, what was rejected, and what was not done."
-      >
-        <div class="column">
-          {tier1.map((entry) => <ProjectEntry entry={entry} />)}
-        </div>
-      </Section>
-
-      {/* ── § 4 ─────────────────────────────────────────────────────── */}
-      <Section id="also" n="4" title="Also built" lede="Smaller, and listed as it stands.">
-        <div class="column">
-          {tier2.map((entry) => <ProjectEntry entry={entry} compact />)}
-        </div>
-      </Section>
-
-      {/* ── § 5 ─────────────────────────────────────────────────────── */}
+      {/* ── § 2 ─────────────────────────────────────────────────────── */}
       <Section
         id="research"
-        n="5"
+        n="2"
         title="Research"
-        lede="Author position is stored as a number and rendered from it, so it cannot drift."
+        lede="Author position is stored as a number and rendered from it, so it cannot drift into a stronger claim."
       >
+        <div class="column">
+          {research.map((entry) => <PaperEntry entry={entry} />)}
+        </div>
+
         <div class="column">
           <Figure
             n="3"
@@ -170,53 +143,101 @@ const history = record.filter((r) =>
           >
             <PricingChart />
           </Figure>
-          {research.map((entry) => <PaperEntry entry={entry} />)}
+          <p class="aside">
+            The number I would defend is not the largest one. It is the control: the same policy
+            trained without foresight lands level with the baseline at every
+            setting.<N id="rl-myopic" />
+          </p>
+        </div>
+
+        <div class="column">
+          {researchBuilds.map((entry) => <ProjectEntry entry={entry} compact />)}
         </div>
       </Section>
 
-      {/* ── § 6 ─────────────────────────────────────────────────────── */}
+      {/* ── § 3 ─────────────────────────────────────────────────────── */}
       <Section
-        id="about"
-        n="6"
-        title="About me"
-        lede="Awards, certifications, and the path here."
+        id="analysis"
+        n="3"
+        title="Analysis"
+        lede="Both of these set out to confirm something. Neither of them did."
       >
         <div class="column">
-          <h3 class="record__group">Awards and selections</h3>
-          <ul class="record">
-            {
-              awards.map((r) => (
-                <li class="record__row">
-                  <span class="record__date">{r.data.date}</span>
-                  <span class="record__body">
-                    <strong>{r.data.title}</strong>
-                    <span class="record__issuer">{r.data.issuer}</span>
-                    {r.data.detail && <span class="record__detail">{r.data.detail}</span>}
-                  </span>
-                </li>
-              ))
-            }
-          </ul>
+          {analysis.map((entry) => <ProjectEntry entry={entry} />)}
+        </div>
 
-          <h3 class="record__group">Certifications</h3>
-          <ul class="record">
-            {
-              certifications.map((r) => (
-                <li class="record__row">
-                  <span class="record__date">{r.data.date}</span>
-                  <span class="record__body">
-                    <strong>{r.data.title}</strong>
-                    <span class="record__issuer">
-                      {r.data.issuer}
-                      {r.data.score && ` · ${r.data.score}`}
-                    </span>
-                  </span>
-                </li>
-              ))
-            }
-          </ul>
+        <div class="column">
+          <Figure
+            n="4"
+            title="Five inputs, one model. The variable the project set out to confirm is the one that failed."
+            wide
+          >
+            <CrimeModel />
+          </Figure>
+        </div>
+      </Section>
 
-          <h3 class="record__group">Education and service</h3>
+      {/* ── § 4 ─────────────────────────────────────────────────────── */}
+      <Section
+        id="also"
+        n="4"
+        title="Also built"
+        lede="Spikes, coursework and harnesses. Listed as they stand."
+      >
+        <div class="column">
+          <p class="aside aside--lead">
+            Twelve repositories of my own, plus the services owned inside two team
+            organisations.<N id="repo-spread" /> Three of them exist only to settle a question
+            before it reached a real service.<N id="poc-habit" />
+          </p>
+          <CompactList entries={other} />
+        </div>
+      </Section>
+
+      {/* ── § 5 ─────────────────────────────────────────────────────── */}
+      <Section id="about" n="5" title="About me" lede="Awards, certifications, and the path here.">
+        <div class="column">
+          <div class="record__grid">
+            <div>
+              <h3 class="record__group">Awards and selections</h3>
+              <ul class="record">
+                {
+                  awards.map((r) => (
+                    <li class="record__row">
+                      <span class="record__date">{r.data.date}</span>
+                      <span class="record__body">
+                        <strong>{r.data.title}</strong>
+                        <span class="record__issuer">{r.data.issuer}</span>
+                        {r.data.detail && <span class="record__detail">{r.data.detail}</span>}
+                      </span>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+
+            <div>
+              <h3 class="record__group">Certifications</h3>
+              <ul class="record">
+                {
+                  certifications.map((r) => (
+                    <li class="record__row">
+                      <span class="record__date">{r.data.date}</span>
+                      <span class="record__body">
+                        <strong>{r.data.title}</strong>
+                        <span class="record__issuer">
+                          {r.data.issuer}
+                          {r.data.score && ` · ${r.data.score}`}
+                        </span>
+                      </span>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </div>
+
+          <h3 class="record__group record__group--wide">Education and service</h3>
           <ul class="record">
             {
               history.map((r) => (
@@ -242,79 +263,145 @@ const history = record.filter((r) =>
         </div>
       </Section>
 
-      {/* ── § 7 ─────────────────────────────────────────────────────── */}
+      {/* ── § 6 ─────────────────────────────────────────────────────── */}
       <Section
         id="boundaries"
-        n="7"
+        n="6"
         title="Boundaries"
         lede="What this page does not support. Same size as the results, on purpose."
       >
         <div class="column">
-          <p class="aside">
+          <p class="aside aside--lead">
             Everything here was deployed and demonstrated. None of it was
-            operated.<N id="no-operations" /> The list below is what I would have to say out
-            loud in an interview anyway, written down before the question is asked.
+            operated.<N id="no-operations" /> I have written tests, not pipelines; manifests, not
+            clusters.<N id="k8s-scope" />
           </p>
-          {
-            boundaries.map((b) => (
-              <Boundary claim={b.data.claim}>
-                <p>{b.data.detail}</p>
-              </Boundary>
-            ))
-          }
+          <div class="boundary__grid">
+            {
+              boundaries.map((b) => (
+                <Boundary claim={b.data.claim}>
+                  <p>{b.data.detail}</p>
+                </Boundary>
+              ))
+            }
+          </div>
         </div>
       </Section>
 
-      {/* ── § 8 ─────────────────────────────────────────────────────── */}
-      <Section id="contact" n="8" title="Contact">
+      {/* ── contact ─────────────────────────────────────────────────── */}
+      <section id="contact" class="contact-block">
         <div class="column">
-          <p>
+          <p class="aside">
             I owned four backend services on Dartoo and five repositories on
-            MAP.<N id="dartoo-ownership" /> Ownership on this site is described by surface
-            rather than by percentage, for a reason given in § 7.
+            MAP.<N id="dartoo-ownership" /> Ownership here is described by surface rather than by
+            percentage, for the reason given in § 6.
           </p>
           <ul class="contact">
             <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
             <li><a href={site.links.github} rel="noopener">github.com/Ryu-Jemu</a></li>
             <li><a href={site.links.blog} rel="noopener">velog.io/@muqqi_bba</a></li>
+            <li><a href="/evidence/">Every claim, with its evidence &rarr;</a></li>
+            <li><a href="/colophon/">How this site is built &rarr;</a></li>
           </ul>
-          <p class="aside">
-            <a href="/evidence/">Every claim on this page, with its evidence &rarr;</a><br />
-            <a href="/colophon/">How this site is built, and what it chose not to do &rarr;</a>
-          </p>
         </div>
-      </Section>
+      </section>
     </article>
   </main>
 </Base>
 
 <style>
-  .page-top {
-    padding-block: 1.75rem 0;
-  }
   main {
-    padding-block: 3rem 8rem;
+    padding-block: 1.75rem 4rem;
+  }
+
+  /* ── the three domains, as a table of contents ─────────────────────── */
+  .intro {
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+  }
+  /* A contents table, not prose. Three columns inside the 35rem measure gives
+     each one about 170px, which breaks every line. It takes the margin. */
+  @media (min-width: 64rem) {
+    .column--wide {
+      max-width: calc(var(--measure) + var(--gutter) + var(--note-w));
+    }
+  }
+  .domains {
+    display: grid;
+    gap: 1rem 1.75rem;
+  }
+  @media (min-width: 40rem) {
+    .domains {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0 2rem;
+    }
+  }
+  .domains a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: -0.015em;
+  }
+  .domains a:hover {
+    color: var(--rubric);
+  }
+  .domains__n {
+    font-family: var(--family-mono);
+    font-size: 0.6875rem;
+    color: var(--rubric);
+    letter-spacing: 0;
+  }
+  .domains p {
+    margin-top: 0.3rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--ink-faint);
+    text-wrap: pretty;
+  }
+
+  .intro__check {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.9375rem;
+    color: var(--ink-muted);
+  }
+  .intro__key {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-meta);
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--rubric);
   }
 
   .aside {
-    margin-top: 1.4rem;
+    margin-top: 1rem;
     color: var(--ink-faint);
-    font-size: 0.95em;
+    font-size: 0.9375rem;
   }
-
-  .habit {
-    margin-top: 1.6rem;
-    margin-bottom: 0.45rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-  .habit:first-child {
+  .aside--lead {
     margin-top: 0;
+    margin-bottom: 1.1rem;
   }
 
+  /* ── record ────────────────────────────────────────────────────────── */
+  .record__grid {
+    display: grid;
+    gap: 1.75rem;
+  }
+  @media (min-width: 44rem) {
+    .record__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+  }
   .record__group {
-    margin-top: 2rem;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.7rem;
     font-family: var(--family-mono);
     font-size: var(--t-meta);
     letter-spacing: var(--ls-meta);
@@ -322,20 +409,20 @@ const history = record.filter((r) =>
     color: var(--scope);
     font-weight: 500;
   }
-  .record__group:first-child {
-    margin-top: 0;
+  .record__group--wide {
+    margin-top: 1.75rem;
   }
   .record {
     display: grid;
-    gap: 0.9rem;
+    gap: 0.6rem;
   }
   .record__row {
     display: grid;
-    grid-template-columns: 8.5rem 1fr;
-    gap: 0.25rem 1rem;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.15rem 0.85rem;
     align-items: baseline;
   }
-  @media (max-width: 32rem) {
+  @media (max-width: 30rem) {
     .record__row {
       grid-template-columns: 1fr;
     }
@@ -349,22 +436,36 @@ const history = record.filter((r) =>
   .record__body {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
-    font-size: 0.98em;
+    gap: 0.05rem;
+    font-size: 0.9375rem;
   }
   .record__issuer,
   .record__detail {
     color: var(--ink-muted);
-    font-size: 0.92em;
+    font-size: 0.8125rem;
+    line-height: 1.45;
   }
   .record__detail {
     color: var(--ink-faint);
   }
 
-  .contact {
-    margin-top: 1rem;
+  .boundary__grid {
     display: grid;
-    gap: 0.35rem;
+    gap: 0.6rem;
+  }
+
+  /* ── contact ───────────────────────────────────────────────────────── */
+  .contact-block {
+    margin-top: var(--space-section);
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    scroll-margin-top: 5rem;
+  }
+  .contact {
+    margin-top: 0.9rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.5rem;
     font-family: var(--family-mono);
     font-size: var(--t-data);
   }

@@ -31,13 +31,18 @@
   status: under-review
   date: "2026"
   manuscriptId: TAI-2026-Feb-R-00315
+  contribution: Section III.E — Beam Prediction
   summary: >-
     A survey of language-model approaches to wireless resource problems, covering
     power control, bandwidth allocation, edge computing and beam prediction.
   highlights:
+    - Wrote Section III.E, Beam Prediction — why a beam sequence is a forecasting problem, and what a language model brings to it that an LSTM does not.
+    - Covered patch embedding of beam indices and departure angles, reprogramming them into tokens the model already holds, and prompt-as-prefix conditioning on domain knowledge, task and series statistics.
     - Reviewed and corrected the manuscript, including three references whose identifiers pointed at unrelated papers.
   notes:
     - ieee-position
+    - ieee-beam-section
+    - beam-reprogramming
 
 - id: ktccs-cmdp
   title: >-

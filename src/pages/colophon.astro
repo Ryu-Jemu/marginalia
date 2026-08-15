@@ -68,6 +68,19 @@ const decisions: Array<{
     notes: [],
   },
   {
+    decision: 'Set the page in the system face rather than a served one.',
+    why:
+      'SF Pro cannot be shipped as a web font — it is on no font CDN and its licence does not cover redistribution. The system stack resolves to it natively on Apple platforms, Display at headline sizes and Text at reading sizes, with no files transferred at all. Elsewhere the page renders in that platform\'s own UI face, which is the point rather than the compromise.',
+    rejected: [
+      'A serif shipped from a font CDN — two network requests and a flash of fallback text, to look less like the device it is being read on.',
+      'A lookalike such as Inter, served. Close, and still a download.',
+    ],
+    notDone: [
+      'Any check that SF Pro is what actually renders. The stack asks; the operating system answers.',
+    ],
+    notes: [],
+  },
+  {
     decision: 'Draw "deployed" in neutral ink, not green.',
     why:
       'Green reads as a service somebody is keeping up. Nothing here is, so a green badge would assert exactly what section 7 spends its length retracting. Amber is reserved for limits, and status gets no colour of its own.',
@@ -102,8 +115,8 @@ const decisions: Array<{
         <div class="column">
           <dl class="spec">
             <div><dt>Framework</dt><dd>Astro 7, static output, no client framework</dd></div>
-            <div><dt>Motion</dt><dd>anime.js 4 — leader lines and boundary frames only</dd></div>
-            <div><dt>Type</dt><dd>Source Serif 4 and IBM Plex Mono, self-hosted</dd></div>
+            <div><dt>Motion</dt><dd>anime.js 4 — leader lines, boundary frames, and the five figures</dd></div>
+            <div><dt>Type</dt><dd>The system stack — SF Pro and SF Mono on Apple platforms. No font files served</dd></div>
             <div><dt>Styling</dt><dd>Hand-written CSS. No utility framework</dd></div>
             <div><dt>Hosting</dt><dd>Render static site</dd></div>
             <div><dt>Analytics</dt><dd>None</dd></div>
@@ -177,7 +190,7 @@ const decisions: Array<{
     margin-top: 1rem;
     font-size: var(--t-lede);
     line-height: var(--lh-lede);
-    font-weight: 300;
+    font-weight: 400;
     color: var(--ink-muted);
   }
 

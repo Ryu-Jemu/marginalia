@@ -237,6 +237,22 @@
     as a number so it cannot drift into a different claim.
   href: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=9078688
 
+- id: ieee-beam-section
+  kind: scope
+  body: >-
+    Section III.E, Beam Prediction, is the section I wrote — the survey's
+    treatment of beam prediction as a time-series problem for language models.
+  limits: >-
+    One subsection of a seven-author survey. The taxonomy, the analytical
+    framework and the other nine functional areas are not mine.
+
+- id: beam-reprogramming
+  kind: scope
+  body: >-
+    The approach the section covers: beam indices and departure angles are
+    patch-embedded, reprogrammed into tokens the model already knows, and
+    prefixed with domain knowledge, the task, and the series statistics.
+
 - id: bp-llm-training
   kind: measurement
   body: >-
@@ -266,6 +282,34 @@
   limits: >-
     Deployed means reachable and demonstrated. None of the three carried real
     users under load, and none has an availability record.
+
+# ── Additional work ───────────────────────────────────────────────────────
+
+- id: repo-spread
+  kind: measurement
+  body: >-
+    Twelve repositories of my own across Python, Java, C# and JavaScript, plus
+    the four Dartoo services and five MAP repositories owned inside team
+    organisations.
+  condition: >-
+    Non-fork repositories under github.com/Ryu-Jemu, counted 2026-08-13. Team
+    work lives in team-dartoo and we-meet-trip and is not included in the twelve.
+  limits: >-
+    A count of repositories, which measures how many things were started rather
+    than how far any of them went.
+
+- id: poc-habit
+  kind: scope
+  body: >-
+    Three of those repositories exist only to settle a question before it
+    reached a real service — an auth flow, an agent graph, and a two-service
+    integration.
+
+- id: invader-collaboration
+  kind: scope
+  body: >-
+    A six-person Java project run on GitHub Actions and Jira. I held features,
+    not the lead, and it is the first place I worked to someone else's review.
 
 # ── Global boundaries cited in the running text ───────────────────────────
 

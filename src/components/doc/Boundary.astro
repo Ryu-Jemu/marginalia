@@ -17,8 +17,8 @@ const { claim } = Astro.props;
 <style is:global>
   .boundary {
     position: relative;
-    padding: 1.1rem 1.25rem;
-    margin-block: 1.1rem;
+    padding: 0.8rem 0.95rem;
+    margin-block: 0;
   }
   .boundary__frame {
     position: absolute;
@@ -41,9 +41,10 @@ const { claim } = Astro.props;
     color: var(--boundary);
   }
   .boundary__detail {
-    margin-top: 0.45rem;
+    margin-top: 0.3rem;
     color: var(--ink-muted);
-    font-size: 0.95em;
+    font-size: 0.875rem;
+    line-height: 1.5;
   }
   .boundary__detail p + p { margin-top: 0.6em; }
 </style>

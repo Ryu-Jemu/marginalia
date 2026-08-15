@@ -23,6 +23,10 @@ import photo from '../../assets/profile/photo.jpg';
     </div>
     <p class="masthead__lede">{site.lede}</p>
 
+    <p class="masthead__scope">
+      Deployed means reachable and demonstrated, not operated.<N id="deployed-scope" />
+    </p>
+
     <dl class="standing">
       {
         standing.map((s) => (
@@ -35,15 +39,12 @@ import photo from '../../assets/profile/photo.jpg';
       }
     </dl>
 
-    <p class="masthead__scope">
-      Deployed means reachable and demonstrated, not operated.<N id="deployed-scope" />
-    </p>
   </div>
 </header>
 
 <style>
   .masthead {
-    padding-bottom: 2rem;
+    padding-bottom: 1.25rem;
   }
   .masthead__top {
     display: flex;
@@ -74,25 +75,25 @@ import photo from '../../assets/profile/photo.jpg';
     margin-bottom: 0.5rem;
   }
   .masthead__name {
-    /* Weight 400, not 800. A title page, not a poster. */
-    font-weight: 400;
+    /* SF Pro Display at 600 with tight tracking. A masthead, not a poster. */
+    font-weight: 600;
   }
   .masthead__lede {
-    margin-top: 1rem;
+    margin-top: 0.7rem;
     font-size: var(--t-lede);
     line-height: var(--lh-lede);
-    font-weight: 300;
-    font-style: italic;
+    font-weight: 400;
     color: var(--ink-muted);
-    max-width: 32ch;
+    max-width: 46ch;
+    letter-spacing: -0.01em;
   }
 
   .standing {
-    margin-top: 2.25rem;
-    padding-top: 1.25rem;
+    margin-top: 1.1rem;
+    padding-top: 1rem;
     border-top: 1px solid var(--rule);
     display: grid;
-    gap: 1.5rem 2rem;
+    gap: 0.9rem 1.75rem;
     /* Two by two. Four across squeezes "Grand Prize" onto three lines at this
        measure, and auto-fit orphans the fourth item on its own row. */
     grid-template-columns: 1fr;
@@ -105,8 +106,8 @@ import photo from '../../assets/profile/photo.jpg';
   }
 
   .masthead__scope {
-    margin-top: 1.5rem;
-    font-size: 0.95em;
+    margin-top: 1.1rem;
+    font-size: 0.875rem;
     color: var(--ink-faint);
   }
   .standing__item {
@@ -114,11 +115,12 @@ import photo from '../../assets/profile/photo.jpg';
     flex-direction: column;
     gap: 0.15rem;
   }
-  /* The figure itself stays in the serif — it is part of a sentence about the
-     work. Only the evidence in the margin becomes tabular mono. */
+  /* The figure stays in the UI face — it is part of a sentence about the work.
+     Only the evidence in the margin becomes tabular mono. */
   .standing__value {
-    font-size: 1.55rem;
+    font-size: 1.3125rem;
     line-height: 1.1;
+    letter-spacing: -0.02em;
     font-weight: 600;
   }
   .standing__label {

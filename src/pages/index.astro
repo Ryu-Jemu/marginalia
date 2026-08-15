@@ -14,6 +14,9 @@ import PaperEntry from '../components/research/PaperEntry.astro';
 import Figure from '../components/viz/Figure.astro';
 import CrimeModel from '../components/viz/CrimeModel.astro';
 import CrimeFit from '../components/viz/CrimeFit.astro';
+import CrimeResiduals from '../components/viz/CrimeResiduals.astro';
+import CinemaTrend from '../components/viz/CinemaTrend.astro';
+import CinemaCorrelation from '../components/viz/CinemaCorrelation.astro';
 import { site } from '../lib/site';
 import { reportMissingMaterials } from '../lib/materials';
 
@@ -109,16 +112,16 @@ reportMissingMaterials();
         id="analysis"
         n="3"
         title="Data analysis"
-        lede="Collection, cleaning, the model, and the check that the model is worth reading. Both studies set out to confirm something and did not."
+        lede="Collection, cleaning, the model, and the check on whether the model is worth reading. Both studies set out to confirm something; neither of them did. Every figure below is recomputed from the study's own data rather than copied out of a report."
       >
         <div class="column column--wide">
           <Bullets
-            key="Seoul crime, twenty-five districts"
+            key="Seoul crime · 25 districts · OLS with Lasso and Ridge cross-checks"
             items={[
-              'Five variables explain 84% of the variation between districts — R² 0.843, adjusted 0.801.',
-              'Population and the density of entertainment venues carry it. CCTV count, the variable the project started from, is not significant.',
-              'Variance inflation was checked before any coefficient was read, and the fit was repeated with cross-validated Lasso and Ridge.',
-              'Residuals were mapped by district rather than predictions, so where the model is wrong is named.',
+              'Five variables explain 84% of the variation between districts — R² 0.843, adjusted 0.801, F-test p = 4.95e-07.',
+              'Population and the density of entertainment venues carry it. CCTV count, the variable the project started from, is not significant at p = 0.297.',
+              'Variance inflation runs 1.10 to 2.61, so the coefficients are not being distorted by collinearity — checked before any of them was read.',
+              'Residuals are mapped by district rather than predictions, which names the places the model gets wrong instead of hiding them.',
             ]}
           />
         </div>
@@ -129,6 +132,33 @@ reportMissingMaterials();
           </Figure>
           <Figure n="4" title="What five variables account for, and what they do not.">
             <CrimeFit />
+          </Figure>
+          <Figure
+            n="5"
+            title="Actual minus predicted, by district. Red is where the model expects more crime than there is; blue is where it expects less."
+          >
+            <CrimeResiduals />
+          </Figure>
+        </div>
+
+        <div class="column column--wide analysis__entries">
+          <Bullets
+            key="Multiplex revenue · 18 years · correlation across 8 regions"
+            items={[
+              'Revenue fell 87.6% against its 2019 peak by 2021, and admissions 88.9% — from 227 million to 25 million.',
+              'The premise was that regional market share follows screen count. It correlates for all three chains and is significant for none of them.',
+              'Per-capita private consumption against share behaves the same way: positive, and indistinguishable from noise at eight regions.',
+              'Collection was rewritten from a brittle crawler onto a documented search API, which is what made the whole thing rebuildable in one command.',
+            ]}
+          />
+        </div>
+
+        <div class="column column--wide analysis__figures">
+          <Figure n="6" title="Eighteen years of the national box office. The study starts where the line falls.">
+            <CinemaTrend />
+          </Figure>
+          <Figure n="7" title="Every coefficient positive, none of them significant. The premise did not survive the sample.">
+            <CinemaCorrelation />
           </Figure>
         </div>
 

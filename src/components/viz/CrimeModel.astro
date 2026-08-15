@@ -7,11 +7,11 @@
  * point of the figure is that the expected answer is the one that failed.
  */
 const VARS = [
-  { name: 'entertainment venues', p: 'p < 0.001', sig: true },
-  { name: 'population', p: 'p = 0.001', sig: true },
+  { name: 'entertainment venues', p: 'p = 0.0004', sig: true },
+  { name: 'population', p: 'p = 0.0006', sig: true },
   { name: 'income', p: '', sig: false },
   { name: 'streetlights', p: 'partly estimated', sig: false },
-  { name: 'CCTV count', p: 'not significant', sig: false, struck: true },
+  { name: 'CCTV count', p: 'p = 0.297 — not significant', sig: false, struck: true },
 ];
 
 const W = 700;
@@ -90,6 +90,6 @@ const MX = 380;
   <text class="viz-label" x={W - 122} y={TOP + 2 * ROW + 18}>25 districts</text>
 
   <text class="viz-label" x={LX} y={TOP + VARS.length * ROW + 26}>
-    VIF &lt; 5 for every variable · cross-checked with LassoCV and RidgeCV · n = 25
+    VIF 1.10–2.61 · cross-checked with LassoCV and RidgeCV · n = 25
   </text>
 </svg>

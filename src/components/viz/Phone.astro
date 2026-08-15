@@ -21,11 +21,15 @@ interface Props {
   i?: number;
 }
 const { src, alt, screen, i = 0 } = Astro.props;
+
+/* The frame takes the capture's own ratio. Assuming one and cropping would
+   cut a status bar off some screens and letterbox others. */
+const ratio = `${src.width} / ${src.height}`;
 ---
 
 <figure class="phone" data-phone style={`--i:${i}`}>
   <div class="phone__frame">
-    <div class="phone__screen">
+    <div class="phone__screen" style={`--ratio:${ratio}`}>
       <Image
         class="phone__img"
         src={src}
@@ -66,9 +70,7 @@ const { src, alt, screen, i = 0 } = Astro.props;
     border-radius: 1.5rem;
     overflow: hidden;
     background: var(--paper-inset);
-    /* The captures are full-screen at 19.5:9, so the frame takes their ratio
-       rather than imposing one and cropping. */
-    aspect-ratio: 739 / 1600;
+    aspect-ratio: var(--ratio);
   }
 
   .phone__img {

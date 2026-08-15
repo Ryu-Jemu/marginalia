@@ -1,0 +1,98 @@
+---
+/**
+ * The premise, tested and not supported.
+ *
+ * The study went in expecting regional market share to follow the number of
+ * screens a chain has there. Across eight regions it does correlate — and at
+ * n = 8 not one of the coefficients clears p < 0.05, including the strongest.
+ *
+ * Coefficients are Pearson's r on the study's own regional tables, recomputed
+ * rather than copied, so the plate and the sentence cannot disagree.
+ */
+interface Row {
+  label: string;
+  r: number;
+  p: number;
+}
+const ROWS: Row[] = [
+  { label: 'CGV screens vs share', r: 0.684, p: 0.0614 },
+  { label: 'Lotte screens vs share', r: 0.569, p: 0.1414 },
+  { label: 'Megabox screens vs share', r: 0.55, p: 0.1581 },
+  { label: 'Consumption vs share', r: 0.532, p: 0.1746 },
+];
+
+const W = 760;
+const ROW_H = 34;
+const TOP = 28;
+const LX = 8;
+const LW = 214;
+const BAR_X = LX + LW + 16;
+const BAR_W = 380;
+const H = TOP + ROWS.length * ROW_H + 44;
+---
+
+<svg class="viz corr" data-viz="corr" viewBox={`0 0 ${W} ${H}`} role="img"
+  aria-label="Pearson correlation between regional screen count and market share for three cinema chains, and between per-capita consumption and share. All four coefficients fall between 0.53 and 0.69 and none is significant at n equals 8.">
+  <text class="viz-label" x={LX} y="14">Pearson r across 8 regions</text>
+  <text class="viz-label" x={BAR_X + BAR_W + 8} y="14">significance</text>
+
+  <!-- the axis, so a coefficient is read against 1 rather than against itself -->
+  <line class="viz-track" x1={BAR_X} y1={TOP - 8} x2={BAR_X + BAR_W} y2={TOP - 8}></line>
+  <text class="viz-label" x={BAR_X} y={TOP - 14}>0</text>
+  <text class="viz-label" x={BAR_X + BAR_W} y={TOP - 14} text-anchor="end">1.0</text>
+
+  {
+    ROWS.map((row, i) => {
+      const cy = TOP + i * ROW_H + 10;
+      return (
+        <g data-corr-row>
+          <text class="corr__label" x={LX} y={cy + 4}>
+            {row.label}
+          </text>
+          <rect class="viz-box" x={BAR_X} y={cy - 6} width={BAR_W} height={12} rx="2" />
+          <rect
+            class="corr__fill"
+            data-corr-bar
+            x={BAR_X}
+            y={cy - 6}
+            width={BAR_W * row.r}
+            height={12}
+            rx="2"
+            style={`transform-origin:${BAR_X}px 0`}
+          />
+          <text class="viz-value" x={BAR_X + BAR_W * row.r + 8} y={cy + 4}>
+            {row.r.toFixed(3)}
+          </text>
+          <text class="corr__p" x={BAR_X + BAR_W + 96} y={cy + 4} text-anchor="end">
+            p = {row.p.toFixed(4)}
+          </text>
+        </g>
+      );
+    })
+  }
+
+  <text class="viz-label" x={LX} y={H - 16}>
+    n = 8 regions · not one coefficient reaches p &lt; 0.05
+  </text>
+</svg>
+
+<style>
+  .corr {
+    display: block;
+  }
+  .corr :global(.corr__label) {
+    font-size: 12px;
+    fill: var(--ink);
+  }
+  /* Drawn in the limit colour, not the accent: a positive coefficient that
+     does not clear its threshold is a boundary, not a result. */
+  .corr :global(.corr__fill) {
+    fill: var(--boundary);
+    opacity: 0.55;
+  }
+  .corr :global(.corr__p) {
+    font-size: 11px;
+    fill: var(--boundary);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

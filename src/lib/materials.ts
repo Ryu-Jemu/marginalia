@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 
 /**
  * Resolving the material a paper is shown with.
@@ -23,7 +22,10 @@ const figureByName = new Map<string, ImageMetadata>(
   Object.entries(FIGURES).map(([path, mod]) => [path.split('/').pop()!, mod.default]),
 );
 
-const PUBLIC = fileURLToPath(new URL('../../public', import.meta.url));
+/* Resolved against the project root rather than this module's own URL: in the
+   build the module is a bundled chunk somewhere else entirely, and the check
+   silently reported every file missing. */
+const PUBLIC = `${process.cwd()}/public`;
 
 export interface Material {
   kind: 'pdf' | 'figure' | 'poster' | 'link';

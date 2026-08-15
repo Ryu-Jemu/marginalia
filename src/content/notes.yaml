@@ -191,17 +191,47 @@
 - id: crime-significant
   kind: measurement
   body: >-
-    Population (p=0.001) and the density of entertainment venues (p<0.001) are
-    significant. CCTV count is not.
+    Population (p=0.0006) and the density of entertainment venues (p=0.0004) are
+    significant. CCTV count is not, at p=0.297.
   condition: >-
-    Same OLS fit. Every variable has a VIF below 5, so the coefficients are not
-    distorted by collinearity.
+    Same OLS fit, refit from the study's own data. Variance inflation runs from
+    1.10 to 2.61 across the five variables, so collinearity is not distorting
+    the coefficients.
+
+- id: crime-residuals
+  kind: measurement
+  body: >-
+    The model over-predicts Seongdong by 1,862 crimes and under-predicts Mapo by
+    1,387 — a spread of 3,249 across a fit that explains 84% of the variation.
+  condition: >-
+    Actual minus predicted, per district, from the same OLS fit. The residual
+    map is drawn from these values rather than from a screenshot.
 
 - id: crime-streetlight
   kind: scope
   body: >-
     Streetlight counts were published for only some districts. The rest were
     estimated from electricity use, so that one variable is weaker than the others.
+
+# ── Multiplex revenue analysis ────────────────────────────────────────────
+
+- id: cinema-fall
+  kind: measurement
+  body: >-
+    Box-office revenue fell 87.6% against its 2019 peak by 2021, and admissions
+    88.9% — from 227 million to 25 million.
+  condition: >-
+    National box-office series 2004–2021, summed per year across domestic and
+    foreign releases, recomputed from the study's own dataset.
+
+- id: cinema-correlation
+  kind: measurement
+  body: >-
+    Screen count against regional share gives r = 0.684, 0.569 and 0.550 for the
+    three chains. None reaches p < 0.05, the closest being p = 0.061.
+  condition: >-
+    Pearson's r across eight regions, recomputed from the study's regional
+    tables. Per-capita consumption against share behaves the same way.
 
 # ── Research ──────────────────────────────────────────────────────────────
 

@@ -26,19 +26,24 @@ ownership:
     - the residual map
   notOwned:
     - the report and presentation, which were shared work
+summary:
+  - Five variables across Seoul's twenty-five districts, fitted by OLS and cross-checked with cross-validated Lasso and Ridge.
+  - Collinearity was checked before any coefficient was read — the highest variance inflation factor is 2.61, well inside the usual threshold of 5.
+  - Population and the density of entertainment venues carry the model. CCTV count, the variable the project set out to confirm, is not significant.
+  - Residuals are mapped by district rather than predictions, so the districts the model gets wrong are named rather than hidden.
 data:
   - value: "0.843"
     label: R², adjusted 0.801
-    detail: five variables, twenty-five districts
-  - value: "< 5"
-    label: variance inflation, every variable
-    detail: checked before any coefficient was read
+    detail: F-test p = 4.95e-07, n = 25
+  - value: "2.61"
+    label: highest variance inflation
+    detail: entertainment venues lowest at 1.10
   - value: "2 of 5"
     label: variables significant
-    detail: population p=0.001 · entertainment venues p<0.001
-  - value: "25"
-    label: residuals mapped by district
-    detail: where the model is wrong, named
+    detail: population p=0.0006 · entertainment venues p=0.0004
+  - value: "3,249"
+    label: residual spread, crimes
+    detail: Seongdong −1,862 to Mapo +1,387
 ---
 
 import N from '../../components/note/N.astro';
@@ -67,3 +72,8 @@ wrong, and those are clustered in a way that points at a floating-population
 variable I could not get at district
 level.<N id="crime-streetlight" /> That gap is in the report, next to the
 result.
+
+The residual map is the part I would put in front of someone first. It over-predicts
+Seongdong by 1,862 crimes and under-predicts Mapo by 1,387,<N id="crime-residuals" />
+and the districts it misses are the ones with a daytime population the model
+never sees.

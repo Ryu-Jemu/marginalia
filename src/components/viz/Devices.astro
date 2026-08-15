@@ -3,26 +3,43 @@ import Phone from './Phone.astro';
 
 import dartooStart from '../../assets/projects/dartoo/screen-start.png';
 import dartooHome from '../../assets/projects/dartoo/screen-home.png';
-import mapScreen from '../../assets/projects/map/screen.png';
+import dartooDisclosure from '../../assets/projects/dartoo/screen-disclosure.png';
+import dartooCompany from '../../assets/projects/dartoo/screen-company.png';
+import dartooChat from '../../assets/projects/dartoo/screen-chat.png';
+
+import mapHome from '../../assets/projects/map/screen-home.png';
+import mapItinerary from '../../assets/projects/map/screen-itinerary.png';
+import mapPlace from '../../assets/projects/map/screen-place.png';
 
 /**
  * The phones for a given product, kept out of the content files so a device
  * frame stays a rendering decision rather than a data one.
+ *
+ * `limit` trims the row where the column is narrow; the full set shows on the
+ * project's own page.
  */
 interface Props {
   slug: string;
+  limit?: number;
 }
-const { slug } = Astro.props;
+const { slug, limit } = Astro.props;
 
 const SETS: Record<string, Array<{ src: ImageMetadata; alt: string; screen: string }>> = {
   dartoo: [
-    { src: dartooStart, alt: 'Dartoo — opening screen', screen: 'Open' },
-    { src: dartooHome, alt: 'Dartoo — the day’s disclosures', screen: 'Today' },
+    { src: dartooStart, alt: 'Dartoo — sign-in screen', screen: 'Sign in' },
+    { src: dartooHome, alt: 'Dartoo — the day’s filings and watched companies', screen: 'Today' },
+    { src: dartooDisclosure, alt: 'Dartoo — a filing with its generated summary', screen: 'Filing' },
+    { src: dartooCompany, alt: 'Dartoo — a company page with its filing history', screen: 'Company' },
+    { src: dartooChat, alt: 'Dartoo — the assistant answering a question about a filing', screen: 'Ask' },
   ],
-  map: [{ src: mapScreen, alt: 'MAP — a generated itinerary', screen: 'Itinerary' }],
+  map: [
+    { src: mapHome, alt: 'MAP — home, with the trip countdown and the day’s weather', screen: 'Home' },
+    { src: mapItinerary, alt: 'MAP — a generated itinerary with the route drawn', screen: 'Itinerary' },
+    { src: mapPlace, alt: 'MAP — a place with its photo, rating and review summary', screen: 'Place' },
+  ],
 };
 
-const shots = SETS[slug] ?? [];
+const shots = (SETS[slug] ?? []).slice(0, limit ?? undefined);
 ---
 
 {

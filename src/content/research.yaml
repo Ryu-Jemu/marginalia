@@ -65,13 +65,14 @@
   authorPosition: { index: 4, of: 7 }
   status: under-review
   date: "2026"
-  manuscriptId: TAI-2026-Feb-R-00315
+  manuscriptId: TAI-2026-Mar-R-00629
   contribution: Section III.E — Beam Prediction
   summary: >-
     A survey of language-model approaches to wireless resource problems, covering
     power control, bandwidth allocation, edge computing and beam prediction.
   role:
     - Wrote Section III.E, Beam Prediction, in full — the section's argument, its taxonomy of approaches and its discussion.
+    - Argued that beamforming for non-stationary devices is where recurrent baselines stop generalising, which is the gap the section is built on.
     - Argued the reformulation the section rests on — a beam sequence is a time series, so beam selection is a forecasting problem a language model can be pointed at.
     - Covered patch embedding of beam indices and departure angles, reprogramming them into tokens the model already holds, and prompt-as-prefix conditioning on domain knowledge, task and series statistics.
     - Reviewed and corrected the manuscript, including three references whose identifiers pointed at unrelated papers.
@@ -82,10 +83,6 @@
     - Beam prediction is presented as a forecasting problem rather than a classification one, which is what makes a language model applicable to it at all.
     - Reprogramming reuses a frozen model's learned sequence structure, so the trainable parameter count stays small relative to the model.
   materials:
-    - kind: pdf
-      src: /papers/ieee-tai-survey.pdf
-      label: Manuscript (PDF)
-      caption: Under review. Section III.E is mine.
     - kind: figure
       src: ieee-tai-beam-architecture.png
       label: Beam prediction — reprogramming architecture

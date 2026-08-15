@@ -1,0 +1,111 @@
+---
+/**
+ * The fall the multiplex study set out to explain.
+ *
+ * Box-office revenue and admissions by year, 2004 to 2021, summed across
+ * domestic and foreign releases. The point of the plate is the shape: a decade
+ * and a half of slow growth, then a cliff — which is why the study's question
+ * was never "did revenue fall" but "what else moved with it".
+ *
+ * Values are the study's own dataset, summed per year at build time in the
+ * generator that produced these arrays; nothing here is smoothed.
+ */
+const YEARS = [
+  2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018,
+  2019, 2020, 2021,
+];
+/** Revenue, hundred-million won. */
+const REVENUE = [
+  4407, 7804, 8924, 9655, 9615, 10832, 11573, 12358, 14551, 15514, 16642, 17155, 17432, 17566,
+  18140, 19140, 5104, 2370,
+];
+/** Admissions, ten-thousand people. */
+const ADMISSIONS = [
+  6925, 12335, 14426, 15202, 14743, 15540, 14776, 15972, 19489, 21335, 21507, 21730, 21703,
+  21988, 21639, 22668, 5952, 2512,
+];
+
+const W = 760;
+const H = 250;
+const L = 46;
+const R = 12;
+const T = 28;
+const B = 38;
+const PW = W - L - R;
+const PH = H - T - B;
+
+const maxRev = Math.max(...REVENUE);
+const maxAdm = Math.max(...ADMISSIONS);
+
+const x = (i: number) => L + (PW * i) / (YEARS.length - 1);
+const yRev = (v: number) => T + PH - (PH * v) / maxRev;
+const yAdm = (v: number) => T + PH - (PH * v) / maxAdm;
+
+const line = (vals: number[], f: (v: number) => number) =>
+  vals.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)} ${f(v).toFixed(1)}`).join(' ');
+
+const peak = YEARS.indexOf(2019);
+const last = YEARS.length - 1;
+const dropRev = ((REVENUE[last] / REVENUE[peak] - 1) * 100).toFixed(1);
+const dropAdm = ((ADMISSIONS[last] / ADMISSIONS[peak] - 1) * 100).toFixed(1);
+---
+
+<svg class="viz trend" data-viz="trend" viewBox={`0 0 ${W} ${H}`} role="img"
+  aria-label={`Box-office revenue and admissions per year from 2004 to 2021. Both peak in 2019 and fall ${dropRev} and ${dropAdm} percent respectively by 2021.`}>
+  <!-- baseline and the peak year -->
+  <line class="viz-track" x1={L} y1={T + PH} x2={W - R} y2={T + PH}></line>
+  <path class="viz-limit" d={`M${x(peak)} ${T} V${T + PH}`} stroke-dasharray="3 3"></path>
+  <text class="viz-label" x={x(peak) - 8} y={T - 6} text-anchor="end">peak 2019</text>
+
+  <path class="trend__adm" data-trend-line d={line(ADMISSIONS, yAdm)}></path>
+  <path class="trend__rev" data-trend-line d={line(REVENUE, yRev)}></path>
+
+  <g data-trend-marks>
+    <circle class="viz-fill-accent" cx={x(peak)} cy={yRev(REVENUE[peak])} r="3.5"></circle>
+    <circle class="viz-fill-accent" cx={x(last)} cy={yRev(REVENUE[last])} r="3.5"></circle>
+    <text class="viz-value viz-value--rubric" x={x(last) - 10} y={yRev(REVENUE[last]) - 14} text-anchor="end">
+      {dropRev}% revenue
+    </text>
+    <text class="trend__adm-label" x={x(last) - 10} y={yRev(REVENUE[last]) + 4} text-anchor="end">
+      {dropAdm}% admissions
+    </text>
+  </g>
+
+  {
+    YEARS.map((yr, i) =>
+      yr % 4 === 0 || i === last ? (
+        <text class="viz-label" x={x(i)} y={T + PH + 18} text-anchor="middle">
+          {yr}
+        </text>
+      ) : null,
+    )
+  }
+
+  <text class="viz-label" x={L} y={T + PH + 34}>
+    Revenue (hundred-million won) and admissions (ten thousand), all releases
+  </text>
+</svg>
+
+<style>
+  .trend {
+    display: block;
+  }
+  .trend :global(.trend__rev) {
+    stroke: var(--rubric);
+    stroke-width: 1.75;
+    fill: none;
+  }
+  /* Admissions sit behind on a second scale — the shape is the claim, not the
+     level, so the two are not forced onto one axis. */
+  .trend :global(.trend__adm-label) {
+    font-size: 13px;
+    fill: var(--scope);
+    font-variant-numeric: tabular-nums;
+  }
+  .trend :global(.trend__adm) {
+    stroke: var(--scope);
+    stroke-width: 1.25;
+    fill: none;
+    opacity: 0.75;
+  }
+</style>

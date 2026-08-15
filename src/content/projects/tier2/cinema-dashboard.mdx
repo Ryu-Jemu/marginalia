@@ -1,7 +1,7 @@
 ---
 title: Why multiplex revenue fell
-tagline: A four-angle analysis, and a scraper I had to throw away to make the thing reproducible.
-period: "2025.01"
+tagline: Eighteen years of box-office data, four angles on the fall, and a premise about screen count that the correlations did not support.
+period: "2024.09 – 2024.12"
 team: 6 people
 role: The Python analysis
 domain: analysis
@@ -11,25 +11,57 @@ order: 7
 stack:
   - Python
   - pandas
+  - SciPy
+  - seaborn
   - folium
-  - KoNLPy
+  - Selenium
   - Naver Search API
 links: []
 ownership:
   owned:
-    - the analysis pipeline and the single-command dashboard build
-    - geocoding, proximity scoring and the text analysis
+    - the analysis pipeline — the yearly series, the regional tables and the correlations
+    - "collection: the review and blog crawler, and its replacement against a documented API"
+    - keyword extraction and the per-chain word clouds
+    - the geospatial work — geocoding, station and mall proximity, clustered maps
   notOwned:
     - the report and the presentation
+summary:
+  - Box-office revenue and admissions from 2004 to 2021, summed per year across domestic and foreign releases.
+  - The premise was that a chain's regional market share follows how many screens it has there. Across eight regions the correlation is positive for all three chains and significant for none.
+  - Per-capita private consumption against regional share behaves the same way — positive, and not significant at this sample size.
+  - "Text side: reviews and blog posts collected per chain, keywords extracted, and a word cloud per operator to compare what customers actually talk about."
+data:
+  - value: "−87.6%"
+    label: revenue against the 2019 peak
+    detail: 19,140 to 2,370 hundred-million won by 2021
+  - value: "−88.9%"
+    label: admissions against the same peak
+    detail: 227 million to 25 million
+  - value: "0.684"
+    label: strongest correlation found
+    detail: CGV screens vs regional share, p = 0.061
+  - value: "0 of 4"
+    label: correlations significant
+    detail: n = 8 regions
 ---
 
-The finding that survived scrutiny was locational: among the twenty
-highest-revenue branches, one operator had a single shopping-mall site where a
-competitor had ten. The hypothesis the team started with — that branch count
-explained the gap — did not survive the numbers.
+import N from '../../../components/note/N.astro';
 
-The part I would rather talk about is the scraper. A Selenium crawler against a
-site that kept changing its markup produced a three-byte CSV one morning and
+The question was not whether multiplex revenue fell — eighteen years of the
+national box-office series answer that on their own, with a peak in 2019 and a
+collapse to an eighth of it two years later.<N id="cinema-fall" /> The question
+was what else moved with it.
+
+The premise the team started from was that a chain's share of a region follows
+how many screens it has there. It does correlate — 0.68 for the largest
+operator, 0.57 and 0.55 for the other two — and at eight regions not one of
+those coefficients clears the usual threshold.<N id="cinema-correlation" /> Per
+capita consumption against share behaves identically. A positive coefficient
+that cannot be distinguished from noise is a finding about the sample, and
+reporting it as support would have been the easy edit.
+
+The part I would rather talk about is collection. A Selenium crawler against a
+site that kept changing its markup produced a three-byte file one morning and
 nobody noticed until the numbers looked odd. Rewriting it against a documented
-search API made the pipeline dull and repeatable, which is what a one-command
-rebuild of the whole dashboard actually requires.
+search API made the pipeline dull and repeatable, which is what rebuilding the
+whole thing in one command actually requires.

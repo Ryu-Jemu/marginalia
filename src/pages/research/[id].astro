@@ -6,8 +6,7 @@ import NoteLines from '../../components/note/NoteLines.astro';
 import Section from '../../components/doc/Section.astro';
 import Bullets from '../../components/doc/Bullets.astro';
 import Materials from '../../components/research/Materials.astro';
-import Figure from '../../components/viz/Figure.astro';
-import PricingChart from '../../components/viz/PricingChart.astro';
+import ResearchFigures from '../../components/research/ResearchFigures.astro';
 import N from '../../components/note/N.astro';
 import { resolveMaterials } from '../../lib/materials';
 import { site } from '../../lib/site';
@@ -116,15 +115,13 @@ const next = () => String(++n);
               <Bullets items={r.findings} tone="ink" />
             </div>
 
+            <div class="column column--wide chart">
+              <ResearchFigures id={entry.id} />
+            </div>
+
             {
               entry.id === 'ask-2026' && (
-                <div class="column column--wide chart">
-                  <Figure
-                    n="1"
-                    title="Revenue over the max-price baseline, by churn sensitivity. The m=1 bar is faint because it is not significant."
-                  >
-                    <PricingChart />
-                  </Figure>
+                <div class="column">
                   <p class="aside">
                     The control is the number worth defending: the same policy trained without
                     foresight lands level with the baseline at every setting.<N id="rl-myopic" />

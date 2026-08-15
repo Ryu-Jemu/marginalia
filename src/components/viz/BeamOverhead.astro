@@ -1,0 +1,121 @@
+---
+/**
+ * What the accuracy costs at inference.
+ *
+ * The survey's Table V, redrawn. Each measurement is normalised against the
+ * larger of the two models so the trade is legible as a shape: the language
+ * model wins on gain and on power, and loses on latency, memory and energy.
+ *
+ * The 16 ms prediction interval is stated in the footer rather than drawn: at
+ * 4.73 ms the marker would sit three bar-widths off the plate, and a marker
+ * that never lands is not a marker.
+ */
+interface Row {
+  label: string;
+  llm: number;
+  lstm: number;
+  unit: string;
+}
+const ROWS: Row[] = [
+  { label: 'Avg. latency', llm: 4.73, lstm: 1.74, unit: 'ms' },
+  { label: 'Peak memory', llm: 949.67, lstm: 24.73, unit: 'MB' },
+  { label: 'Avg. power', llm: 22.55, lstm: 37.41, unit: 'W' },
+  { label: 'Energy / inference', llm: 0.137, lstm: 0.054, unit: 'J' },
+];
+
+const W = 900;
+const ROW_H = 46;
+const TOP = 34;
+const LX = 8;
+const LW = 148;
+const BAR_X = LX + LW;
+const BAR_W = 440;
+const VAL_X = BAR_X + BAR_W + 16;
+const H = TOP + ROWS.length * ROW_H + 34;
+
+const fmt = (v: number) => (v >= 100 ? v.toFixed(2) : v >= 1 ? v.toFixed(2) : v.toFixed(3));
+---
+
+<svg class="viz over" data-viz="over" viewBox={`0 0 ${W} ${H}`} role="img"
+  aria-label="Inference overhead. BP-LLM against cascaded LSTM: latency 4.73 versus 1.74 milliseconds, peak memory 949.67 versus 24.73 megabytes, average power 22.55 versus 37.41 watts, energy per inference 0.137 versus 0.054 joules.">
+  <g data-over-key>
+    <rect class="over__swatch over__swatch--llm" x={LX} y="6" width="12" height="9" rx="2" />
+    <text class="viz-label" x={LX + 18} y="14">BP-LLM</text>
+    <rect class="over__swatch over__swatch--lstm" x={LX + 92} y="6" width="12" height="9" rx="2" />
+    <text class="viz-label" x={LX + 110} y="14">Cascaded LSTM</text>
+    <text class="viz-label" x={VAL_X + 92} y="14" text-anchor="end">ratio</text>
+  </g>
+
+  {
+    ROWS.map((row, i) => {
+      const top = TOP + i * ROW_H;
+      const max = Math.max(row.llm, row.lstm);
+      const wl = (BAR_W * row.llm) / max;
+      const ws = (BAR_W * row.lstm) / max;
+      return (
+        <g data-over-row>
+          <text class="over__label" x={LX} y={top + 16}>
+            {row.label}
+          </text>
+          <text class="viz-label" x={LX} y={top + 30}>
+            {row.unit}
+          </text>
+
+          <rect class="over__bar over__swatch--llm" data-over-bar x={BAR_X} y={top} width={wl} height="13" rx="2"
+            style={`transform-origin:${BAR_X}px 0`} />
+          <rect class="over__bar over__swatch--lstm" data-over-bar x={BAR_X} y={top + 17} width={ws} height="13" rx="2"
+            style={`transform-origin:${BAR_X}px 0`} />
+
+          <text class="over__v over__v--llm" x={VAL_X} y={top + 11}>
+            {fmt(row.llm)}
+          </text>
+          <text class="over__v" x={VAL_X} y={top + 28}>
+            {fmt(row.lstm)}
+          </text>
+          <text class="over__ratio" x={VAL_X + 92} y={top + 20}>
+            ×{(row.llm / row.lstm).toFixed(row.llm / row.lstm >= 10 ? 0 : 1)}
+          </text>
+        </g>
+      );
+    })
+  }
+
+  <text class="viz-label" x={LX} y={H - 12}>
+    The language model costs latency, memory and energy, and draws less power. The task allows 16 ms per prediction; both finish inside it.
+  </text>
+</svg>
+
+<style>
+  .over {
+    display: block;
+  }
+  .over :global(.over__label) {
+    font-family: var(--family-mono);
+    font-size: 11.5px;
+    fill: var(--ink);
+  }
+  .over :global(.over__swatch--llm),
+  .over :global(.over__bar.over__swatch--llm) {
+    fill: var(--rubric);
+  }
+  .over :global(.over__swatch--lstm),
+  .over :global(.over__bar.over__swatch--lstm) {
+    fill: var(--scope);
+    opacity: 0.75;
+  }
+  .over :global(.over__v) {
+    font-family: var(--family-mono);
+    font-size: 11.5px;
+    fill: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .over :global(.over__v--llm) {
+    fill: var(--ink);
+  }
+  .over :global(.over__ratio) {
+    font-family: var(--family-mono);
+    font-size: 11px;
+    fill: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

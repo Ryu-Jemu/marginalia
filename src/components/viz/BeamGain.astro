@@ -1,0 +1,120 @@
+---
+/**
+ * Normalised beamforming gain against prediction horizon.
+ *
+ * A redrawing of the survey's Figure 7 in this page's own ink. Every cell value
+ * is the published one — the plate is a reproduction, not an illustration — so
+ * a reader can check it against the manuscript cell by cell.
+ *
+ * Gain is drawn as depth of the accent rather than as a rainbow ramp: the
+ * comparison is one quantity across three models, and a hue scale would imply
+ * categories that are not there.
+ */
+const STEPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const ROWS = [
+  { name: 'BP-LLM', mine: true, v: [0.95, 0.92, 0.9, 0.89, 0.865, 0.855, 0.858, 0.845, 0.807, 0.82] },
+  { name: 'ODE', mine: false, v: [0.905, 0.895, 0.885, 0.872, 0.86, 0.848, 0.835, 0.818, 0.806, 0.802] },
+  { name: 'Cascaded LSTM', mine: true, v: [0.878, 0.858, 0.852, 0.842, 0.837, 0.828, 0.803, 0.808, 0.784, 0.783] },
+];
+
+const W = 900;
+const LX = 8;
+const LW = 108;
+const CELL_W = 74;
+const CELL_H = 34;
+const TOP = 26;
+const GRID_X = LX + LW;
+const H = TOP + ROWS.length * CELL_H + 46;
+
+const lo = Math.min(...ROWS.flatMap((r) => r.v));
+const hi = Math.max(...ROWS.flatMap((r) => r.v));
+/** 0.08–0.92 so the weakest cell is still a shade rather than the page. */
+const shade = (v: number) => (0.08 + ((v - lo) / (hi - lo)) * 0.84).toFixed(3);
+---
+
+<svg class="viz gain" data-viz="gain" viewBox={`0 0 ${W} ${H}`} role="img"
+  aria-label="Normalised beamforming gain for BP-LLM, ODE and cascaded LSTM across prediction steps 1 to 10. BP-LLM is highest at every step, from 0.950 at step 1 to 0.820 at step 10.">
+  <text class="viz-label" x={LX} y="14">Normalised beamforming gain · DeepMIMO</text>
+
+  {
+    ROWS.map((row, r) => (
+      <g data-gain-row>
+        <text
+          class:list={['gain__name', row.mine && 'gain__name--mine']}
+          x={GRID_X - 10}
+          y={TOP + r * CELL_H + CELL_H / 2 + 4}
+          text-anchor="end"
+        >
+          {row.name}
+        </text>
+        {row.v.map((v, c) => (
+          <>
+            <rect
+              class="gain__cell"
+              data-gain-cell
+              x={GRID_X + c * CELL_W}
+              y={TOP + r * CELL_H}
+              width={CELL_W - 2}
+              height={CELL_H - 2}
+              rx="2"
+              style={`--a:${shade(v)}`}
+            />
+            <text
+              class:list={['gain__v', Number(shade(v)) > 0.66 && 'gain__v--on-fill']}
+              x={GRID_X + c * CELL_W + (CELL_W - 2) / 2}
+              y={TOP + r * CELL_H + CELL_H / 2 + 4}
+              text-anchor="middle"
+            >
+              {v.toFixed(3)}
+            </text>
+          </>
+        ))}
+      </g>
+    ))
+  }
+
+  {
+    STEPS.map((s, c) => (
+      <text
+        class="viz-label"
+        x={GRID_X + c * CELL_W + (CELL_W - 2) / 2}
+        y={TOP + ROWS.length * CELL_H + 16}
+        text-anchor="middle"
+      >
+        {s}
+      </text>
+    ))
+  }
+  <text class="viz-label" x={GRID_X} y={TOP + ROWS.length * CELL_H + 36}>
+    Prediction time step · BP-LLM leads at every horizon; all three fall away as it lengthens
+  </text>
+</svg>
+
+<style>
+  .gain {
+    display: block;
+  }
+  .gain :global(.gain__cell) {
+    fill: var(--rubric);
+    fill-opacity: var(--a);
+  }
+  .gain :global(.gain__name) {
+    font-family: var(--family-mono);
+    font-size: 11px;
+    fill: var(--ink-faint);
+  }
+  /* The two rows I implemented are named in full ink; the third baseline is not
+     mine to claim. */
+  .gain :global(.gain__name--mine) {
+    fill: var(--ink);
+  }
+  .gain :global(.gain__v) {
+    font-family: var(--family-mono);
+    font-size: 11px;
+    fill: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .gain :global(.gain__v--on-fill) {
+    fill: var(--on-rubric);
+  }
+</style>

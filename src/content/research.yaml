@@ -36,18 +36,12 @@
     - Against a max-price baseline the policy gains 2.1% at m=1, 105.8% at m=3, 195.8% at m=5 and 363.2% at m=10. Only m≥3 is significant at p<0.001.
     - 97% of the m=3 revenue gap comes from the eMBB slice alone, and eMBB retention holds at 88.8% against the baseline's 3.3%.
     - The myopic control is indistinguishable from the baseline at every m, which places the advantage in the foresight rather than in the algorithm.
-    - TD3 lands 6.5% below the on-policy method; SAC is statistically indistinguishable from it (p=0.938).
+    - At m=1 the net rewards are PPO 7,334, SAC 7,370 and TD3 6,862, against Max-Price 7,183 — the deterministic method is 6.4% below PPO, and SAC is indistinguishable from it at p=0.938.
   materials:
     - kind: pdf
       src: /papers/ask-2026.pdf
       label: Paper (PDF)
       caption: KIPS ASK 2026 spring conference, C2026A0229.
-    - kind: figure
-      src: ask-2026-uplift.png
-      label: Revenue uplift by churn sensitivity
-    - kind: figure
-      src: ask-2026-slice.png
-      label: Revenue decomposed by slice
     - kind: link
       src: https://github.com/Ryu-Jemu/network-pricing
       label: Environment and experiment code
@@ -72,24 +66,20 @@
     power control, bandwidth allocation, edge computing and beam prediction.
   role:
     - Wrote Section III.E, Beam Prediction, in full — the section's argument, its taxonomy of approaches and its discussion.
-    - Argued that beamforming for non-stationary devices is where recurrent baselines stop generalising, which is the gap the section is built on.
-    - Argued the reformulation the section rests on — a beam sequence is a time series, so beam selection is a forecasting problem a language model can be pointed at.
-    - Covered patch embedding of beam indices and departure angles, reprogramming them into tokens the model already holds, and prompt-as-prefix conditioning on domain knowledge, task and series statistics.
+    - Argued the reformulation the section rests on — a beam sequence is a time series, so beam selection is a forecasting problem a language model can be pointed at, where recurrent baselines stop generalising for non-stationary devices.
+    - Implemented the case study behind Figure 7 — both the BP-LLM model and the cascaded LSTM baseline — and ran the DeepMIMO simulations that produced the normalised beamforming gains.
+    - "Produced Table V, the inference-overhead measurements: latency, peak GPU memory, average power and energy per inference for both models."
     - Reviewed and corrected the manuscript, including three references whose identifiers pointed at unrelated papers.
   method:
-    - The section compares reprogramming a frozen general model against training a sequence model from scratch, and states what each buys.
-    - Conditioning is treated as three separate prefixes — domain knowledge, the task, and the statistics of the series — rather than one prompt.
+    - Beam indices and departure angles are patched and embedded, then reprogrammed into prototype tokens drawn from the model's existing vocabulary.
+    - Conditioning is three separate prefixes — domain knowledge, the statistical trend such as signal drift, and the lag structure — concatenated ahead of the data tokens.
+    - The backbone stays frozen. Only the embedding, the reprogramming layer and a linear projection carry weights, and training minimises mean squared error over the H-step horizon.
+    - The comparison is run on DeepMIMO against a cascaded LSTM and an ODE baseline, over prediction horizons of one to ten steps.
   findings:
-    - Beam prediction is presented as a forecasting problem rather than a classification one, which is what makes a language model applicable to it at all.
-    - Reprogramming reuses a frozen model's learned sequence structure, so the trainable parameter count stays small relative to the model.
-  materials:
-    - kind: figure
-      src: ieee-tai-beam-architecture.png
-      label: Beam prediction — reprogramming architecture
-      caption: From Section III.E.
-    - kind: figure
-      src: ieee-tai-prompt.png
-      label: Prompt-as-prefix conditioning
+    - BP-LLM holds the highest normalised beamforming gain at every horizon — 0.950 at one step against the cascaded LSTM's 0.878, and 0.820 against 0.783 at ten.
+    - All three models degrade as the horizon lengthens, and the margin over the LSTM baseline narrows from 0.072 to 0.037 across it.
+    - The language model costs 4.73 ms per inference against 1.74, and 949.67 MB of peak memory against 24.73 — 38 times the footprint.
+    - It draws less power, 22.55 W against 37.41, and both models finish inside the 16 ms prediction interval the task allows.
   highlights:
     - Wrote Section III.E, Beam Prediction — why a beam sequence is a forecasting problem, and what a language model brings to it that an LSTM does not.
     - Covered patch embedding of beam indices and departure angles, reprogramming them into tokens the model already holds, and prompt-as-prefix conditioning on domain knowledge, task and series statistics.
@@ -112,13 +102,10 @@
   role:
     - Prepared the beam sequence data — indices and departure angles, patched into fixed-length windows.
     - Built the reprogramming layer over a frozen GPT-2 and the prompt-as-prefix conditioning.
-    - Ran training and recorded the loss curve.
+    - Implemented the cascaded LSTM baseline it is measured against, so the comparison runs on one harness rather than two.
+    - Ran training, recorded the loss curve, and measured inference latency, memory, power and energy for both models.
   findings:
     - 339,338 trainable parameters over a frozen backbone; training loss fell from 2.08 to 0.0009 across ten epochs.
     - No train/validation/test split and no evaluation metric were implemented, so there is no accuracy figure and the loss curve is the only result.
-  materials:
-    - kind: figure
-      src: bp-llm-loss.png
-      label: Training loss over ten epochs
   notes:
     - bp-llm-training

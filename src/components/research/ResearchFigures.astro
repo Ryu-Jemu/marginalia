@@ -1,0 +1,74 @@
+---
+import Figure from '../viz/Figure.astro';
+import PricingChart from '../viz/PricingChart.astro';
+import PricingAlgorithms from '../viz/PricingAlgorithms.astro';
+import BeamArchitecture from '../viz/BeamArchitecture.astro';
+import BeamGain from '../viz/BeamGain.astro';
+import BeamOverhead from '../viz/BeamOverhead.astro';
+
+/**
+ * The plates that belong to a given paper.
+ *
+ * Every one is drawn from the manuscript's own published values rather than
+ * lifted as an image, so the numbers on the page and the numbers in the paper
+ * are the same numbers.
+ */
+interface Props {
+  id: string;
+}
+const { id } = Astro.props;
+let n = 0;
+const next = () => String(++n);
+---
+
+{
+  id === 'ask-2026' && (
+    <>
+      <Figure
+        n={next()}
+        title="Revenue over the max-price baseline, by churn sensitivity. The m=1 bar is faint because it is not significant."
+      >
+        <PricingChart />
+      </Figure>
+      <Figure
+        n={next()}
+        title="Figure 2(b), redrawn. At the setting where price sensitivity is lowest, the learned policy has nothing to beat."
+      >
+        <PricingAlgorithms />
+      </Figure>
+    </>
+  )
+}
+
+{
+  id === 'ieee-tai-survey' && (
+    <>
+      <Figure
+        n={next()}
+        title="The pipeline Section III.E describes: patched, reprogrammed, prefixed, and passed through a backbone that never moves."
+      >
+        <BeamArchitecture />
+      </Figure>
+      <Figure
+        n={next()}
+        title="Figure 7, redrawn. Every cell is the published value; BP-LLM and the cascaded LSTM are the two rows I implemented."
+      >
+        <BeamGain />
+      </Figure>
+      <Figure n={next()} title="Table V, redrawn. What the gain costs at inference.">
+        <BeamOverhead />
+      </Figure>
+    </>
+  )
+}
+
+{
+  id === 'bp-llm-lab' && (
+    <Figure
+      n={next()}
+      title="The model behind the survey section: three trainable stages over a frozen backbone."
+    >
+      <BeamArchitecture />
+    </Figure>
+  )
+}

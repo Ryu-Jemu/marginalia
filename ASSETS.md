@@ -31,19 +31,28 @@ manuscript body only, no portal header, no response letter — can be dropped at
 `public/papers/ieee-tai-survey.pdf` and the entry re-added to
 `src/content/research.yaml`.
 
+## Redrawn instead of imported
+
+No paper figure is served as an image. Each one is rebuilt as an SVG from the
+manuscript's published values, so the numbers on the page and the numbers in
+the paper are the same numbers and the plate takes the site's own ink.
+
+| Component | Reproduces |
+|---|---|
+| `PricingChart.astro` | ASK Figure 2(a) — uplift by churn multiplier |
+| `PricingAlgorithms.astro` | ASK Figure 2(b) — PPO 7,334 · SAC 7,370 · TD3 6,862 · Myopic-PPO 7,169 · Max-Price 7,183 |
+| `BeamArchitecture.astro` | Section III.E — patch embed, reprogram, prefix, frozen backbone, projection |
+| `BeamGain.astro` | TAI Figure 7 — all thirty published gain values |
+| `BeamOverhead.astro` | TAI Table V — latency, memory, power, energy |
+| `CrimeResiduals.astro` | Residual choropleth, from `seoul.geojson` and a refit of the OLS |
+| `CinemaTrend.astro` · `CinemaCorrelation.astro` | Box-office series and the regional correlations |
+
+The paper's error bars are deliberately not reproduced: their extents are not
+printed, and reading them off a raster would be inventing precision. The one
+interval the paper states, p = 0.938 between PPO and SAC, is drawn.
+
 ## Still open
 
-Figures, into `src/assets/papers/`. PNG, JPG or WebP; a screenshot out of the
-PDF at full width is fine, they are re-encoded and resized at build time.
-
-| File | What it should show |
-|---|---|
-| `ask-2026-uplift.png` | Figure 2(a) — net reward by churn multiplier |
-| `ask-2026-slice.png` | Figure 2(b) — the algorithm comparison at m = 1 |
-| `ieee-tai-beam-architecture.png` | The reprogramming architecture from Section III.E |
-| `ieee-tai-prompt.png` | The prompt-as-prefix conditioning figure |
-| `bp-llm-loss.png` | The training loss curve over ten epochs |
-
 Product captures, into `src/assets/projects/map/`: the camera recognition
-screen. The vision service is listed among the six owned and is the one surface
-with no picture of it.
+screen — held for now at your request. The vision service is one of the six
+owned and the only surface with no picture of it.

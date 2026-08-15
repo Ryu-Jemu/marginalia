@@ -1,0 +1,117 @@
+---
+/**
+ * The algorithm comparison at m = 1, redrawn from the paper's Figure 2(b).
+ *
+ * Means are the paper's published values. The error bars in the original are
+ * not reproduced: their extents are not printed, and reading them off a raster
+ * would be inventing precision. The one interval that matters is stated
+ * instead — PPO and SAC are not distinguishable at p = 0.938.
+ *
+ * The dashed rule separates the learned policies from the two that do not look
+ * ahead, which is the comparison the figure exists to make.
+ */
+const BARS = [
+  { name: 'PPO', v: 7334, kind: 'learned' as const },
+  { name: 'SAC', v: 7370, kind: 'learned' as const },
+  { name: 'TD3', v: 6862, kind: 'learned' as const },
+  { name: 'Myopic-PPO', v: 7169, kind: 'baseline' as const },
+  { name: 'Max-Price', v: 7183, kind: 'baseline' as const },
+];
+
+const W = 760;
+const H = 260;
+const L = 56;
+const R = 16;
+const T = 34;
+const B = 46;
+const PW = W - L - R;
+const PH = H - T - B;
+
+/* The axis starts at 6,500 rather than zero — as the paper's does — because the
+   whole spread is 508 on a base of seven thousand. The break is marked. */
+const Y0 = 6500;
+const Y1 = 7600;
+const y = (v: number) => T + PH - (PH * (v - Y0)) / (Y1 - Y0);
+
+const SLOT = PW / BARS.length;
+const BW = SLOT * 0.56;
+const x = (i: number) => L + SLOT * i + (SLOT - BW) / 2;
+const cx = (i: number) => x(i) + BW / 2;
+
+const TICKS = [6500, 7000, 7500];
+const splitAt = 3;
+---
+
+<svg class="viz alg" data-viz="alg" viewBox={`0 0 ${W} ${H}`} role="img"
+  aria-label="Net reward at churn multiplier one: PPO 7,334, SAC 7,370, TD3 6,862, Myopic-PPO 7,169, Max-Price 7,183. PPO and SAC are not statistically distinguishable at p equals 0.938.">
+  {
+    TICKS.map((t) => (
+      <>
+        <line class="viz-track" x1={L} y1={y(t)} x2={W - R} y2={y(t)} />
+        <text class="viz-label" x={L - 8} y={y(t) + 4} text-anchor="end">
+          {t.toLocaleString('en-US')}
+        </text>
+      </>
+    ))
+  }
+  <text class="viz-label" x={L} y={T - 14}>net reward</text>
+  <!-- axis break, because the scale does not start at zero -->
+  <path class="viz-rule" d={`M${L - 12} ${T + PH - 6} l8 -4 M${L - 12} ${T + PH - 1} l8 -4`}></path>
+
+  {
+    BARS.map((b, i) => (
+      <g data-alg-bar>
+        <rect
+          class:list={['alg__bar', `alg__bar--${b.kind}`]}
+          data-alg-rect
+          x={x(i)}
+          y={y(b.v)}
+          width={BW}
+          height={T + PH - y(b.v)}
+          rx="2"
+          style={`transform-origin:50% ${T + PH}px`}
+        />
+        <text class="viz-value" x={cx(i)} y={y(b.v) - 8} text-anchor="middle">
+          {b.v.toLocaleString('en-US')}
+        </text>
+        <text class="viz-label" x={cx(i)} y={T + PH + 18} text-anchor="middle">
+          {b.name}
+        </text>
+      </g>
+    ))
+  }
+
+  <!-- the divider between policies that look ahead and those that do not -->
+  <path class="viz-limit" d={`M${L + SLOT * splitAt} ${T - 4} V${T + PH}`} stroke-dasharray="3 3"></path>
+  <text class="viz-label" x={L + SLOT * splitAt + 8} y={T + 4}>no foresight</text>
+
+  <!-- the one interval the paper states -->
+  <g data-alg-ns>
+    <path class="viz-rule" d={`M${cx(0)} ${T + 4} V${T - 4} H${cx(1)} V${T + 4}`}></path>
+    <text class="alg__ns" x={(cx(0) + cx(1)) / 2} y={T - 10} text-anchor="middle">
+      n.s. · p = 0.938
+    </text>
+  </g>
+
+  <text class="viz-label" x={L} y={H - 12}>
+    Churn multiplier m = 1 · three seeds per policy · same environment
+  </text>
+</svg>
+
+<style>
+  .alg {
+    display: block;
+  }
+  .alg :global(.alg__bar--learned) {
+    fill: var(--rubric);
+  }
+  /* The two that do not look ahead are drawn as ground, not as results. */
+  .alg :global(.alg__bar--baseline) {
+    fill: var(--rule-strong);
+  }
+  .alg :global(.alg__ns) {
+    font-family: var(--family-mono);
+    font-size: 10px;
+    fill: var(--ink-faint);
+  }
+</style>

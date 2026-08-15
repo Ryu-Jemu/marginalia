@@ -165,11 +165,11 @@
 - id: rl-algorithms
   kind: measurement
   body: >-
-    Deterministic TD3 lands 6.5% below the on-policy method, while SAC is
-    statistically indistinguishable from it (p=0.938).
+    At m=1 the net rewards are PPO 7,334, SAC 7,370 and TD3 6,862. The
+    deterministic method is 6.4% below PPO; SAC is indistinguishable from it.
   condition: >-
-    Same environment, five seeds each, reported so the algorithm choice reads as
-    a finding rather than a preference.
+    Same environment, three seeds per policy, p=0.938 between PPO and SAC.
+    Reported so the algorithm choice reads as a finding rather than a preference.
 
 - id: rl-award
   kind: source

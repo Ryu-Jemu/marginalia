@@ -1,0 +1,138 @@
+---
+/**
+ * How a beam sequence is put in front of a language model.
+ *
+ * Redrawn from the section's own formulation: the beam series is patched and
+ * embedded, reprogrammed into tokens the model already holds, prefixed with the
+ * structured prompt, passed through a frozen backbone, and projected back to
+ * beam indices. Only the shaded blocks carry trainable weights — which is the
+ * whole argument for reprogramming rather than training a sequence model.
+ */
+const W = 980;
+const H = 236;
+
+const ROW_Y = 92;
+const BOX_H = 44;
+const BOX_W = 132;
+const GAP = 24;
+
+const STAGES = [
+  { name: 'Patch embed', sub: 'beam index · AoD', train: true },
+  { name: 'Reprogram', sub: 'prototype tokens', train: true },
+  { name: 'Prefix', sub: 'Z = [Z prompt ; Z data]', train: false },
+  { name: 'Frozen LLM', sub: 'GPT-2 · M(Z) → E', train: false, frozen: true },
+  { name: 'Project', sub: 'Ŷ = EW + b', train: true },
+];
+
+const startX = 12;
+const boxes = STAGES.map((s, i) => ({
+  ...s,
+  x: startX + i * (BOX_W + GAP),
+  cx: startX + i * (BOX_W + GAP) + BOX_W / 2,
+}));
+const lastRight = boxes[boxes.length - 1].x + BOX_W;
+
+/** The three prefixes the section names, stacked above the concatenation. */
+const PREFIX = ['Domain knowledge', 'Statistical trend — drift', 'Lag structure'];
+const prefixBox = boxes[2];
+---
+
+<svg class="viz arch" data-viz="arch" viewBox={`0 0 ${W} ${H}`} role="img"
+  aria-label="Beam prediction pipeline: patch embedding of beam indices and departure angles, patch reprogramming into prototype tokens, concatenation with a three-part prompt prefix, a frozen GPT-2 backbone, and a linear projection back to beam indices. Only the embedding, reprogramming and projection carry trainable weights.">
+  <text class="viz-label" x={startX} y="16">Beam index sequence · angle of departure</text>
+  <text class="viz-label" x={lastRight} y="16" text-anchor="end">Beam indices, H steps ahead</text>
+
+  <!-- prompt-as-prefix, feeding the concatenation -->
+  <g data-arch-prefix>
+    {
+      PREFIX.map((p, i) => (
+        <>
+          <rect class="arch__prefix" x={prefixBox.x - 26} y={24 + i * 17} width={BOX_W + 52} height={14} rx="2" />
+          <text class="arch__prefix-t" x={prefixBox.cx} y={24 + i * 17 + 10} text-anchor="middle">
+            {p}
+          </text>
+        </>
+      ))
+    }
+    <path class="viz-track" d={`M${prefixBox.cx} ${24 + PREFIX.length * 17} V${ROW_Y}`} />
+    <text class="viz-label" x={prefixBox.x - 32} y={24 + PREFIX.length * 17 + 4} text-anchor="end">
+      prompt-as-prefix
+    </text>
+  </g>
+
+  <line class="viz-track" x1={startX} y1={ROW_Y + BOX_H / 2} x2={lastRight} y2={ROW_Y + BOX_H / 2}></line>
+
+  {
+    boxes.map((b) => (
+      <g data-arch-stage>
+        <rect
+          class:list={['viz-box', b.train && 'arch__box--train', b.frozen && 'arch__box--frozen']}
+          x={b.x}
+          y={ROW_Y}
+          width={BOX_W}
+          height={BOX_H}
+          rx="3"
+        />
+        <text class="arch__name" x={b.cx} y={ROW_Y + 19} text-anchor="middle">
+          {b.name}
+        </text>
+        <text class="arch__sub" x={b.cx} y={ROW_Y + 34} text-anchor="middle">
+          {b.sub}
+        </text>
+      </g>
+    ))
+  }
+
+  <!-- the loss, closing the loop back onto the projection -->
+  <g data-arch-loss>
+    <path
+      class="viz-limit"
+      d={`M${boxes[4].cx} ${ROW_Y + BOX_H} V${ROW_Y + BOX_H + 22} H${boxes[0].cx} V${ROW_Y + BOX_H + 12}`}
+      stroke-dasharray="3 3"
+    ></path>
+    <text class="viz-value viz-value--boundary" x={boxes[2].cx} y={ROW_Y + BOX_H + 38} text-anchor="middle">
+      MSE over the H-step horizon · 339,338 trainable parameters
+    </text>
+  </g>
+
+  <g data-arch-key>
+    <rect class="viz-box arch__box--train" x={startX} y={H - 22} width={16} height="10" rx="2" />
+    <text class="viz-label" x={startX + 22} y={H - 13}>trainable</text>
+    <rect class="viz-box arch__box--frozen" x={startX + 96} y={H - 22} width={16} height="10" rx="2" />
+    <text class="viz-label" x={startX + 118} y={H - 13}>frozen backbone</text>
+  </g>
+</svg>
+
+<style>
+  .arch {
+    display: block;
+  }
+  .arch :global(.arch__name) {
+    font-family: var(--family-mono);
+    font-size: 11.5px;
+    fill: var(--ink);
+  }
+  .arch :global(.arch__sub) {
+    font-family: var(--family-mono);
+    font-size: 8.5px;
+    fill: var(--ink-faint);
+  }
+  /* Trainable blocks take the accent outline; the frozen backbone is filled
+     flat, because nothing inside it moves. */
+  .arch :global(.arch__box--train) {
+    stroke: var(--rubric);
+  }
+  .arch :global(.arch__box--frozen) {
+    fill: var(--rule);
+    stroke: var(--rule-strong);
+  }
+  .arch :global(.arch__prefix) {
+    fill: var(--paper-inset);
+    stroke: var(--rule);
+  }
+  .arch :global(.arch__prefix-t) {
+    font-family: var(--family-mono);
+    font-size: 8.5px;
+    fill: var(--scope);
+  }
+</style>

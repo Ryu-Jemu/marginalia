@@ -1,0 +1,130 @@
+---
+/**
+ * The training run, on a log axis.
+ *
+ * Average loss per epoch from the run's own log. The axis is logarithmic
+ * because the curve crosses three decades in one epoch and a linear axis would
+ * draw it as a single drop followed by a flat line — which hides that it is
+ * still moving at epoch four and stopped by epoch eight.
+ *
+ * This is a training curve and nothing else: there was no held-out split, so
+ * the plate is annotated to say so rather than leaving a reader to assume it.
+ */
+const LOSS = [2.0826, 0.0084, 0.0032, 0.0018, 0.0014, 0.0011, 0.001, 0.0009, 0.0009, 0.0009];
+
+const W = 760;
+const H = 248;
+const L = 54;
+const R = 200;
+const T = 26;
+const B = 44;
+const PW = W - L - R;
+const PH = H - T - B;
+
+const DECADES = [1, 0.1, 0.01, 0.001];
+const hi = Math.log10(4);
+const lo = Math.log10(0.0005);
+const x = (i: number) => L + (PW * i) / (LOSS.length - 1);
+const y = (v: number) => T + PH - (PH * (Math.log10(v) - lo)) / (hi - lo);
+
+const path = LOSS.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+const last = LOSS.length - 1;
+---
+
+<svg class="viz train" data-viz="train" viewBox={`0 0 ${W} ${H}`} role="img"
+  aria-label="Average training loss per epoch, falling from 2.0826 at epoch one to 0.0009 by epoch eight and flat thereafter. Logarithmic axis. No held-out split was implemented.">
+  {
+    DECADES.map((d) => (
+      <>
+        <line class="viz-track" x1={L} y1={y(d)} x2={L + PW} y2={y(d)} />
+        <text class="viz-label" x={L - 8} y={y(d) + 4} text-anchor="end">
+          {d}
+        </text>
+      </>
+    ))
+  }
+  <text class="viz-label" x={L} y={T - 10}>average loss per epoch · log scale</text>
+
+  <path class="train__line" data-train-line d={path}></path>
+
+  {
+    LOSS.map((v, i) => (
+      <circle class="viz-fill-accent" cx={x(i)} cy={y(v)} r={i === 0 || i === last ? 3.5 : 2} />
+    ))
+  }
+
+  <text class="viz-value viz-value--rubric" x={x(0) + 10} y={y(LOSS[0]) + 4}>2.0826</text>
+  <text class="viz-value viz-value--rubric" x={x(last) - 8} y={y(LOSS[last]) + 16} text-anchor="end">
+    0.0009
+  </text>
+
+  {
+    LOSS.map((_, i) =>
+      i % 3 === 0 || i === last ? (
+        <text class="viz-label" x={x(i)} y={T + PH + 18} text-anchor="middle">
+          {i + 1}
+        </text>
+      ) : null,
+    )
+  }
+  <text class="viz-label" x={L} y={T + PH + 34}>Epoch</text>
+
+  <!-- the setup, beside the curve rather than in a caption nobody reads -->
+  <g data-train-key>
+    <text class="viz-label" x={L + PW + 18} y={T + 4}>run</text>
+    {
+      [
+        ['GPT-2, frozen', ''],
+        ['trainable', '339,338'],
+        ['samples used', '20,000'],
+        ['input window', '40 steps'],
+        ['horizon', '10 steps'],
+        ['device', 'MPS'],
+        ['run time', '34 min'],
+      ].map(([k, v], i) => (
+        <>
+          <text class="train__k" x={L + PW + 18} y={T + 24 + i * 17}>
+            {k}
+          </text>
+          <text class="train__v" x={W - 8} y={T + 24 + i * 17} text-anchor="end">
+            {v}
+          </text>
+        </>
+      ))
+    }
+    <text class="train__note" x={L + PW + 18} y={T + 24 + 7 * 17 + 10}>no held-out split</text>
+    <text class="train__note-sub" x={L + PW + 18} y={T + 24 + 7 * 17 + 24}>training loss only</text>
+  </g>
+</svg>
+
+<style>
+  .train {
+    display: block;
+  }
+  .train :global(.train__line) {
+    stroke: var(--rubric);
+    stroke-width: 1.75;
+    fill: none;
+  }
+  .train :global(.train__k) {
+    font-family: var(--family-mono);
+    font-size: 9.5px;
+    fill: var(--ink-faint);
+  }
+  .train :global(.train__note) {
+    font-family: var(--family-mono);
+    font-size: 11px;
+    fill: var(--boundary);
+  }
+  .train :global(.train__note-sub) {
+    font-family: var(--family-mono);
+    font-size: 9.5px;
+    fill: var(--ink-faint);
+  }
+  .train :global(.train__v) {
+    font-family: var(--family-mono);
+    font-size: 9.5px;
+    fill: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

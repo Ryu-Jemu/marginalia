@@ -5,6 +5,7 @@ import PricingAlgorithms from '../viz/PricingAlgorithms.astro';
 import BeamArchitecture from '../viz/BeamArchitecture.astro';
 import BeamGain from '../viz/BeamGain.astro';
 import BeamOverhead from '../viz/BeamOverhead.astro';
+import BeamTraining from '../viz/BeamTraining.astro';
 
 /**
  * The plates that belong to a given paper.
@@ -64,11 +65,19 @@ const next = () => String(++n);
 
 {
   id === 'bp-llm-lab' && (
-    <Figure
-      n={next()}
-      title="The model behind the survey section: three trainable stages over a frozen backbone."
-    >
-      <BeamArchitecture />
-    </Figure>
+    <>
+      <Figure
+        n={next()}
+        title="The model behind the survey section: three trainable stages over a frozen backbone."
+      >
+        <BeamArchitecture />
+      </Figure>
+      <Figure
+        n={next()}
+        title="Average loss per epoch, from the run's own log. A training curve — there was no held-out split to draw anything else from."
+      >
+        <BeamTraining />
+      </Figure>
+    </>
   )
 }

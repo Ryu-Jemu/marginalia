@@ -259,10 +259,20 @@
   kind: measurement
   body: >-
     A frozen GPT-2 reprogrammed for beam prediction, 339,338 trainable
-    parameters, training loss 2.08 to 0.0009 over ten epochs.
+    parameters, training loss 2.0826 to 0.0009 over ten epochs.
   condition: >-
-    Training loss only. No train/validation/test split and no evaluation metric
-    were implemented, so there is no accuracy figure to report.
+    Average loss per epoch from the run log, 20,000 of 84,019 built samples,
+    34 minutes on Apple silicon. Training loss only — no held-out split was
+    implemented, so there is no accuracy figure to report.
+
+- id: bp-llm-data
+  kind: measurement
+  body: >-
+    378 ray-traced sets from the DeepMIMO o1_28 scenario became 84,019 sliding
+    windows — forty past steps against ten future ones.
+  condition: >-
+    Counted from the preprocessing run log. Sets whose beam search returned an
+    empty sequence were skipped rather than filled in.
 
 - id: teaching-assistant
   kind: source

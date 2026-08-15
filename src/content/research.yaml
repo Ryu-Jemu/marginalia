@@ -97,15 +97,22 @@
   date: "2025 – 2026"
   summary: >-
     The implementation behind the survey section — a frozen GPT-2 reprogrammed
-    for a millimetre-wave beam sequence. Training ran; evaluation was never
-    implemented.
+    for a millimetre-wave beam sequence, built from the DeepMIMO ray-tracing
+    data up.
   role:
-    - Prepared the beam sequence data — indices and departure angles, patched into fixed-length windows.
-    - Built the reprogramming layer over a frozen GPT-2 and the prompt-as-prefix conditioning.
-    - Implemented the cascaded LSTM baseline it is measured against, so the comparison runs on one harness rather than two.
-    - Ran training, recorded the loss curve, and measured inference latency, memory, power and energy for both models.
+    - "Built the data pipeline: 378 ray-traced sets from the DeepMIMO o1_28 scenario at 28 GHz, turned into channel vectors through a Saleh-Valenzuela model and beamed against a 32-point DFT codebook."
+    - Derived the supervision by taking the arg-max beam per position, then cut it into 84,019 sliding windows of forty past steps against ten future ones.
+    - Built the model — reversible normalisation, patch embedding, cross-variable attention over beam index and departure angle, reprogramming onto 256 text prototypes, and a prompt prefix carrying domain knowledge, the instruction and the series statistics.
+    - Froze the backbone and trained only the three surrounding stages; ran the ten-epoch run on Apple silicon and logged it.
+    - Implemented the cascaded LSTM baseline the model is measured against, so the comparison runs on one harness rather than two.
+  method:
+    - Saleh-Valenzuela channel over three paths at 0.8, 0.15 and 0.05 of the power, 32 antennas at half-wavelength spacing, codebook size equal to the array.
+    - Beams are predicted every 16 ms — the slot period that later decides whether the model's inference latency is affordable at all.
+    - Normalisation statistics are computed on the training indices, and the loss is mean squared error over the ten-step horizon.
   findings:
-    - 339,338 trainable parameters over a frozen backbone; training loss fell from 2.08 to 0.0009 across ten epochs.
-    - No train/validation/test split and no evaluation metric were implemented, so there is no accuracy figure and the loss curve is the only result.
+    - 339,338 trainable parameters over a frozen GPT-2; the rest of the backbone never moves.
+    - Training loss fell from 2.0826 to 0.0084 in one epoch, reached 0.0009 by the eighth, and did not move after that.
+    - The run took 34 minutes on Apple silicon over a 20,000-sample subset of the 84,019 built.
+    - "No held-out split was implemented: the normalisation statistics and the loss come from the same indices, so this is a training curve and not a measurement of prediction quality."
   notes:
     - bp-llm-training

@@ -5,8 +5,8 @@ import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
 /* ── notes ────────────────────────────────────────────────────────────────
- * Every claim on this site carries its evidence here. The refinements below
- * are the site's thesis expressed as code: a measurement without a stated
+ * Every figure in the running text resolves to an entry here. The refinement
+ * below is the rule expressed as code: a measurement without a stated
  * condition fails the build.
  * ------------------------------------------------------------------------ */
 const notes = defineCollection({
@@ -14,28 +14,17 @@ const notes = defineCollection({
   schema: z
     .object({
       id: z.string(),
-      kind: z.enum(['measurement', 'commit', 'source', 'scope', 'limit']),
+      kind: z.enum(['measurement', 'source', 'scope']),
       /** Kept to 1–2 sentences: a long note derails screen-reader narration. */
       body: z.string().max(240),
-      /** Required for `measurement`. What was measured, and under what conditions. */
+      /** Required for `measurement`. What was measured, and how. */
       condition: z.string().optional(),
-      /** Required for `commit`. */
-      commit: z
-        .string()
-        .regex(/^[0-9a-f]{7,40}$/, 'commit must be a 7–40 char hex sha')
-        .optional(),
       href: z.url().optional(),
-      /** What this evidence does NOT establish. */
-      limits: z.string().optional(),
       project: reference('projects').optional(),
     })
     .refine((n) => n.kind !== 'measurement' || !!n.condition, {
       message: 'a `measurement` note requires `condition`',
       path: ['condition'],
-    })
-    .refine((n) => n.kind !== 'commit' || !!n.commit, {
-      message: 'a `commit` note requires `commit`',
-      path: ['commit'],
     })
     .refine((n) => n.kind !== 'source' || !!n.href, {
       message: 'a `source` note requires `href`',
@@ -55,8 +44,8 @@ const projects = defineCollection({
     team: z.string(),
     role: z.string(),
     status: z.enum(['deployed', 'in-progress', 'archived', 'on-hold']),
-    /** The three things this person does. Drives which section it renders in. */
-    domain: z.enum(['backend', 'research', 'analysis', 'other']),
+    /** Drives which section the entry renders in. */
+    domain: z.enum(['pipeline', 'research', 'analysis', 'other']),
     tier: z.union([z.literal(1), z.literal(2)]),
     order: z.number(),
     stack: z.array(z.string()),
@@ -66,7 +55,6 @@ const projects = defineCollection({
           kind: z.enum(['repo', 'deployed', 'org', 'paper', 'doc']),
           href: z.url(),
           label: z.string(),
-          caveat: z.string().optional(),
         }),
       )
       .default([]),
@@ -75,18 +63,34 @@ const projects = defineCollection({
       owned: z.array(z.string()),
       notOwned: z.array(z.string()),
     }),
-    decisions: z
+    /**
+     * The figures the project is measured in. Rendered as a panel, so what the
+     * thing moved and how much of it is visible before any prose is read.
+     */
+    data: z
       .array(
         z.object({
-          decision: z.string(),
-          why: z.string(),
-          rejected: z.array(z.string()).default([]),
-          notDone: z.array(z.string()).default([]),
-          notes: z.array(z.string()).default([]),
+          value: z.string(),
+          label: z.string(),
+          detail: z.string().optional(),
         }),
       )
       .default([]),
-    boundaries: z.array(z.string()).default([]),
+    /**
+     * Defects I found and fixed, each stated as symptom → cause → fix. This is
+     * the part of the work that is checkable, so it gets the room.
+     */
+    fixes: z
+      .array(
+        z.object({
+          title: z.string(),
+          area: z.string(),
+          symptom: z.string(),
+          cause: z.string(),
+          fix: z.string(),
+        }),
+      )
+      .default([]),
   }),
 });
 
@@ -98,13 +102,7 @@ const research = defineCollection({
     venue: z.string(),
     /** Numeric so "second author" can never be written by hand. */
     authorPosition: z.object({ index: z.number().int().min(1), of: z.number().int().min(1) }),
-    status: z.enum([
-      'accepted',
-      'under-review',
-      'revision',
-      'submission-in-progress',
-      'assisting',
-    ]),
+    status: z.enum(['accepted', 'under-review', 'revision', 'assisting']),
     date: z.string(),
     /** The specific part of a multi-author work that is his. */
     contribution: z.string().optional(),
@@ -132,14 +130,4 @@ const record = defineCollection({
   }),
 });
 
-const boundaries = defineCollection({
-  loader: file('./src/content/boundaries.yaml'),
-  schema: z.object({
-    id: z.string(),
-    claim: z.string(),
-    detail: z.string(),
-    scope: z.string(),
-  }),
-});
-
-export const collections = { notes, projects, research, record, boundaries };
+export const collections = { notes, projects, research, record };

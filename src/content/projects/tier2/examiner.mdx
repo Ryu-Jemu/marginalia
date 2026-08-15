@@ -1,0 +1,45 @@
+---
+title: examiner
+tagline: A fact-checking service where a prosecutor and a defender argue from separately gathered evidence, and the arithmetic is not left to either of them.
+period: "2026.03 – 2026.06"
+team: Solo
+role: Design and implementation, end to end
+domain: other
+status: deployed
+tier: 2
+order: 7
+stack:
+  - Python
+  - LangChain
+  - LangGraph
+  - Gemini embeddings
+  - Chroma
+  - FastAPI
+  - Docker
+links:
+  - kind: deployed
+    href: https://factchecker-nlvz.onrender.com
+    label: Open the demo
+ownership:
+  owned:
+    - the whole thing
+  notOwned:
+    - any evaluation of whether its verdicts are correct
+---
+
+import N from '../../../components/note/N.astro';
+
+The design question was not how to make a model check a claim. It was how to
+stop a model from agreeing with itself.
+
+A prosecutor and a defender each argue over three rounds, and each is fed by its
+own researcher, so the two sides arrive with different evidence rather than
+different adjectives applied to the same evidence. A judge weighs the exchange
+and can send either researcher back for more, bounded by explicit termination
+conditions so a hard claim cannot loop indefinitely.
+
+"Cannot determine" is a verdict the system is allowed to return, because a
+checker forced to choose between true and false will invent a lean on thin
+sourcing. The final confidence figure is computed in Python rather than produced
+by the model,<N id="examiner-determinism" /> and citations are verified against
+the retrieved documents in code rather than only forbidden in the prompt.

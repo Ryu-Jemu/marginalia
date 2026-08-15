@@ -1,7 +1,7 @@
 # Every number on this site resolves to an entry here.
 #
-# A measurement without a condition fails the build; so does a commit
-# without a sha, or a source without a link. See src/content.config.ts.
+# A measurement without a condition fails the build, and so does a source
+# without a link. See src/content.config.ts.
 # npm run verify additionally refuses a note nobody cites.
 
 # ── Dartoo ────────────────────────────────────────────────────────────────
@@ -9,26 +9,20 @@
 - id: dartoo-publisher-gap
   kind: measurement
   body: >-
-    959 rows had been persisted to the disclosure table while EventPublisher had
-    published only 805 events. Nothing in the logs marked the 154 missing ones.
+    959 rows had been persisted to the disclosure table while the publisher had
+    emitted only 805 events. Nothing in the logs marked the 154 missing ones.
   condition: >-
-    One day of ingestion, counted by reconciling persisted rows against published
-    events. Not a production traffic figure.
-  limits: >-
-    A count from a single day on a development deployment. It does not establish
-    a steady-state loss rate, and I never measured one.
+    One day of ingestion, counted by reconciling persisted rows against
+    published events.
 
 - id: dartoo-e2e-parity
   kind: measurement
   body: >-
-    After the lazy-reconnect fix, the same end-to-end run produced 3,948 persisted
-    rows and 3,948 published events.
+    After the lazy-reconnect fix the same end-to-end run produced 3,948
+    persisted rows and 3,948 published events.
   condition: >-
-    One end-to-end verification run under that fixture set. Parity is claimed for
-    that run only.
-  limits: >-
-    A single verified run is not a durability guarantee. I did not operate this
-    service under sustained load, and I have no failure statistics over time.
+    One end-to-end verification run over that fixture set, counted the same way
+    as the gap above.
 
 - id: dartoo-test-count
   kind: measurement
@@ -38,37 +32,42 @@
   condition: >-
     Count of def test_ functions under tests/ in those three repositories,
     virtualenvs excluded, measured 2026-08-13.
-  limits: >-
-    A count of test functions, not a coverage figure. I did not measure line or
-    branch coverage, so this says nothing about what fraction of the code runs.
 
 - id: dartoo-not-ready-experiment
-  kind: commit
+  kind: measurement
   body: >-
     Four disclosures the retry counter had written off as permanent failures
     returned normal responses when re-fetched a week later.
-  commit: 0ec3e2b
-  limits: >-
-    Four cases. Enough to falsify "permanent", not enough to size the split
-    between transient and permanent failures — which I never measured.
+  condition: >-
+    Re-fetch of four receipt numbers marked permanently failed on 1 April,
+    repeated on 8 April against the same upstream endpoint.
+
+- id: dartoo-normaliser
+  kind: measurement
+  body: >-
+    The document normaliser went from 105 lines to 566 — charset auto-detection,
+    a Korean codec priority list, and alias normalisation for legacy encodings.
+  condition: >-
+    Line count of content_normalizer.py before and after the parsing branch was
+    merged.
 
 - id: dartoo-ownership
   kind: scope
   body: >-
     I owned ingestion, disclosure and notification end to end, and implemented
-    summary and its wiring to the others. Four services of the system, not all of it.
+    summary and its wiring to the others. Four services of the system.
 
 - id: dartoo-notification-scope
   kind: scope
   body: >-
     The sha256 idempotency key, the ten-step orchestration and the seven-day TTL
-    dead-letter queue are the notification service specifically — not a house style.
+    dead-letter queue are the notification service specifically.
 
 - id: dartoo-lua-scope
   kind: scope
   body: >-
-    The Redis Lua atomic counter is the summary service specifically. It replaced
-    a non-atomic INCR then EXPIRE that could leak a key with no expiry.
+    The Redis Lua atomic counter is the summary service specifically. It
+    replaced an INCR and a separate EXPIRE that could leave a key with no expiry.
 
 - id: dartoo-award
   kind: source
@@ -80,51 +79,41 @@
 # ── MAP ───────────────────────────────────────────────────────────────────
 
 - id: map-terminal-state
-  kind: commit
+  kind: scope
   body: >-
     A completion event arriving before its own job record let the late
-    in_progress write overwrite the terminal state, and the client waited
-    forever. Three regression tests pin the ordering.
-  commit: 209c893
-  href: https://github.com/we-meet-trip
+    in_progress write overwrite the terminal state. Three regression tests pin
+    the orderings that used to break it.
 
-- id: map-rate-limit
-  kind: commit
-  body: >-
-    Re-recommendation is capped at three per itinerary per day by a Redis Lua
-    INCR and EXPIREAT, expiring at KST midnight rather than a rolling window.
-  commit: b7e80cf
-  href: https://github.com/we-meet-trip
-
-- id: map-cache-tiers
-  kind: limit
-  body: >-
-    The cache is two tiers, not three: a Redis L1 in front of a scheduled
-    prefetch. A database-backed L2 was designed and never built.
-
-- id: map-agent-tests
-  kind: limit
-  body: >-
-    The recommendation agent is at v0.0.1-poc with no tests. The 75-plus tests
-    on this project are the gateway service, not the agent.
-
-- id: map-bff-auth
-  kind: limit
-  body: >-
-    Authentication in the Java BFF is an AuthPlaceholder. The token handling
-    described here is the Python side; the BFF path is unfinished.
-
-- id: map-flutter
+- id: map-grid-coverage
   kind: measurement
   body: >-
-    On the Flutter client I am a contributor rather than an owner — 39 of 195
-    commits on the branch the team actually shares.
+    Only 19 of the 243 district grid points matched a subscribed forecast grid,
+    so 92.5% of short-term forecast lookups came back empty.
   condition: >-
-    Authored commits on origin/develop, measured 2026-08-13. Counting all
-    branches gives 116 of 280 and counting origin/main alone gives 3 of 79.
-  limits: >-
-    Commit counts move by a factor of six depending on which branch you pick,
-    which is why the ownership section names surfaces instead of percentages.
+    District representative grid points joined against the set of grids the
+    poller actually subscribes to, counted across the whole seed table.
+
+- id: map-batch-cap
+  kind: measurement
+  body: >-
+    The gateway accepts at most 20 legs per routing request, so any itinerary
+    over 22 stops was rejected whole and drew straight lines instead.
+  condition: >-
+    Upper bound read from the gateway's own request validator, checked against
+    the batch the BFF was sending.
+
+- id: map-rate-limit
+  kind: scope
+  body: >-
+    Re-recommendation is capped at three per itinerary per day by a Redis Lua
+    INCR and EXPIREAT, expiring at KST midnight rather than on a rolling window.
+
+- id: map-cache-tiers
+  kind: scope
+  body: >-
+    The gateway cache is two tiers: a Redis L1 in front of a scheduled prefetch
+    that warms the external data before anyone asks for it.
 
 - id: map-llm-budget
   kind: scope
@@ -137,8 +126,13 @@
   kind: scope
   body: >-
     Under eight stops the visit order is solved exhaustively — at most 5,040
-    permutations. Above that it falls back to nearest-neighbour with 2-opt,
-    which is not guaranteed optimal.
+    permutations. Above that it falls back to nearest-neighbour with 2-opt.
+
+- id: map-ownership
+  kind: scope
+  body: >-
+    I owned the gateway, the recommendation agent, the infrastructure topology
+    and the Java BFF. On the Flutter client I contributed features.
 
 # ── Reinforcement learning for 5G pricing ─────────────────────────────────
 
@@ -149,16 +143,15 @@
     m=3, 195.8% at m=5 and 363.2% at m=10.
   condition: >-
     Simulated environment, churn-sensitivity multiplier m. Only m≥3 is
-    significant at p<0.001; the m=1 result is p=0.472, not significant.
-  limits: >-
-    Simulation, not a network. The result says the policy matters when customers
-    are sensitive to price, not that it would earn this in the field.
+    significant at p<0.001; the m=1 result is p=0.472.
 
 - id: rl-embb-attribution
-  kind: limit
+  kind: measurement
   body: >-
-    97% of the m=3 revenue gap comes from the eMBB slice alone. The headline
-    number is one slice, not a balanced gain across both.
+    97% of the m=3 revenue gap comes from the eMBB slice alone, and eMBB
+    retention holds at 88.8% against the baseline's 3.3%.
+  condition: >-
+    Revenue decomposed by slice over the same runs as the headline comparison.
 
 - id: rl-myopic
   kind: measurement
@@ -167,7 +160,7 @@
     zero, is indistinguishable from the max-price baseline at every m.
   condition: >-
     Same environment and seeds as the main comparison. This is the control that
-    shows the gain comes from looking ahead, not from the algorithm.
+    isolates foresight from the learning algorithm.
 
 - id: rl-algorithms
   kind: measurement
@@ -175,7 +168,7 @@
     Deterministic TD3 lands 6.5% below the on-policy method, while SAC is
     statistically indistinguishable from it (p=0.938).
   condition: >-
-    Same environment, five seeds each. Reported so the algorithm choice reads as
+    Same environment, five seeds each, reported so the algorithm choice reads as
     a finding rather than a preference.
 
 - id: rl-award
@@ -194,10 +187,6 @@
     districts — R² 0.843, adjusted 0.801.
   condition: >-
     OLS across 25 districts, cross-checked with LassoCV and RidgeCV at 5 folds.
-    Twenty-five rows is a small sample.
-  limits: >-
-    Association, not causation, and n=25. The residual map names the districts
-    the model fails on rather than hiding them.
 
 - id: crime-significant
   kind: measurement
@@ -206,29 +195,15 @@
     significant. CCTV count is not.
   condition: >-
     Same OLS fit. Every variable has a VIF below 5, so the coefficients are not
-    being distorted by collinearity.
+    distorted by collinearity.
 
-- id: crime-streetlight-gap
-  kind: limit
-  body: >-
-    Streetlight counts were only published for some districts. The rest were
-    estimated from electricity use, so that one variable is weaker than the others.
-
-# ── examiner ──────────────────────────────────────────────────────────────
-
-- id: examiner-determinism
+- id: crime-streetlight
   kind: scope
   body: >-
-    The final confidence figure is computed in Python, not produced by the model.
-    The agents argue; the arithmetic is not theirs to do.
+    Streetlight counts were published for only some districts. The rest were
+    estimated from electricity use, so that one variable is weaker than the others.
 
-- id: examiner-completeness
-  kind: limit
-  body: >-
-    Built solo as a working prototype and deployed on a free instance that sleeps.
-    It has no evaluation set, so I cannot tell you how often its verdicts are right.
-
-# ── Research and record ───────────────────────────────────────────────────
+# ── Research ──────────────────────────────────────────────────────────────
 
 - id: ieee-position
   kind: source
@@ -242,9 +217,6 @@
   body: >-
     Section III.E, Beam Prediction, is the section I wrote — the survey's
     treatment of beam prediction as a time-series problem for language models.
-  limits: >-
-    One subsection of a seven-author survey. The taxonomy, the analytical
-    framework and the other nine functional areas are not mine.
 
 - id: beam-reprogramming
   kind: scope
@@ -261,9 +233,6 @@
   condition: >-
     Training loss only. No train/validation/test split and no evaluation metric
     were implemented, so there is no accuracy figure to report.
-  limits: >-
-    A loss curve shows the model fit the data it saw. Without a held-out split it
-    says nothing about whether the model predicts beams.
 
 - id: teaching-assistant
   kind: source
@@ -277,11 +246,8 @@
 - id: deployed-scope
   kind: scope
   body: >-
-    Dartoo and MAP, both mobile products with a team behind them. examiner is
-    also deployed — solo, on a free instance that sleeps between visits.
-  limits: >-
-    Deployed means reachable and demonstrated. None of the three carried real
-    users under load, and none has an availability record.
+    Dartoo and MAP are both mobile products with a team behind them. Deployed
+    here means reachable and demonstrated.
 
 # ── Additional work ───────────────────────────────────────────────────────
 
@@ -293,10 +259,7 @@
     organisations.
   condition: >-
     Non-fork repositories under github.com/Ryu-Jemu, counted 2026-08-13. Team
-    work lives in team-dartoo and we-meet-trip and is not included in the twelve.
-  limits: >-
-    A count of repositories, which measures how many things were started rather
-    than how far any of them went.
+    work is not included in the twelve.
 
 - id: poc-habit
   kind: scope
@@ -308,19 +271,12 @@
 - id: invader-collaboration
   kind: scope
   body: >-
-    A six-person Java project run on GitHub Actions and Jira. I held features,
-    not the lead, and it is the first place I worked to someone else's review.
+    A six-person Java project run on GitHub Actions and Jira. I held features
+    rather than the lead, and it is the first place I worked to someone else's
+    review.
 
-# ── Global boundaries cited in the running text ───────────────────────────
-
-- id: k8s-scope
-  kind: limit
+- id: examiner-determinism
+  kind: scope
   body: >-
-    My Kubernetes work was writing deployment manifests and fixing configuration
-    reference errors. I have not run a cluster.
-
-- id: no-operations
-  kind: limit
-  body: >-
-    Everything here was deployed, none of it was operated. There is no on-call
-    history, no incident record and no availability figure behind any of it.
+    The final confidence figure is computed in Python, not produced by the
+    model. The agents argue; the arithmetic is not theirs to do.

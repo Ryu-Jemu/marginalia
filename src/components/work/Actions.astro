@@ -1,0 +1,104 @@
+---
+/**
+ * Where a project can be opened, as buttons.
+ *
+ * A link set in the same ink as the sentence around it asks the reader to
+ * notice it. These are the two or three things a reviewer might actually click,
+ * so they are given a target instead: a filled button for the running product,
+ * outlined ones for the source and the write-up.
+ */
+interface Action {
+  href: string;
+  label: string;
+  kind: 'repo' | 'deployed' | 'org' | 'paper' | 'doc' | 'detail';
+}
+interface Props {
+  actions: Action[];
+}
+const { actions } = Astro.props;
+
+const external = (href: string) => /^https?:/.test(href);
+---
+
+<p class="actions">
+  {
+    actions.map((a) => (
+      <a
+        class:list={['btn', a.kind === 'deployed' && 'btn--primary']}
+        href={a.href}
+        rel={external(a.href) ? 'noopener' : undefined}
+      >
+        {a.label}
+        <span class="btn__arrow" aria-hidden="true">
+          {external(a.href) ? '↗' : '→'}
+        </span>
+      </a>
+    ))
+  }
+</p>
+
+<style>
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.42em 0.85em;
+    border: 1px solid var(--rule-strong);
+    border-radius: 999px;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    line-height: 1.3;
+    color: var(--ink-muted);
+    text-decoration: none;
+    background: transparent;
+    transition:
+      color 130ms ease,
+      border-color 130ms ease,
+      background-color 130ms ease,
+      transform 130ms ease;
+  }
+  .btn:hover {
+    color: var(--ink);
+    border-color: var(--ink-faint);
+    transform: translateY(-1px);
+  }
+  .btn__arrow {
+    color: var(--ink-faint);
+    font-size: 0.95em;
+  }
+  .btn:hover .btn__arrow {
+    color: var(--rubric);
+  }
+
+  /* One filled button per project: the thing that is actually running. */
+  .btn--primary {
+    background: var(--rubric);
+    border-color: var(--rubric);
+    color: var(--on-rubric);
+  }
+  .btn--primary:hover {
+    background: var(--rubric-hover);
+    border-color: var(--rubric-hover);
+    color: var(--on-rubric);
+  }
+  .btn--primary .btn__arrow,
+  .btn--primary:hover .btn__arrow {
+    color: inherit;
+    opacity: 0.75;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn {
+      transition: none;
+    }
+    .btn:hover {
+      transform: none;
+    }
+  }
+</style>

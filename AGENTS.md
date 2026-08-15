@@ -1,18 +1,34 @@
 # marginalia
 
-An annotated-document portfolio. Every claim in the running text carries its
-evidence in the margin: the commit that shows it, the condition it was measured
-under, and what it does not establish.
+A data portfolio, written as an annotated document. Two pipelines, two papers,
+two studies — and for each pipeline, the defects I found in it stated as
+symptom, cause and fix. Every figure in the running text carries the condition
+it was measured under in the margin beside it.
+
+## Who it is for
+
+Reviewers and interview panels. It shows results and the work that produced
+them; it does not narrate process or deliberation. There is no decision log, no
+"what I rejected", no boundaries section and no evidence index — those were
+removed deliberately. Commit hashes are not linked: the work is described, not
+cited.
 
 ## The rule that governs everything else
 
 **A number without its condition is not publishable here.** This is enforced, not
 just intended — `src/content.config.ts` refines the `notes` schema so a
-`measurement` without `condition`, a `commit` without `commit`, or a `source`
-without `href` fails the build. Verified: adding an unconditioned metric produces
-`InvalidContentEntryDataError`.
+`measurement` without `condition` or a `source` without `href` fails the build.
+Verified: adding an unconditioned metric produces `InvalidContentEntryDataError`.
 
 `scripts/check-claims.mjs` is the second gate, for phrasing the schema cannot see.
+
+## Structure
+
+`/` is the whole résumé: masthead → §1 Data pipelines (Dartoo, MAP) → §2
+Research → §3 Data analysis → §4 More work → §5 About. `/work/<slug>/` carries
+the same project in full, with prose and figures. Content lives in
+`src/content/`; a project's `data[]` renders as the figure panel and its
+`fixes[]` as the defect list.
 
 ## Development
 

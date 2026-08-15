@@ -1,0 +1,94 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ProjectEntry from './ProjectEntry.astro';
+import FixList from './FixList.astro';
+import DataPanel from '../doc/DataPanel.astro';
+import Devices from '../viz/Devices.astro';
+
+/**
+ * One product, in the order a reviewer reads it: what it looks like, what it
+ * is, what it is measured in, and what I fixed in it.
+ *
+ * The phones and the stack take the left column so the figures and the
+ * headline sit beside them rather than under a band of empty page.
+ */
+interface Props {
+  entry: CollectionEntry<'projects'>;
+}
+const { entry } = Astro.props;
+const p = entry.data;
+const slug = entry.id.replace(/^tier2\//, '');
+---
+
+<div class="project">
+  <div class="column column--wide project__top">
+    <div class="project__side">
+      <Devices slug={slug} />
+      <ul class="project__stack">
+        {p.stack.map((s) => <li>{s}</li>)}
+      </ul>
+    </div>
+
+    <div class="project__lead">
+      <ProjectEntry entry={entry} />
+      <div class="project__panel">
+        <DataPanel items={p.data} />
+      </div>
+    </div>
+  </div>
+
+  <div class="column column--wide project__fixes">
+    <p class="meta project__key">Defects I found and fixed</p>
+    <FixList fixes={p.fixes} />
+  </div>
+</div>
+
+<style>
+  .project + .project {
+    margin-top: 2.25rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .project__top {
+    display: grid;
+    gap: 1.5rem;
+  }
+  @media (min-width: 52rem) {
+    .project__top {
+      grid-template-columns: 15.5rem minmax(0, 1fr);
+      gap: 2rem;
+      align-items: start;
+    }
+  }
+  .project__side {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+  }
+  .project__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .project__stack li {
+    font-family: var(--family-mono);
+    font-size: 0.6875rem;
+    color: var(--ink-faint);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.2em 0.65em;
+  }
+
+  .project__panel {
+    margin-top: 1.1rem;
+  }
+
+  .project__fixes {
+    margin-top: 1.6rem;
+  }
+  .project__key {
+    color: var(--rubric);
+    margin-bottom: 0.75rem;
+  }
+</style>

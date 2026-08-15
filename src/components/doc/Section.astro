@@ -11,7 +11,7 @@ const { id, n, title, lede } = Astro.props;
 ---
 
 <section id={id} class="section">
-  <header class="column section__head">
+  <header class="column column--wide section__head">
     <p class="meta section__n">§&nbsp;{n}</p>
     <h2>{title}</h2>
     {lede && <p class="section__lede">{lede}</p>}
@@ -24,19 +24,22 @@ const { id, n, title, lede } = Astro.props;
     margin-top: var(--space-section);
     scroll-margin-top: 5rem;
   }
+  /* The rule spans the whole shell — it is the division between sections, not
+     a division of the reading column. */
   .section__head {
-    padding-top: 1.1rem;
+    padding-top: 1rem;
     border-top: 1px solid var(--rule);
-    margin-bottom: 1.2rem;
+    margin-bottom: 1.1rem;
   }
   .section__n {
     color: var(--rubric);
     margin-bottom: 0.35rem;
   }
   .section__lede {
-    margin-top: 0.45rem;
+    margin-top: 0.4rem;
     color: var(--ink-faint);
     font-size: 0.9375rem;
-    max-width: 46ch;
+    max-width: 66ch;
+    text-wrap: pretty;
   }
 </style>

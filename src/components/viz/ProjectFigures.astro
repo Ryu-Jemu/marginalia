@@ -1,15 +1,10 @@
 ---
 import Figure from './Figure.astro';
-import Screens from './Screens.astro';
 import SilentLoss from './SilentLoss.astro';
 import RaceTimeline from './RaceTimeline.astro';
 import RouteStages from './RouteStages.astro';
 import PricingChart from './PricingChart.astro';
 import CrimeModel from './CrimeModel.astro';
-
-import dartooStart from '../../assets/projects/dartoo/screen-start.png';
-import dartooHome from '../../assets/projects/dartoo/screen-home.png';
-import mapScreen from '../../assets/projects/map/screen.png';
 
 /**
  * Which plates belong to which project. Kept out of the content files so the
@@ -24,39 +19,28 @@ const { slug } = Astro.props;
 
 {
   slug === 'dartoo' && (
-    <>
-      <Figure n="1" title="One service, two lanes. Every request returned 200, and only one of the lanes was delivering." wide>
-        <SilentLoss />
-      </Figure>
-      <Screens
-        shots={[
-          { src: dartooStart, alt: 'Dartoo start screen', caption: 'Start screen' },
-          { src: dartooHome, alt: 'Dartoo home screen showing the day’s disclosures', caption: 'Home — the day’s disclosures and watched companies' },
-        ]}
-      />
-    </>
+    <Figure n="1" title="One service, two lanes. Every request returned 200 and only one lane delivered.">
+      <SilentLoss />
+    </Figure>
   )
 }
 
 {
   slug === 'map' && (
     <>
-      <Figure n="1" title="The same two writes, before and after the rule. Arrival order stops deciding the outcome." wide>
+      <Figure n="1" title="The same two writes, before and after the rule.">
         <RaceTimeline />
       </Figure>
-      <Figure n="2" title="Three stages. The model only reorders a route the deterministic stages already produced." wide>
+      <Figure n="2" title="Three stages. The model only reorders a route the deterministic stages produced.">
         <RouteStages />
       </Figure>
-      <Screens
-        shots={[{ src: mapScreen, alt: 'MAP itinerary screen', caption: 'Itinerary view' }]}
-      />
     </>
   )
 }
 
 {
   slug === 'network-pricing' && (
-    <Figure n="1" title="Uplift over the max-price baseline by churn sensitivity. The m=1 bar is drawn faint because it is not significant." wide>
+    <Figure n="1" title="Revenue over the max-price baseline, by churn sensitivity. The m=1 bar is faint because it is not significant.">
       <PricingChart />
     </Figure>
   )
@@ -64,7 +48,7 @@ const { slug } = Astro.props;
 
 {
   slug === 'crime-analysis' && (
-    <Figure n="1" title="Five inputs, one model. The variable the project set out to confirm is the one that failed." wide>
+    <Figure n="1" title="Five inputs, one model. The variable the project set out to confirm is the one that failed.">
       <CrimeModel />
     </Figure>
   )

@@ -23,19 +23,6 @@ if (!entry) {
   throw new Error(`Unknown note id: "${id}" — add it to src/content/notes.yaml`);
 }
 const n = entry.data;
-
-const commitHref =
-  n.href && n.commit ? `${n.href.replace(/\/$/, '')}/commit/${n.commit}` : n.href;
-
-/**
- * The margin carries what qualifies the number — the claim and the condition
- * it was measured under. The full statement of what the evidence does *not*
- * establish lives on /evidence, one link away.
- *
- * The link itself is not optional. Compressing the margin is a layout choice;
- * letting a limit go unmentioned would be a different kind of choice.
- */
-const hasLimits = Boolean(n.limits) && n.kind !== 'limit';
 ---
 
 <span
@@ -56,26 +43,9 @@ const hasLimits = Boolean(n.limits) && n.kind !== 'limit';
       </span>
     )
   }{
-    n.commit &&
-      (commitHref ? (
-        <a class="note__meta note__meta--commit" href={commitHref} rel="noopener">
-          <code>{n.commit.slice(0, 7)}</code>
-        </a>
-      ) : (
-        <span class="note__meta note__meta--commit">
-          <code>{n.commit.slice(0, 7)}</code>
-        </span>
-      ))
-  }{
-    n.href && !n.commit && (
+    n.href && (
       <a class="note__meta note__meta--source" href={n.href} rel="noopener">
         Source
-      </a>
-    )
-  }{
-    hasLimits && (
-      <a class="note__meta note__meta--limit" href={`/evidence/#note-${n.id}`}>
-        <span class="note__meta-key">Limits</span> <span class="note__more">read →</span>
       </a>
     )
   }</span

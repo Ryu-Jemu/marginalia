@@ -6,11 +6,12 @@ import Masthead from '../components/chrome/Masthead.astro';
 import NoteLines from '../components/note/NoteLines.astro';
 import N from '../components/note/N.astro';
 import Section from '../components/doc/Section.astro';
-import Boundary from '../components/doc/Boundary.astro';
 import ProjectEntry from '../components/work/ProjectEntry.astro';
+import PipelineProject from '../components/work/PipelineProject.astro';
 import CompactList from '../components/work/CompactList.astro';
 import PaperEntry from '../components/research/PaperEntry.astro';
 import Figure from '../components/viz/Figure.astro';
+import PipelineFlow from '../components/viz/PipelineFlow.astro';
 import RaceTimeline from '../components/viz/RaceTimeline.astro';
 import SilentLoss from '../components/viz/SilentLoss.astro';
 import PricingChart from '../components/viz/PricingChart.astro';
@@ -21,27 +22,33 @@ const byOrder = (a: { data: { order: number } }, b: { data: { order: number } })
   a.data.order - b.data.order;
 
 const projects = (await getCollection('projects')).sort(byOrder);
+const bySlug = (slug: string) => projects.find((p) => p.id.replace(/^tier2\//, '') === slug)!;
 const inDomain = (d: string) => projects.filter((p) => p.data.domain === d);
-const backend = inDomain('backend');
-const analysis = inDomain('analysis');
+
+const dartoo = bySlug('dartoo');
+const map = bySlug('map');
 const researchBuilds = inDomain('research');
+const analysis = inDomain('analysis');
 const other = inDomain('other');
 
 const research = await getCollection('research');
 const record = await getCollection('record');
-const boundaries = await getCollection('boundaries');
 
-const byKind = (kind: string) => record.filter((r) => r.data.kind === kind);
+/** Most recent first. The dates are `YYYY.MM` strings, which sort lexically. */
+const newestFirst = (a: { data: { date: string } }, b: { data: { date: string } }) =>
+  b.data.date.localeCompare(a.data.date);
+
+const byKind = (kind: string) => record.filter((r) => r.data.kind === kind).sort(newestFirst);
 const awards = byKind('award');
 const certifications = byKind('certification');
-const history = record.filter((r) =>
-  ['education', 'service', 'lab', 'teaching', 'writing'].includes(r.data.kind),
-);
+const history = record
+  .filter((r) => ['education', 'service', 'lab', 'teaching', 'writing'].includes(r.data.kind))
+  .sort(newestFirst);
 ---
 
 <Base
   title={`${site.name} — ${site.role}`}
-  description="Backend services, wireless-optimisation research, and data analysis — with the evidence for every claim in the margin beside it."
+  description="Data pipelines, wireless-optimisation research, and statistical analysis — with the measurement conditions in the margin beside every figure."
 >
   <Nav />
 
@@ -56,10 +63,10 @@ const history = record.filter((r) =>
         <div class="column column--wide">
           <ol class="domains">
             <li>
-              <a href="#backend"><span class="domains__n">01</span> Backend</a>
+              <a href="#pipelines"><span class="domains__n">01</span> Data pipelines</a>
               <p>
-                Four services on one product and five repositories on another, taken from what
-                the thing should do through to the pipeline that does it.
+                Two products where I owned the path the data takes — collected, decoded, cached,
+                modelled and delivered.
               </p>
             </li>
             <li>
@@ -70,55 +77,80 @@ const history = record.filter((r) =>
               </p>
             </li>
             <li>
-              <a href="#analysis"><span class="domains__n">03</span> Analysis</a>
+              <a href="#analysis"><span class="domains__n">03</span> Data analysis</a>
               <p>
-                Two studies where the finding contradicted the premise the project started from
-                — Seoul crime, and multiplex revenue.
+                Two studies where the data contradicted the premise the project started from —
+                Seoul crime, and multiplex revenue.
               </p>
             </li>
           </ol>
-
-          <p class="intro__check column">
-            <span class="intro__key">Start with this one</span>
-            A completion event reaching the database before its own job record let the
-            late{' '}<code>in_progress</code> write overwrite the terminal state, and the client
-            waited forever.<N id="map-terminal-state" /> It is public, it is three regression tests long,
-            and it is the fastest way to check whether the way I describe my work matches what I
-            actually did.
-          </p>
         </div>
       </section>
 
       {/* ── § 1 ─────────────────────────────────────────────────────── */}
       <Section
-        id="backend"
+        id="pipelines"
         n="1"
-        title="Backend"
-        lede="From what the service should do, to the pipeline that does it. Every detail page carries the decisions, what was rejected, and what was left undone."
+        title="Data pipelines"
+        lede="Two team products, nine services owned between them. Each one is a path data takes from an external source to a phone, and the parts of it that broke quietly are listed with what fixed them."
       >
         <div class="column">
-          {backend.map((entry) => <ProjectEntry entry={entry} />)}
+          <p class="aside aside--lead">
+            The defects worth opening with were all quiet ones. A publisher that reported success
+            while delivering nothing; a finished job that walked backwards into “in
+            progress”;<N id="map-terminal-state" /> source archives arriving in three encodings,
+            some declaring none at all.<N id="dartoo-normaliser" /> None of them showed in a status
+            code.
+          </p>
         </div>
 
-        <div class="column">
+        <div class="column column--wide">
+          <Figure n="1" title="Dartoo — five stages from the filing system to a push notification.">
+            <PipelineFlow
+              from="Regulatory filing system"
+              to="Phone"
+              stages={[
+                { name: 'Poll', detail: 'ingestion' },
+                { name: 'Decode', detail: 'normalise' },
+                { name: 'Store', detail: 'disclosure' },
+                { name: 'Summarise', detail: 'summary' },
+                { name: 'Deliver', detail: 'notification' },
+              ]}
+            />
+          </Figure>
+        </div>
+
+        <PipelineProject entry={dartoo} />
+
+        <div class="column column--wide">
           <Figure
-            n="1"
-            title="One service, two lanes. Every request returned 200, and only one of the lanes was delivering."
-            wide
+            n="2"
+            title="One service, two lanes. Every request returned 200 and only one lane delivered."
           >
             <SilentLoss />
           </Figure>
-          <p class="aside">
-            Both of the bugs I would talk about first were silent. Neither showed up in a status
-            code, and both were only visible by counting the same thing in two places and finding
-            the numbers different.<N id="dartoo-publisher-gap" />
-          </p>
+        </div>
 
-          <Figure
-            n="2"
-            title="The same two writes, before and after the rule. Arrival order stops deciding the outcome."
-            wide
-          >
+        <div class="column column--wide project-gap">
+          <Figure n="3" title="MAP — five external feeds, filtered before the model sees them.">
+            <PipelineFlow
+              from="Five external feeds"
+              to="Itinerary"
+              stages={[
+                { name: 'Poll', detail: 'scheduled prefetch' },
+                { name: 'Cache', detail: 'Redis L1' },
+                { name: 'Filter', detail: 'rule engine' },
+                { name: 'Choose', detail: 'model' },
+                { name: 'Verify', detail: 'contract check' },
+              ]}
+            />
+          </Figure>
+        </div>
+
+        <PipelineProject entry={map} />
+
+        <div class="column column--wide">
+          <Figure n="4" title="The same two writes, before and after the rule.">
             <RaceTimeline />
           </Figure>
         </div>
@@ -135,16 +167,15 @@ const history = record.filter((r) =>
           {research.map((entry) => <PaperEntry entry={entry} />)}
         </div>
 
-        <div class="column">
-          <Figure
-            n="3"
-            title="Uplift over the max-price baseline by churn sensitivity. The m=1 bar is faint because it is not significant."
-            wide
-          >
+        <div class="column column--wide">
+          <Figure n="5" title="Revenue over the max-price baseline, by churn sensitivity. The m=1 bar is faint because it is not significant.">
             <PricingChart />
           </Figure>
-          <p class="aside">
-            The number I would defend is not the largest one. It is the control: the same policy
+        </div>
+
+        <div class="column">
+          <p class="aside aside--lead">
+            The figure I would defend is not the largest one. It is the control: the same policy
             trained without foresight lands level with the baseline at every
             setting.<N id="rl-myopic" />
           </p>
@@ -159,19 +190,15 @@ const history = record.filter((r) =>
       <Section
         id="analysis"
         n="3"
-        title="Analysis"
-        lede="Both of these set out to confirm something. Neither of them did."
+        title="Data analysis"
+        lede="Collection, cleaning, the model, and the check that the model is worth reading."
       >
         <div class="column">
-          {analysis.map((entry) => <ProjectEntry entry={entry} />)}
+          {analysis.map((entry) => <ProjectEntry entry={entry} compact />)}
         </div>
 
-        <div class="column">
-          <Figure
-            n="4"
-            title="Five inputs, one model. The variable the project set out to confirm is the one that failed."
-            wide
-          >
+        <div class="column column--wide">
+          <Figure n="6" title="Five inputs, one model. The variable the project set out to confirm is the one that failed.">
             <CrimeModel />
           </Figure>
         </div>
@@ -179,10 +206,10 @@ const history = record.filter((r) =>
 
       {/* ── § 4 ─────────────────────────────────────────────────────── */}
       <Section
-        id="also"
+        id="more"
         n="4"
-        title="Also built"
-        lede="Spikes, coursework and harnesses. Listed as they stand."
+        title="More work"
+        lede="Services, spikes and coursework, listed as they stand."
       >
         <div class="column">
           <p class="aside aside--lead">
@@ -190,13 +217,15 @@ const history = record.filter((r) =>
             organisations.<N id="repo-spread" /> Three of them exist only to settle a question
             before it reached a real service.<N id="poc-habit" />
           </p>
+        </div>
+        <div class="column column--wide">
           <CompactList entries={other} />
         </div>
       </Section>
 
       {/* ── § 5 ─────────────────────────────────────────────────────── */}
-      <Section id="about" n="5" title="About me" lede="Awards, certifications, and the path here.">
-        <div class="column">
+      <Section id="about" n="5" title="About" lede="Awards, certifications, and the path here.">
+        <div class="column column--wide">
           <div class="record__grid">
             <div>
               <h3 class="record__group">Awards and selections</h3>
@@ -238,7 +267,7 @@ const history = record.filter((r) =>
           </div>
 
           <h3 class="record__group record__group--wide">Education and service</h3>
-          <ul class="record">
+          <ul class="record record--two">
             {
               history.map((r) => (
                 <li class="record__row">
@@ -263,45 +292,14 @@ const history = record.filter((r) =>
         </div>
       </Section>
 
-      {/* ── § 6 ─────────────────────────────────────────────────────── */}
-      <Section
-        id="boundaries"
-        n="6"
-        title="Boundaries"
-        lede="What this page does not support. Same size as the results, on purpose."
-      >
-        <div class="column">
-          <p class="aside aside--lead">
-            Everything here was deployed and demonstrated. None of it was
-            operated.<N id="no-operations" /> I have written tests, not pipelines; manifests, not
-            clusters.<N id="k8s-scope" />
-          </p>
-          <div class="boundary__grid">
-            {
-              boundaries.map((b) => (
-                <Boundary claim={b.data.claim}>
-                  <p>{b.data.detail}</p>
-                </Boundary>
-              ))
-            }
-          </div>
-        </div>
-      </Section>
-
       {/* ── contact ─────────────────────────────────────────────────── */}
       <section id="contact" class="contact-block">
-        <div class="column">
-          <p class="aside">
-            I owned four backend services on Dartoo and five repositories on
-            MAP.<N id="dartoo-ownership" /> Ownership here is described by surface rather than by
-            percentage, for the reason given in § 6.
-          </p>
+        <div class="column column--wide">
+          <h2 class="contact__head">Contact</h2>
           <ul class="contact">
             <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
             <li><a href={site.links.github} rel="noopener">github.com/Ryu-Jemu</a></li>
             <li><a href={site.links.blog} rel="noopener">velog.io/@muqqi_bba</a></li>
-            <li><a href="/evidence/">Every claim, with its evidence &rarr;</a></li>
-            <li><a href="/colophon/">How this site is built &rarr;</a></li>
           </ul>
         </div>
       </section>
@@ -311,20 +309,13 @@ const history = record.filter((r) =>
 
 <style>
   main {
-    padding-block: 1.75rem 4rem;
+    padding-block: 1.5rem 4rem;
   }
 
   /* ── the three domains, as a table of contents ─────────────────────── */
   .intro {
-    padding-top: 1.25rem;
+    padding-top: 1.1rem;
     border-top: 1px solid var(--rule);
-  }
-  /* A contents table, not prose. Three columns inside the 35rem measure gives
-     each one about 170px, which breaks every line. It takes the margin. */
-  @media (min-width: 64rem) {
-    .column--wide {
-      max-width: calc(var(--measure) + var(--gutter) + var(--note-w));
-    }
   }
   .domains {
     display: grid;
@@ -362,21 +353,10 @@ const history = record.filter((r) =>
     text-wrap: pretty;
   }
 
-  .intro__check {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
+  .project-gap {
+    margin-top: 2.25rem;
+    padding-top: 1.5rem;
     border-top: 1px solid var(--rule);
-    font-size: 0.9375rem;
-    color: var(--ink-muted);
-  }
-  .intro__key {
-    display: block;
-    margin-bottom: 0.3rem;
-    font-family: var(--family-mono);
-    font-size: var(--t-meta);
-    letter-spacing: var(--ls-meta);
-    text-transform: uppercase;
-    color: var(--rubric);
   }
 
   .aside {
@@ -397,7 +377,7 @@ const history = record.filter((r) =>
   @media (min-width: 44rem) {
     .record__grid {
       grid-template-columns: 1fr 1fr;
-      gap: 2rem;
+      gap: 2.25rem;
     }
   }
   .record__group {
@@ -415,6 +395,12 @@ const history = record.filter((r) =>
   .record {
     display: grid;
     gap: 0.6rem;
+  }
+  @media (min-width: 44rem) {
+    .record--two {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem 2.25rem;
+    }
   }
   .record__row {
     display: grid;
@@ -449,11 +435,6 @@ const history = record.filter((r) =>
     color: var(--ink-faint);
   }
 
-  .boundary__grid {
-    display: grid;
-    gap: 0.6rem;
-  }
-
   /* ── contact ───────────────────────────────────────────────────────── */
   .contact-block {
     margin-top: var(--space-section);
@@ -461,8 +442,11 @@ const history = record.filter((r) =>
     border-top: 1px solid var(--rule);
     scroll-margin-top: 5rem;
   }
+  .contact__head {
+    font-size: var(--t-h3);
+  }
   .contact {
-    margin-top: 0.9rem;
+    margin-top: 0.8rem;
     display: flex;
     flex-wrap: wrap;
     gap: 0.35rem 1.5rem;

@@ -1,0 +1,45 @@
+---
+import Phone from './Phone.astro';
+
+import dartooStart from '../../assets/projects/dartoo/screen-start.png';
+import dartooHome from '../../assets/projects/dartoo/screen-home.png';
+import mapScreen from '../../assets/projects/map/screen.png';
+
+/**
+ * The phones for a given product, kept out of the content files so a device
+ * frame stays a rendering decision rather than a data one.
+ */
+interface Props {
+  slug: string;
+}
+const { slug } = Astro.props;
+
+const SETS: Record<string, Array<{ src: ImageMetadata; alt: string; screen: string }>> = {
+  dartoo: [
+    { src: dartooStart, alt: 'Dartoo — opening screen', screen: 'Open' },
+    { src: dartooHome, alt: 'Dartoo — the day’s disclosures', screen: 'Today' },
+  ],
+  map: [{ src: mapScreen, alt: 'MAP — a generated itinerary', screen: 'Itinerary' }],
+};
+
+const shots = SETS[slug] ?? [];
+---
+
+{
+  shots.length > 0 && (
+    <div class="devices" data-notes-inline>
+      {shots.map((s, i) => (
+        <Phone src={s.src} alt={s.alt} screen={s.screen} i={i} />
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .devices {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+</style>

@@ -55,10 +55,9 @@ const { base = '' } = Astro.props;
     }
   }
 
-  /* Wider than the reading column: the document is 55.5rem, and the bar has a
-     name, five links and three controls to fit on one row. */
+  /* Aligned with the document below it, so the bar's left edge and the first
+     line of text share a margin. */
   .nav__inner {
-    max-width: 74rem;
     display: flex;
     align-items: center;
     gap: 1rem 1.5rem;

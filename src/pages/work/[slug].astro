@@ -4,9 +4,11 @@ import Base from '../../layouts/Base.astro';
 import Nav from '../../components/chrome/Nav.astro';
 import NoteLines from '../../components/note/NoteLines.astro';
 import Section from '../../components/doc/Section.astro';
-import Boundary from '../../components/doc/Boundary.astro';
-import DecisionLog from '../../components/work/DecisionLog.astro';
 import StatusLabel from '../../components/work/StatusLabel.astro';
+import Actions from '../../components/work/Actions.astro';
+import FixList from '../../components/work/FixList.astro';
+import DataPanel from '../../components/doc/DataPanel.astro';
+import Devices from '../../components/viz/Devices.astro';
 import ProjectFigures from '../../components/viz/ProjectFigures.astro';
 import { site } from '../../lib/site';
 
@@ -23,7 +25,20 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const p = entry.data;
+const slug = entry.id.replace(/^tier2\//, '');
 const { Content } = await render(entry);
+
+const backTo =
+  p.domain === 'pipeline'
+    ? '#pipelines'
+    : p.domain === 'research'
+      ? '#research'
+      : p.domain === 'analysis'
+        ? '#analysis'
+        : '#more';
+
+let n = 0;
+const next = () => String(++n);
 ---
 
 <Base title={`${p.title} — ${site.name}`} description={p.tagline}>
@@ -34,7 +49,7 @@ const { Content } = await render(entry);
       <NoteLines />
 
       <header class="column head">
-        <p class="head__back"><a href="/#backend">&larr; Back</a></p>
+        <p class="head__back"><a href={`/${backTo}`}>&larr; Back</a></p>
         <p class="meta head__meta">
           <span>{p.period}</span>
           <span class="head__sep">·</span>
@@ -47,21 +62,21 @@ const { Content } = await render(entry);
 
         {
           p.links.length > 0 && (
-            <p class="head__links">
-              {p.links.map((l) => (
-                <a href={l.href} rel="noopener">
-                  {l.label}
-                  {l.caveat && <span class="head__caveat"> — {l.caveat}</span>}
-                </a>
-              ))}
-            </p>
+            <Actions actions={p.links.map((l) => ({ href: l.href, label: l.label, kind: l.kind }))} />
           )
         }
       </header>
 
-      {/* Attribution by surface. See the boundary on commit share. */}
-      <Section id="scope" n="1" title="Scope">
-        <div class="column scope">
+      {
+        p.data.length > 0 && (
+          <div class="column column--wide head__panel">
+            <DataPanel items={p.data} />
+          </div>
+        )
+      }
+
+      <Section id="scope" n={next()} title="Scope">
+        <div class="column column--wide scope">
           <div>
             <p class="meta scope__key">What I owned</p>
             <ul class="scope__list">
@@ -83,50 +98,36 @@ const { Content } = await render(entry);
         </div>
       </Section>
 
-      <Section id="problem" n="2" title="What happened">
+      <Section id="what" n={next()} title="What it does">
         <div class="column prose">
           <Content />
         </div>
-        <div class="column">
-          <ProjectFigures slug={entry.id.replace(/^tier2\//, '')} />
+        <div class="column column--wide">
+          <Devices slug={slug} />
+          <ProjectFigures slug={slug} />
         </div>
       </Section>
 
       {
-        p.decisions.length > 0 && (
+        p.fixes.length > 0 && (
           <Section
-            id="decisions"
-            n="3"
-            title="Decision log"
-            lede="What was chosen, why, what was turned down, and what was left undone."
+            id="fixes"
+            n={next()}
+            title="Defects I found and fixed"
+            lede="Symptom, cause, fix — in the order they were learned."
           >
-            <div class="column">
-              <DecisionLog decisions={p.decisions} />
+            <div class="column column--wide">
+              <FixList fixes={p.fixes} />
             </div>
           </Section>
         )
       }
 
-      {
-        p.boundaries.length > 0 && (
-          <Section id="limits" n="4" title="What this does not show">
-            <div class="column">
-              {p.boundaries.map((b) => (
-                <Boundary claim={b} />
-              ))}
-            </div>
-          </Section>
-        )
-      }
-
-      <Section id="stack" n="5" title="Built with">
-        <div class="column">
+      <Section id="stack" n={next()} title="Built with">
+        <div class="column column--wide">
           <ul class="stack">
             {p.stack.map((s) => <li>{s}</li>)}
           </ul>
-          <p class="stack__after">
-            <a href="/evidence/">Every claim on this site, with its evidence &rarr;</a>
-          </p>
         </div>
       </Section>
     </article>
@@ -134,17 +135,14 @@ const { Content } = await render(entry);
 </Base>
 
 <style>
-  .page-top {
-    padding-block: 1.75rem 0;
-  }
   main {
-    padding-block: 2rem 8rem;
+    padding-block: 1.75rem 5rem;
   }
 
   .head__back {
     font-family: var(--family-mono);
     font-size: var(--t-data);
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.5rem;
   }
   .head__back a {
     color: var(--ink-faint);
@@ -164,33 +162,17 @@ const { Content } = await render(entry);
     color: var(--rule-strong);
   }
   .head__tagline {
-    margin-top: 0.9rem;
+    margin-top: 0.8rem;
     font-size: var(--t-lede);
     line-height: var(--lh-lede);
     font-weight: 400;
     color: var(--ink-muted);
   }
   .head__role {
-    margin-top: 1rem;
+    margin-top: 0.9rem;
   }
-  .head__links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 1.2rem;
-    margin-top: 1rem;
-    font-family: var(--family-mono);
-    font-size: var(--t-data);
-  }
-  .head__links a {
-    color: var(--ink-faint);
-    text-decoration: none;
-    border-bottom: 1px solid var(--rule-strong);
-  }
-  .head__links a:hover {
-    color: var(--ink);
-  }
-  .head__caveat {
-    color: var(--boundary);
+  .head__panel {
+    margin-top: 1.5rem;
   }
 
   .scope {
@@ -200,7 +182,7 @@ const { Content } = await render(entry);
   @media (min-width: 34rem) {
     .scope {
       grid-template-columns: 1fr 1fr;
-      gap: 2rem;
+      gap: 2.25rem;
     }
   }
   .scope__key {
@@ -239,12 +221,7 @@ const { Content } = await render(entry);
     font-size: var(--t-data);
     color: var(--ink-muted);
     border: 1px solid var(--rule);
-    border-radius: 2px;
-    padding: 0.2em 0.6em;
-  }
-  .stack__after {
-    margin-top: 1.5rem;
-    font-family: var(--family-mono);
-    font-size: var(--t-data);
+    border-radius: 999px;
+    padding: 0.25em 0.7em;
   }
 </style>

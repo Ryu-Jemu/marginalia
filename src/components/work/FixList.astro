@@ -1,0 +1,137 @@
+---
+/**
+ * Defects found and fixed, one row each.
+ *
+ * Symptom, cause, fix — in that order, because that is the order they were
+ * learned in and the order a reader can check. The rows draw in as they enter
+ * the viewport; the marker rule fills from the top so the list reads as a
+ * sequence rather than a wall.
+ */
+interface Fix {
+  title: string;
+  area: string;
+  symptom: string;
+  cause: string;
+  fix: string;
+}
+interface Props {
+  fixes: Fix[];
+}
+const { fixes } = Astro.props;
+---
+
+<ol class="fixes" data-fixes>
+  {
+    fixes.map((f, i) => (
+      <li class="fix" data-fix>
+        <span class="fix__rail" aria-hidden="true" />
+        <p class="fix__head">
+          <span class="fix__n">{String(i + 1).padStart(2, '0')}</span>
+          <span class="fix__area">{f.area}</span>
+        </p>
+        <h4 class="fix__title">{f.title}</h4>
+        <dl class="fix__body">
+          <div>
+            <dt>Symptom</dt>
+            <dd>{f.symptom}</dd>
+          </div>
+          <div>
+            <dt>Cause</dt>
+            <dd>{f.cause}</dd>
+          </div>
+          <div class="fix__row--fix">
+            <dt>Fix</dt>
+            <dd>{f.fix}</dd>
+          </div>
+        </dl>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .fixes {
+    display: grid;
+    gap: 1.35rem;
+  }
+  .fix {
+    position: relative;
+    padding-left: 1.1rem;
+  }
+  /* The rail is a scaled element rather than a height animation: transform
+     does not force layout, and the list can be long. */
+  .fix__rail {
+    position: absolute;
+    left: 0;
+    top: 0.3rem;
+    bottom: 0.15rem;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--rule-strong);
+    transform-origin: 50% 0;
+  }
+  .fix__head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-meta);
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+  }
+  .fix__n {
+    color: var(--rubric);
+  }
+  .fix__area {
+    color: var(--ink-faint);
+  }
+  .fix__title {
+    margin-top: 0.28rem;
+    font-size: 1.0625rem;
+    line-height: 1.32;
+    letter-spacing: -0.016em;
+    font-weight: 600;
+    text-wrap: pretty;
+  }
+
+  .fix__body {
+    margin-top: 0.5rem;
+    display: grid;
+    gap: 0.35rem;
+  }
+  /* The block may span the whole shell, but the sentence must not: the second
+     track is capped at a readable line rather than at the container. */
+  .fix__body > div {
+    display: grid;
+    grid-template-columns: 4.75rem minmax(0, 56ch);
+    gap: 0.85rem;
+    align-items: baseline;
+  }
+  @media (max-width: 34rem) {
+    .fix__body > div {
+      grid-template-columns: 1fr;
+      gap: 0.1rem;
+    }
+  }
+  .fix__body dt {
+    font-family: var(--family-mono);
+    font-size: var(--t-meta);
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--scope);
+  }
+  .fix__body dd {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--ink-muted);
+    text-wrap: pretty;
+  }
+  /* The resolution is the line that gets read in full, so it takes the ink. */
+  .fix__row--fix dt {
+    color: var(--rubric);
+  }
+  .fix__row--fix dd {
+    color: var(--ink);
+  }
+</style>

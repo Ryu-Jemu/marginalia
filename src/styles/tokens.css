@@ -69,15 +69,18 @@
   --t-data: 0.75rem;
 
   /* Measure and margin.
-   * 38rem of Source Serif 4 at the body size lands around 68 characters.
-   * The note column is a fixed length, not Tufte's percentage offsets — a
-   * predictable gutter is what makes the leader lines computable. */
+   * The reading column is capped where the line length stops being comfortable
+   * — around 74 characters at the body size. Everything gained beyond that goes
+   * to the margin column and to the full-width blocks, so a wide window fills
+   * with content rather than with page edge. The note column is a fixed length,
+   * not Tufte's percentage offsets: a predictable gutter is what makes the
+   * leader lines computable. */
   --measure: 100%;
   --note-w: 14rem;
-  --gutter: 2rem;
+  --gutter: 1.75rem;
   --rail: 0rem;
 
-  --space-section: 2.75rem;
+  --space-section: 2.5rem;
   --space-para: 0.85em;
 }
 
@@ -123,20 +126,29 @@
 
 @media (min-width: 40rem) {
   :root {
-    --measure: 33rem;
+    --measure: 34rem;
   }
 }
 
 @media (min-width: 64rem) {
   :root {
-    --measure: 35rem;
-    --rail: 0rem;
+    --measure: 37rem;
+    --note-w: 16rem;
+    --gutter: 2rem;
   }
 }
 
 @media (min-width: 90rem) {
   :root {
-    --note-w: 16rem;
+    --measure: 39rem;
+    --note-w: 19rem;
     --gutter: 2.25rem;
+  }
+}
+
+@media (min-width: 100rem) {
+  :root {
+    --measure: 40rem;
+    --note-w: 21rem;
   }
 }

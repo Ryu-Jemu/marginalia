@@ -26,36 +26,19 @@ ownership:
     - the residual map
   notOwned:
     - the report and presentation, which were shared work
-decisions:
-  - decision: Check collinearity before reading any coefficient.
-    why: >-
-      Population, income and streetlight counts all move together across
-      districts. Without a variance inflation check the coefficients can be
-      unstable enough that their signs are noise, and every conclusion drawn
-      from them is decoration.
-    notes:
-      - crime-significant
-  - decision: Re-fit with Lasso and Ridge rather than trusting one fit.
-    why: >-
-      With twenty-five rows, a single OLS fit is one draw. Regularised
-      cross-validated fits keeping the same variables and the same explanatory
-      power is what makes the result worth reporting.
-    notes:
-      - crime-model
-  - decision: Map the residuals and name the districts the model fails on.
-    why: >-
-      A choropleth of predictions flatters the model. A choropleth of residuals
-      shows where it is wrong, which is the part a reader needs in order to
-      judge whether to believe it.
-    notDone:
-      - Adding a floating-population variable, which the residuals suggest is the missing one. The data was not available at district level.
-  - decision: Report that CCTV is not significant.
-    why: >-
-      It was the variable the project started from, and the expected finding was
-      the opposite. Dropping it quietly would have been the easy edit.
-boundaries:
-  - Twenty-five rows. Association, not causation, and a small sample either way.
-  - Streetlight counts were partly estimated, so that variable is weaker than the rest.
+data:
+  - value: "0.843"
+    label: R², adjusted 0.801
+    detail: five variables, twenty-five districts
+  - value: "< 5"
+    label: variance inflation, every variable
+    detail: checked before any coefficient was read
+  - value: "2 of 5"
+    label: variables significant
+    detail: population p=0.001 · entertainment venues p<0.001
+  - value: "25"
+    label: residuals mapped by district
+    detail: where the model is wrong, named
 ---
 
 import N from '../../components/note/N.astro';
@@ -82,5 +65,5 @@ The last step was mapping the residuals rather than the predictions. A
 prediction map flatters the model. A residual map names the districts it gets
 wrong, and those are clustered in a way that points at a floating-population
 variable I could not get at district
-level.<N id="crime-streetlight-gap" /> That gap is in the report, next to the
+level.<N id="crime-streetlight" /> That gap is in the report, next to the
 result.

@@ -44,19 +44,6 @@
     - ieee-beam-section
     - beam-reprogramming
 
-- id: ktccs-cmdp
-  title: >-
-    Constrained-MDP pricing for 5G slices under load-dependent quality of service
-  venue: KTCCS
-  authorPosition: { index: 1, of: 2 }
-  status: submission-in-progress
-  date: "2026"
-  summary: >-
-    Extends the pricing work with an explicit service-level constraint rather
-    than a penalty term folded into the reward.
-  highlights:
-    - Submission in progress. Nothing here is peer reviewed yet.
-
 - id: bp-llm-lab
   title: Beam prediction with reprogrammed language models
   venue: ICI Lab, Hanyang University ERICA

@@ -1,10 +1,10 @@
 ---
 title: Dartoo
-tagline: A mobile assistant that collects Korean regulatory disclosures, summarises them, and pushes the ones you care about.
+tagline: A disclosure data pipeline — it polls the Korean regulatory filing system, decodes and normalises the source documents, summarises them, and pushes the ones a user is watching.
 period: "2025.07 – 2026.06"
 team: 6-person founding team
 role: Backend — owned four of the services
-domain: backend
+domain: pipeline
 status: deployed
 tier: 1
 order: 1
@@ -22,11 +22,10 @@ stack:
 links:
   - kind: deployed
     href: https://dartoo.co.kr
-    label: dartoo.co.kr
+    label: Open dartoo.co.kr
   - kind: org
     href: https://github.com/team-dartoo
     label: team-dartoo
-    caveat: private organisation
 ownership:
   owned:
     - ingestion — polling, decoding, object storage, task dispatch
@@ -38,84 +37,122 @@ ownership:
     - the CI/CD pipeline
     - the monitoring stack
     - infrastructure provisioning
-decisions:
-  - decision: Reconcile two counts rather than trust success responses.
-    why: >-
-      Every request returned 200 and the table filled up on schedule. The
-      publisher had been off for the whole run and nothing said so. Comparing
-      rows persisted against events published was the only signal that existed.
-    rejected:
-      - Adding more logging around the publisher — a disabled publisher logs nothing to add to.
-      - A health check on the broker — the broker was healthy; the client had given up on it.
-    notDone:
-      - Alerting on the reconciliation gap. It runs as a scheduled job, not as a monitor.
-    notes:
-      - dartoo-publisher-gap
-      - dartoo-e2e-parity
-  - decision: Treat a repeated error code as a hypothesis, and test it.
-    why: >-
-      A retry counter had classified a batch of NOT_READY responses as permanent
-      failures. Re-fetching four of them a week later returned all four normally,
-      so the classification was wrong rather than the data.
-    rejected:
-      - Raising the retry ceiling — that guesses at a number instead of learning the shape of the failure.
-    notDone:
-      - Measuring how the transient and permanent cases actually split. Four cases falsify; they do not quantify.
-    notes:
-      - dartoo-not-ready-experiment
-  - decision: Make the summary spend cap atomic in Redis, in Lua.
-    why: >-
-      An INCR followed by a separate EXPIRE can be interrupted between the two
-      calls, leaving a counter with no expiry that never resets. One Lua script
-      makes both happen or neither.
-    rejected:
-      - A database counter — it puts a write on the path of every model call.
-    notes:
-      - dartoo-lua-scope
-  - decision: Rebuild notification instead of adapting it.
-    why: >-
-      The existing service used a synchronous consumer, a placeholder auth
-      check, six inactive routers, and no guaranteed dead-letter routing. The
-      delivery guarantees I needed were below the level any of that could reach.
-    rejected:
-      - Incremental migration — the parts I would keep were the parts that were wrong.
-    notDone:
-      - CI for it. The pipeline was someone else's work and it never covered this service.
-    notes:
-      - dartoo-notification-scope
-      - dartoo-test-count
-boundaries:
-  - I did not build the CI/CD pipeline or the monitoring stack on this project.
-  - This service was deployed and demonstrated, not operated. There is no availability record behind it.
+data:
+  - value: "5"
+    label: stages end to end
+    detail: poll → decode → store → summarise → deliver
+  - value: "3,948"
+    label: rows = events published
+    detail: verification run after the publisher fix
+  - value: "319"
+    label: automated tests
+    detail: ingestion 110 · notification 156 · disclosure 53
+  - value: "154"
+    label: events lost, found by reconciling
+    detail: 959 persisted against 805 published
+fixes:
+  - title: The pipeline reported success while delivering nothing
+    area: disclosure · ingestion
+    symptom: >-
+      Every request returned 200, every worker reported success, and the
+      disclosure table filled up on schedule. 959 rows were persisted and only
+      805 events reached the queue. No log line marked the other 154.
+    cause: >-
+      When the broker came up after the disclosure service, the publisher set
+      its enabled flag to false and never reset it. Once the broker recovered
+      the publisher stayed switched off and discarded every event silently.
+    fix: >-
+      A lazy reconnect on first publish, exponential backoff, a guard against
+      concurrent connection attempts, and a warning carrying the receipt number
+      so a discarded event can never be invisible again. The next end-to-end run
+      produced 3,948 rows and 3,948 events.
+  - title: A retry counter had decided the wrong thing was permanent
+    area: ingestion
+    symptom: >-
+      Filings whose source document was not ready came back with the same
+      status code whether they would be ready in a minute or never. A fixed
+      retry ceiling wrote them all off, and the failure log grew.
+    cause: >-
+      The status code was mixed rather than terminal, so a counter could not
+      separate the two cases. I re-fetched four filings that had been marked
+      permanently failed a week earlier; all four returned normally.
+    fix: >-
+      A staged backoff with a delay tuned to how long the upstream actually
+      takes to publish, dead-letter isolation for the genuinely permanent case,
+      and a per-day call ceiling so retries cannot exhaust the API quota.
+  - title: Source documents failed to parse on encoding alone
+    area: ingestion
+    symptom: >-
+      Filing archives contained documents in cp949, euc-kr and utf-8, some with
+      no charset declared at all. Parsing failed on those, and the failure
+      looked like bad data rather than a decoding problem.
+    cause: >-
+      The normaliser trusted the declared charset, and legacy declarations such
+      as ks_c_5601-1987 do not match any codec name Python knows.
+    fix: >-
+      Charset auto-detection for undeclared documents, a Korean codec priority
+      list, alias normalisation, and stricter HTML charset extraction. The
+      normaliser went from 105 lines to 566, and the parse failures stopped.
+  - title: Failed messages were dropped instead of dead-lettered
+    area: notification
+    symptom: >-
+      A message that raised during processing disappeared. The dead-letter queue
+      stayed empty, so there was nothing to inspect and nothing to replay.
+    cause: >-
+      The consumer acknowledged on delivery rather than on outcome, so the
+      broker considered a failed message handled.
+    fix: >-
+      Explicit acknowledge on success and negative-acknowledge on failure, which
+      is what routes a message to the dead-letter exchange, plus a
+      correlation id carried from the event into every log line so one delivery
+      can be followed across four services.
+  - title: The daily model-spend cap could stop applying
+    area: summary
+    symptom: >-
+      The counter that limits how many documents get summarised per day would
+      occasionally stop resetting, and then never allow another summary.
+    cause: >-
+      An increment followed by a separate expiry call can be interrupted between
+      the two, leaving a counter with no expiry set.
+    fix: >-
+      One Lua script so both happen or neither, with the day boundary pinned to
+      Asia/Seoul rather than the container's clock.
+  - title: Model output arrived wrapped in a code fence
+    area: summary
+    symptom: >-
+      Summary requests succeeded upstream and then failed to parse, so filings
+      were stored without the summary the notification depended on.
+    cause: >-
+      The model returned valid JSON inside a fenced code block, and the parser
+      was handed the fence along with it.
+    fix: >-
+      Unwrap before parsing, map the importance labels to the values the rest of
+      the system uses, and add a mock mode so the whole path can be integration
+      tested without paying per run.
 ---
 
 import N from '../../components/note/N.astro';
 
-The ingestion pipeline looked healthy. Every request returned 200, every worker
-reported success, and the disclosure table filled up on schedule. What it did
-not do was publish the events the rest of the system was waiting
-for.<N id="dartoo-publisher-gap" />
+Dartoo is a data pipeline with a phone on the end of it. Regulatory filings are
+polled from the national disclosure system, their source archives decoded and
+normalised, the text summarised, and the result pushed to whoever was watching
+that company. I owned four of the services on that path.<N id="dartoo-ownership" />
 
-The failure had no log line. When RabbitMQ came up after the disclosure service,
-`EventPublisher` set `self.enabled = False` and never reset it, so once the
-broker recovered the publisher stayed switched off and discarded every event in
-silence. The success responses were telling the truth about persistence and
-nothing at all about delivery.
+The two defects worth showing were both silent. Neither appeared in a status
+code, and both were only visible by counting the same thing in two places and
+finding the numbers different.<N id="dartoo-publisher-gap" /> The publisher had
+been switched off for an entire run while every request in front of it returned
+200; reconciling persisted rows against published events was the only signal
+that existed.<N id="dartoo-e2e-parity" />
 
-The fix was a lazy reconnect — keep the publisher enabled after a startup
-failure and reconnect on first publish — plus exponential backoff, a guard
-against concurrent connection attempts, and a warning log carrying the receipt
-number, so that a discarded event can never again be
-invisible.<N id="dartoo-e2e-parity" />
+The second was a classification error rather than a crash. A retry counter had
+written off a batch of not-ready responses as permanent, so I re-fetched four of
+them a week later and all four came back normally.<N id="dartoo-not-ready-experiment" />
+That made it a policy problem rather than a bug: a staged backoff for the
+transient case, dead-letter isolation for the permanent one.
 
-A second assumption failed the same way. A retry counter had written off a batch
-of `NOT_READY` responses as permanent, so I re-fetched four of them a week
-later.<N id="dartoo-not-ready-experiment" /> All four came back normally. The
-status code was mixed rather than terminal, which made it a policy problem: a
-three-stage backoff for the transient case, dead-letter isolation for the
-genuinely permanent one.
-
-What that pair of bugs changed is how I read a green pipeline. Both were silent,
-both survived every success check in the system, and both were only visible by
-counting the same thing in two places and finding the numbers
-different.<N id="dartoo-test-count" />
+The delivery path was rebuilt rather than adapted — an asynchronous consumer,
+sha256 idempotency keys, a ten-step orchestration and a seven-day dead-letter
+queue.<N id="dartoo-notification-scope" /> The spend cap on the summary service
+is one Lua script for the same reason.<N id="dartoo-lua-scope" /> Across the
+three services I owned there are 319 automated tests.<N id="dartoo-test-count" />

@@ -1,0 +1,104 @@
+---
+/**
+ * The shape of the work, drawn once.
+ *
+ * Five stages, one track, and records moving along it. The packets pass behind
+ * the stage boxes rather than over them, so a record visibly enters a stage and
+ * comes out the other side — the animation is the diagram's content, not a
+ * flourish on top of it.
+ */
+interface Stage {
+  name: string;
+  detail: string;
+}
+interface Props {
+  stages: Stage[];
+  /** Text at the two ends of the track. */
+  from: string;
+  to: string;
+}
+const { stages, from, to } = Astro.props;
+
+const W = 780;
+const H = 132;
+const BOX_W = 122;
+const GAP = 42;
+/* The end labels get their own row above the track. Sharing a row with the
+   boxes put "Regulatory filing system" straight through the first one. */
+const LABEL_Y = 14;
+const BOX_Y = 44;
+const BOX_H = 36;
+const TRACK_Y = BOX_Y + BOX_H / 2;
+
+const startX = (W - (stages.length * BOX_W + (stages.length - 1) * GAP)) / 2;
+const boxes = stages.map((s, i) => ({
+  ...s,
+  x: startX + i * (BOX_W + GAP),
+  cx: startX + i * (BOX_W + GAP) + BOX_W / 2,
+}));
+const trackFrom = 4;
+const trackTo = W - 4;
+---
+
+<svg
+  class="viz flow"
+  data-viz="flow"
+  viewBox={`0 0 ${W} ${H}`}
+  role="img"
+  aria-hidden="true"
+  data-x0={trackFrom}
+  data-x1={trackTo}
+>
+  <!-- the track, drawn first so everything else sits on top of it -->
+  <line class="viz-track" x1={trackFrom} y1={TRACK_Y} x2={trackTo} y2={TRACK_Y}></line>
+
+  <text class="viz-label" x={trackFrom} y={LABEL_Y}>{from}</text>
+  <text class="viz-label" x={trackTo} y={LABEL_Y} text-anchor="end">{to}</text>
+  <!-- the two ends of the track, so the labels above them read as endpoints -->
+  <path class="viz-rule" d={`M${trackFrom} ${TRACK_Y - 6} V${TRACK_Y + 6}`}></path>
+  <path class="viz-rule" d={`M${trackTo} ${TRACK_Y - 6} V${TRACK_Y + 6}`}></path>
+
+  <!-- records in flight; behind the boxes on purpose -->
+  <g data-packets>
+    {
+      Array.from({ length: 7 }).map((_, i) => (
+        <rect
+          data-packet
+          x={trackFrom - 3}
+          y={TRACK_Y - 3}
+          width="6"
+          height="6"
+          rx="1"
+          class="viz-fill-accent"
+          opacity="0"
+          style={`--k:${i}`}
+        />
+      ))
+    }
+  </g>
+
+  {
+    boxes.map((b, i) => (
+      <g data-stage style={`--k:${i}`}>
+        <rect class="viz-box" x={b.x} y={BOX_Y} width={BOX_W} height={BOX_H} rx="3" />
+        <text class="flow__name" x={b.cx} y={TRACK_Y + 4} text-anchor="middle">
+          {b.name}
+        </text>
+        <text class="viz-label" x={b.cx} y={BOX_Y + BOX_H + 20} text-anchor="middle">
+          {b.detail}
+        </text>
+      </g>
+    ))
+  }
+</svg>
+
+<style>
+  .flow {
+    display: block;
+  }
+  .flow :global(.flow__name) {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    fill: var(--ink);
+  }
+</style>

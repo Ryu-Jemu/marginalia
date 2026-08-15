@@ -26,42 +26,19 @@ ownership:
     - the paper
   notOwned:
     - the lab's wider research programme this sits inside
-decisions:
-  - decision: Make churn a parameter and sweep it, rather than picking a value.
-    why: >-
-      A single churn setting produces one number and no understanding. Sweeping
-      the sensitivity multiplier shows the gain appearing as customers get more
-      price-sensitive — and shows it vanishing at m=1, where it is not
-      significant. The sweep is what makes the result a finding instead of a
-      score.
-    notes:
-      - rl-uplift
-  - decision: Add a myopic control trained with the discount factor at zero.
-    why: >-
-      Without it, the comparison only says a learned policy beats a fixed one.
-      The myopic version is the same algorithm stripped of foresight, and it is
-      indistinguishable from the baseline at every setting — so the advantage is
-      the looking ahead, not the machinery.
-    notes:
-      - rl-myopic
-  - decision: Decompose the revenue gain by slice and publish the decomposition.
-    why: >-
-      The headline number at m=3 is large. Almost all of it comes from one slice.
-      Reporting the aggregate alone would have implied a balanced result across
-      both, which the data does not support.
-    notes:
-      - rl-embb-attribution
-  - decision: Report the algorithm comparison as a result, not a preference.
-    why: >-
-      Deterministic TD3 underperforms and SAC is statistically indistinguishable
-      from the method used. Saying so is more useful than presenting the choice
-      as obvious after the fact.
-    notes:
-      - rl-algorithms
-boundaries:
-  - This is a simulation. No result here was observed on a real network.
-  - The revenue advantage at the headline setting is concentrated in a single slice.
-  - At the lowest churn sensitivity the advantage is not statistically significant.
+data:
+  - value: "+105.8%"
+    label: revenue over the max-price baseline
+    detail: at churn sensitivity m=3, p<0.001
+  - value: "4"
+    label: sweep points, m = 1 · 3 · 5 · 10
+    detail: the gain scales with price sensitivity
+  - value: "5"
+    label: seeds per algorithm
+    detail: PPO, SAC and TD3 compared on the same environment
+  - value: "97%"
+    label: of the m=3 gap from one slice
+    detail: the decomposition is published with the result
 ---
 
 import N from '../../components/note/N.astro';

@@ -10,7 +10,7 @@
   --shell-w: var(--measure);
   max-width: var(--shell-w);
   margin-inline: auto;
-  padding-inline: 1.5rem;
+  padding-inline: 1.25rem;
 }
 
 .column {
@@ -22,10 +22,20 @@
   display: flow-root;
 }
 
+/* Blocks that are not running prose — panels, tables, device rows, figures —
+   take the whole shell, margin column included. They must not contain margin
+   notes: a note floated inside one would land outside the page. */
+.column--wide {
+  max-width: 100%;
+}
+
 @media (min-width: 64rem) {
   .shell {
     --shell-w: calc(var(--measure) + var(--gutter) + var(--note-w));
-    padding-left: calc(1.5rem + var(--rail));
+    padding-left: calc(1.25rem + var(--rail));
+  }
+  .column--wide {
+    max-width: calc(var(--measure) + var(--gutter) + var(--note-w));
   }
 }
 
@@ -107,40 +117,16 @@
   color: var(--scope);
 }
 
-.note__meta--commit code {
-  font-size: 1em;
-}
-
-.note__meta--commit {
+a.note__meta {
   color: var(--rubric);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  width: fit-content;
 }
 
 a.note__meta:hover {
   color: var(--rubric-hover);
-}
-
-/* The margin says a limit exists and where to read it; /evidence states it in
- * full. Compressing the margin is a layout decision — dropping the limit
- * entirely would have been a different kind of decision. */
-.note__meta--limit {
-  color: var(--boundary);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  /* Its own line like the other meta rows, but only as wide as its text so the
-     hover rule underlines the link rather than the whole column. */
-  width: fit-content;
-}
-
-.note__meta--limit .note__meta-key {
-  color: var(--boundary);
-}
-
-.note__meta--limit:hover {
   border-bottom-color: currentColor;
-}
-
-.note__more {
-  color: var(--ink-faint);
 }
 
 /* ── notes: margin treatment (≥ 64rem, when the reader wants them there) ───

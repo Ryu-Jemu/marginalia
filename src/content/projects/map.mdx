@@ -1,10 +1,10 @@
 ---
 title: MAP
-tagline: A travel recommendation app whose backend wraps five external APIs behind one gateway and plans routes with a rule engine the model is not allowed to overrule.
+tagline: A travel data pipeline — five external feeds behind one gateway, cached and pre-loaded, filtered by a deterministic rule engine, and only then handed to a model.
 period: "2026.03 – present"
 team: 5 people
-role: Backend and AI — gateway, agent, infra, and the Java BFF
-domain: backend
+role: Backend and AI — gateway, agent, infrastructure, and the Java BFF
+domain: pipeline
 status: in-progress
 tier: 1
 order: 2
@@ -22,103 +22,147 @@ stack:
 links:
   - kind: deployed
     href: https://map-project-cbd94.web.app
-    label: map-project-cbd94.web.app
+    label: Open the web build
   - kind: org
     href: https://github.com/we-meet-trip
     label: we-meet-trip
 ownership:
   owned:
-    - hub — the external API gateway, its cache and its rule engine
+    - hub — the external data gateway, its cache, its poller and its rule engine
     - agent — the LangGraph recommendation pipeline and its contract checks
     - infra — compose topology, health gating, self-hosted routing
     - user — the Java BFF and its stream consumer
   notOwned:
-    - the Flutter client, where I am a contributor rather than an owner
-    - product design and the itinerary UI
-decisions:
-  - decision: Let the terminal state win, whatever order the writes arrive in.
-    why: >-
-      The completion event could reach the database before the record of the job
-      that produced it. The late `in_progress` write then overwrote the finished
-      state and the client waited forever for a result that had already arrived.
-      Writing the first record only when no row exists, and retrying a primary
-      key collision on the completion path as an update, makes arrival order
-      stop mattering.
-    rejected:
-      - Ordering the writes upstream — that moves the race rather than removing it.
-      - A lock around the transition — contention on the hot path to fix a rare interleaving.
-    notes:
-      - map-terminal-state
-  - decision: Filter with rules first, then let the model choose.
-    why: >-
-      A model asked to pick places from an open field will invent them. Given a
-      candidate list a deterministic engine has already filtered by travel
-      radius, weather and exclusion zones, the worst it can do is pick a bad
-      real place. The output is then validated as a contract — visit order a
-      permutation, legs connected, coordinates in range — before anything is
-      published.
-    rejected:
-      - Letting the model query the APIs directly. Cheaper to build, impossible to bound.
-    notDone:
-      - Any measurement of recommendation quality. There is no evaluation set.
-    notes:
-      - map-llm-budget
-      - map-tsp
-  - decision: Answer immediately with 202 and let the client poll.
-    why: >-
-      A recommendation takes longer than a request should. The endpoint returns
-      202 with a Retry-After, the work continues on a stream, and the job record
-      is the single place the client asks about.
-    rejected:
-      - Holding the connection open — it turns every slow model call into a client timeout.
-  - decision: Cap re-recommendation at KST midnight rather than a rolling window.
-    why: >-
-      A rolling window means a user who retried at 23:50 is still limited at
-      00:10 for reasons they cannot see. An absolute expiry matches what "three
-      times today" means to the person reading it.
-    notes:
-      - map-rate-limit
-  - decision: Move every third-party key out of the client and onto the server.
-    why: >-
-      The Flutter app was calling external APIs with keys shipped inside the
-      bundle, which is to say published. Routing those calls through the gateway
-      made the keys server-side and gave the cache something to sit in front of.
-boundaries:
-  - The recommendation agent is at v0.0.1-poc with no tests. The test count on this project is the gateway.
-  - Authentication in the Java BFF is a placeholder and unfinished.
-  - The cache is two tiers, not three. The database-backed tier was designed and never built.
-  - On the Flutter client I am a contributor, not an owner.
+    - the Flutter client, where I contributed features rather than owning it
+    - product design and the itinerary interface
+data:
+  - value: "5"
+    label: external feeds behind one gateway
+    detail: weather, air quality, places, reviews, transit
+  - value: "243"
+    label: district grid points seeded
+    detail: forecast coverage for the whole country
+  - value: "3"
+    label: model calls per recommendation, at most
+    detail: rules filter the candidates first
+  - value: "5,040"
+    label: visit orders searched exhaustively
+    detail: under eight stops; heuristic above it
+fixes:
+  - title: A finished job walked backwards into "in progress"
+    area: user (Java BFF)
+    symptom: >-
+      A recommendation would complete, and the client would keep polling
+      forever. The job row said in_progress for a job that had finished seconds
+      earlier. It did not reproduce on demand.
+    cause: >-
+      The record of acceptance and the record of completion were writes to the
+      same row from two different paths. When the completion event won the race
+      to the database, the late acceptance write overwrote the terminal state.
+    fix: >-
+      The acceptance write only happens when no row exists, and a primary key
+      collision on that path is ignored rather than retried as an update, so a
+      terminal state is never walked back. Three regression tests pin the
+      orderings that used to break it.
+  - title: Forecast lookups asked for grids nothing was ever stored for
+    area: hub (gateway)
+    symptom: >-
+      Short-term forecasts came back empty for most districts. Asking for a
+      district that did not exist returned data, because the miss fell through
+      to a province-level path — the wrong query worked and the right one did not.
+    cause: >-
+      Forecasts accumulate only on the grid points the poller subscribes to, but
+      lookups used the requesting district's own grid point. Only 19 of the 243
+      district grid points coincide with a subscribed one.
+    fix: >-
+      Resolve to the nearest active grid inside the same province, never across
+      a province line — Gapyeong is fourteen times closer to a Gangwon grid than
+      to its own province's, and a plausible forecast from the wrong zone is
+      worse than none. The rule is a pure function, pinned by tests, and both
+      the forecast and the observation paths now call it.
+  - title: The poller died silently and left the day empty
+    area: hub (gateway)
+    symptom: >-
+      Whole release cycles arrived with no forecast stored. Because the work ran
+      as a background task nobody awaited, the failure left no trace at all, and
+      it recurred at the same point every cycle.
+    cause: >-
+      A database exception inside the per-grid loop escaped the loop, so the
+      remaining grids for that release were never written. One value outside the
+      accepted category set rolled back that grid's entire transaction.
+    fix: >-
+      Per-grid exception isolation, an explicit log when the task dies, category
+      filtering before the write, one query to decide what is already stored
+      instead of one per grid, and a duplicate guard that the boot-time run and
+      a manual run can both see.
+  - title: The rate limiter let the caller choose its own counter
+    area: user (Java BFF) · edge proxy
+    symptom: >-
+      A caller could send the same endpoint as many requests as it liked. The
+      limit was in place and simply never bound.
+    cause: >-
+      The filter read the forwarded-address header no matter who the immediate
+      sender was, so the value that keys the counter was attacker-controlled.
+      A comment said the edge made spoofing impossible; that assumption had been
+      withdrawn some time earlier.
+    fix: >-
+      Read the header only when the immediate peer falls inside a configured
+      trusted-proxy range, and read the single-valued header the edge always
+      overwrites rather than the appendable one. Requests arriving from outside
+      that range are keyed by their actual source address.
+  - title: Long itineraries silently lost their road geometry
+    area: user (Java BFF)
+    symptom: >-
+      Itineraries above a certain size drew straight lines between every stop
+      instead of following roads. Nothing surfaced in the interface; there was
+      only a warning in the log.
+    cause: >-
+      The gateway accepts at most 20 legs per routing request and the BFF sent
+      the whole itinerary in one batch, so anything over 22 stops was rejected
+      in full and fell back to straight lines for every leg, not just the excess.
+    fix: >-
+      Chunk at 20 and recombine in the original leg order, so one rejected chunk
+      costs only its own legs. Day-boundary legs are not requested at all, and
+      the rejection response — which quoted place names and coordinates — was
+      taken out of the log.
+  - title: One database restart killed a run of recommendation jobs
+    area: agent
+    symptom: >-
+      After the database came back, recommendation jobs failed consecutively,
+      as many in a row as the pool held, then recovered on their own.
+    cause: >-
+      The checkpointer pool lent out connections severed by the restart. A dead
+      connection was only detected when its first query failed, which is to say
+      after the job had already claimed it.
+    fix: >-
+      Check the connection at the point it is borrowed. That adds one round trip
+      per checkout, which a recommendation performs a handful of times.
 ---
 
 import N from '../../components/note/N.astro';
 
-The bug that taught me most on this project was a race I could not reproduce on
-demand. A recommendation would finish, the client would keep waiting, and the
-job row would say `in_progress` — for a job that had completed several seconds
-earlier.<N id="map-terminal-state" />
+MAP is a gateway with a model at the end of it. Five external feeds — weather,
+air quality, places, reviews, transit — are polled, cached and normalised behind
+one service, then filtered by a deterministic rule engine, and only what
+survives is shown to the model.<N id="map-ownership" />
 
-The completion event was arriving before the record of the job that produced it.
-Whichever write landed second won, and half the time that was the stale one. The
-fix was to stop treating the two writes as ordered at all: the first record is
-only written when no row exists, and a primary key collision on the completion
-path is retried as an update. A terminal state, once written, is never walked
-back. Three regression tests fix the orderings that used to break it.
+That order is the design. A model asked to pick places from an open field
+invents them; given a candidate list already filtered by travel radius, weather
+and exclusion zones, the worst it can do is choose a bad real
+place.<N id="map-llm-budget" /> Its output is then checked as a contract — visit
+order a permutation, legs connected, coordinates inside the country — before
+anything downstream sees it. Visit order itself is solved exhaustively while
+that is cheap.<N id="map-tsp" />
 
-The other decision worth defending is where the model sits. A recommendation
-agent that queries travel APIs directly is a weekend's work and impossible to
-bound. This one runs behind a deterministic rule engine — travel radius by mode,
-indoor preference when it rains, exclusion zones as polyline intersections — and
-the model only chooses among candidates that already
-passed.<N id="map-llm-budget" /> Its output is then checked as a contract before
-anything downstream sees it.
+The data side is where the defects were. Forecasts only accumulate on the grid
+points the poller subscribes to, and the lookup path was asking for a different
+set entirely, so most districts returned nothing while a malformed request
+returned a usable answer.<N id="map-grid-coverage" /> The road-routing batch had
+a ceiling the caller did not know about, and crossing it cost the whole
+itinerary rather than the excess.<N id="map-batch-cap" />
 
-Visit order is solved exhaustively while that is cheap and approximately once it
-is not.<N id="map-tsp" /> The gateway keeps a Redis tier in front of a scheduled
-prefetch, and a failed upstream degrades to an empty result rather than a 5xx,
-because a missing weather forecast should not take down an
-itinerary.<N id="map-cache-tiers" />
-
-What I have not done here matters as much. The agent has no tests and no
-evaluation set.<N id="map-agent-tests" /> Auth in the Java BFF is still a
-placeholder.<N id="map-bff-auth" /> And on the Flutter client I am one
-contributor among several, not the owner.<N id="map-flutter" />
+In front of all of it: a Redis tier over a scheduled prefetch, so the external
+feed is warm before anyone asks,<N id="map-cache-tiers" /> a failed upstream
+degrading to an empty result rather than a 5xx, and a re-recommendation cap that
+expires at midnight local time instead of on a rolling
+window.<N id="map-rate-limit" />

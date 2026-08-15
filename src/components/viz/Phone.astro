@@ -1,0 +1,134 @@
+---
+import { Image } from 'astro:assets';
+
+/**
+ * A screenshot in a device frame.
+ *
+ * The two products on this page are phone apps, and a screenshot floating on a
+ * page does not read as one. The frame is drawn in CSS rather than shipped as a
+ * PNG so it takes the page's own ink and rule colours and stays sharp at any
+ * size.
+ *
+ * No caption. The surrounding text says what the product does; a sentence under
+ * the picture only repeats it.
+ */
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  /** Label under the frame — two or three words, naming the screen. */
+  screen: string;
+  /** Staggered entrance index. */
+  i?: number;
+}
+const { src, alt, screen, i = 0 } = Astro.props;
+---
+
+<figure class="phone" data-phone style={`--i:${i}`}>
+  <div class="phone__frame">
+    <div class="phone__screen">
+      <Image
+        class="phone__img"
+        src={src}
+        alt={alt}
+        widths={[260, 520]}
+        sizes="(max-width: 40rem) 42vw, 13rem"
+        loading="lazy"
+      />
+    </div>
+    <span class="phone__island" aria-hidden="true"></span>
+    <span class="phone__btn phone__btn--vol" aria-hidden="true"></span>
+    <span class="phone__btn phone__btn--pwr" aria-hidden="true"></span>
+  </div>
+  <figcaption class="phone__label">{screen}</figcaption>
+</figure>
+
+<style>
+  .phone {
+    margin: 0;
+    /* Two frames share the column at 7.25rem each; a single frame grows to fill
+       it. Either way the row keeps the same width. */
+    flex: 1 1 7rem;
+    max-width: 11rem;
+  }
+
+  .phone__frame {
+    position: relative;
+    padding: 0.4rem;
+    border-radius: 1.85rem;
+    background: linear-gradient(160deg, var(--rule-strong), var(--ink-muted));
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.16),
+      0 12px 28px -14px rgb(0 0 0 / 0.4);
+  }
+
+  .phone__screen {
+    position: relative;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    background: var(--paper-inset);
+    /* The captures are full-screen at 19.5:9, so the frame takes their ratio
+       rather than imposing one and cropping. */
+    aspect-ratio: 739 / 1600;
+  }
+
+  .phone__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 0;
+  }
+
+  /* The cut-out. Drawn in a fixed near-black rather than a token, because it is
+     the hardware, not the page — it stays dark in both themes. */
+  .phone__island {
+    position: absolute;
+    top: 0.85rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2.9rem;
+    height: 0.6rem;
+    border-radius: 0.4rem;
+    background: #0d0d0f;
+  }
+
+  .phone__btn {
+    position: absolute;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--rule-strong);
+  }
+  .phone__btn--vol {
+    left: -2px;
+    top: 24%;
+    height: 12%;
+  }
+  .phone__btn--pwr {
+    right: -2px;
+    top: 30%;
+    height: 16%;
+  }
+
+  .phone__label {
+    margin-top: 0.6rem;
+    font-family: var(--family-mono);
+    font-size: 0.6875rem;
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  @media (max-width: 30rem) {
+    .phone__frame {
+      padding: 0.3rem;
+      border-radius: 1.4rem;
+    }
+    .phone__screen {
+      border-radius: 1.15rem;
+    }
+    .phone__island {
+      top: 0.6rem;
+      width: 2.2rem;
+      height: 0.45rem;
+    }
+  }
+</style>

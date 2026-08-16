@@ -1,3 +1,70 @@
+# The record, in three parts.
+#
+#   career · education · service · lab  -> the timeline, sorted on the start date
+#   award · certification               -> the lists beside it
+#   activity                            -> the block under it
+#
+# `bullets` only means anything on a timeline entry.
+
+# ── the timeline ──────────────────────────────────────────────────────────
+
+- id: map-team
+  kind: career
+  title: MAP — travel itinerary service
+  issuer: 5-person team · backend and AI
+  date: "2026.03 – present"
+  bullets:
+    - Six services owned — the external-data gateway, the recommendation agent, the Java BFF, vision, infrastructure and the admin console.
+    - Five external feeds polled and cached behind one integration point.
+
+- id: dartoo-team
+  kind: career
+  title: Dartoo — founding project
+  issuer: 6-person team · backend and data engineering
+  date: "2025.07 – 2026.06"
+  bullets:
+    - Four of the six backend services owned — collection, storage and search, summarisation, and the delivery path.
+    - Regulatory filings polled, decoded, summarised and pushed to whoever was watching that company.
+
+- id: ici-lab
+  kind: lab
+  title: Undergraduate researcher
+  issuer: ICI Lab, Hanyang University ERICA
+  date: "2025.03 – 2026.06"
+  bullets:
+    - Led the reinforcement-learning study on 5G slice pricing and wrote the paper as first author.
+    - Section III.E of the IEEE TAI survey, and the beam-prediction implementation behind it.
+
+- id: hanyang
+  kind: education
+  title: BSc Computer Science, with a second major in Convergence Security
+  issuer: Hanyang University ERICA
+  date: "2023.03 – 2027.02"
+  bullets:
+    - GPA 4.18 / 4.5 across 143 credits. Graduating February 2027.
+
+- id: air-force
+  kind: service
+  title: Radio communications equipment maintenance, discharged as sergeant
+  issuer: Republic of Korea Air Force · 827th class
+  date: "2021.06 – 2023.03"
+  bullets:
+    - Completed the full term of service.
+
+- id: kau
+  kind: education
+  title: Avionics and Information Engineering — withdrew
+  issuer: Korea Aerospace University
+  date: "2020.03 – 2021.05"
+
+- id: ansan-dongsan
+  kind: education
+  title: Graduated, science track
+  issuer: Ansan Dongsan High School
+  date: "2017.03 – 2020.02"
+
+# ── awards and selections ─────────────────────────────────────────────────
+
 - id: ask-silver
   kind: award
   title: Silver award, paper competition
@@ -37,6 +104,8 @@
   date: "2026.05"
   detail: For MAP — the travel itinerary pipeline.
 
+# ── certifications ────────────────────────────────────────────────────────
+
 - id: aws-clf
   kind: certification
   title: AWS Certified Cloud Practitioner
@@ -62,35 +131,10 @@
   issuer: Korea Data Agency
   date: "2025.09"
 
-- id: hanyang
-  kind: education
-  title: BSc Computer Science, with a second major in Convergence Security
-  issuer: Hanyang University ERICA
-  date: "2023.03 – 2027.02"
-  detail: GPA 4.18 / 4.5 across 143 credits. Graduating February 2027.
-
-- id: kau
-  kind: education
-  title: Avionics and Information Engineering — withdrew
-  issuer: Korea Aerospace University
-  date: "2020.03 – 2021.05"
-
-- id: air-force
-  kind: service
-  title: Radio communications equipment maintenance, discharged as sergeant
-  issuer: Republic of Korea Air Force
-  date: "2021.06 – 2023.03"
-  detail: Completed the full term of service.
-
-- id: ici-lab
-  kind: lab
-  title: Undergraduate researcher
-  issuer: ICI Lab, Hanyang University ERICA
-  date: "2025.03 – 2026.06"
-  detail: First-author pricing paper, survey co-author, beam prediction work.
+# ── activities ────────────────────────────────────────────────────────────
 
 - id: teaching
-  kind: teaching
+  kind: activity
   title: Teaching assistant, C programming lab
   issuer: Hanyang University
   date: "2026.03 – 2026.06"
@@ -98,9 +142,15 @@
     - teaching-assistant
 
 - id: blog
-  kind: writing
+  kind: activity
   title: Technical blog — 30 posts
   issuer: velog
   date: "2024 – present"
   detail: AWS labs, Kubernetes, Spring and backend architecture.
   href: https://velog.io/@muqqi_bba
+
+- id: volunteering
+  kind: activity
+  title: Mobility assistant for students with disabilities
+  issuer: Hanyang University ERICA
+  date: "2023"

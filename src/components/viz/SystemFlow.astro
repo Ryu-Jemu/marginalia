@@ -7,6 +7,10 @@
  * stage collected on a bus above. Records travel the track and pass behind the
  * stage boxes, so a record visibly enters a stage and comes out the other side.
  *
+ * One record travels at a time, and the stage it is inside is lit while it is
+ * there. A stream of packets says "throughput"; this plate is about the path a
+ * single record takes, and it is read by following that record.
+ *
  * The diagram is generated from the project's own `pipeline` data, so it cannot
  * describe a stage the content file does not claim.
  *
@@ -97,23 +101,19 @@ const trackTo = W - PAD;
   <line class="viz-track" x1={trackFrom} y1={TRACK_Y} x2={trackTo} y2={TRACK_Y}></line>
   <path class="viz-rule" d={`M${trackTo} ${TRACK_Y - 7} V${TRACK_Y + 7}`}></path>
 
-  {/* records in flight; behind the boxes on purpose */}
+  {/* the record in flight; behind the boxes on purpose, so it goes in one
+      side of a stage and comes out the other */}
   <g data-packets>
-    {
-      Array.from({ length: 8 }).map((_, i) => (
-        <rect
-          data-packet
-          x={trackFrom - 3}
-          y={TRACK_Y - 3}
-          width="6"
-          height="6"
-          rx="1"
-          class="viz-fill-accent"
-          opacity="0"
-          style={`--k:${i}`}
-        />
-      ))
-    }
+    <rect
+      data-packet
+      x={trackFrom - 3.5}
+      y={TRACK_Y - 3.5}
+      width="7"
+      height="7"
+      rx="1.5"
+      class="viz-fill-accent"
+      opacity="0"
+    />
   </g>
 
   {
@@ -126,6 +126,19 @@ const trackTo = W - PAD;
           width={boxW}
           height={BOX_H}
           rx="3"
+        />
+        {/* Lit while the record is inside. A separate rect rather than a
+            restyled box: the off state is then the stylesheet's, not a value
+            the script has to remember and put back. */}
+        <rect
+          class="flow__lit"
+          data-stage-lit
+          x={b.x}
+          y={BOX_Y}
+          width={boxW}
+          height={BOX_H}
+          rx="3"
+          opacity="0"
         />
         <text class="flow__name" x={b.cx} y={TRACK_Y + 4} text-anchor="middle">
           {b.name}
@@ -171,6 +184,14 @@ const trackTo = W - PAD;
     font-size: 8.5px;
     fill: var(--scope);
     letter-spacing: 0.02em;
+  }
+  /* Stronger than --rubric-wash: this has to read as "the record is in here"
+     from across the plate, and it has to be distinguishable from the model
+     stage's permanent accent outline, which carries no fill. */
+  .flow :global(.flow__lit) {
+    fill: color-mix(in srgb, var(--rubric) 13%, transparent);
+    stroke: var(--rubric);
+    stroke-width: 1.5;
   }
   /* A stage where a model is called is marked, because it is the one place the
      output is not determined by the input. */

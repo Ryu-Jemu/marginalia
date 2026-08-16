@@ -1,4 +1,4 @@
-import { animate, createDrawable, stagger, utils } from 'animejs';
+import { animate, createDrawable, createTimeline, stagger, utils } from 'animejs';
 import { motionOff, whenInView } from './observe';
 
 /**
@@ -60,25 +60,43 @@ function silentLoss(svg: SVGSVGElement): void {
   if (gap) animate(gap, { opacity: [0, 1], duration: 500, delay: 1700, ease: 'out(3)' });
 }
 
-/* ── the pipeline, with records moving along it ──────────────────────────── */
+/* ── the pipeline, one record walking it ─────────────────────────────────── */
+
+/**
+ * A stream of packets says "throughput". This plate is about the path one
+ * record takes, so one record travels it, pausing in each stage, and the stage
+ * it is inside is lit while it is there. The pace is set to be followed rather
+ * than glanced at: a reader should be able to watch a single record arrive at
+ * a stage, see the stage light, and see it leave.
+ */
+const HOP = 700;
+const DWELL = 550;
+/** The beat before the next record sets off. */
+const REST = 1000;
+/** After the track has drawn and the boxes have arrived. */
+const START = 900;
+
 function flow(svg: SVGSVGElement): void {
   const x0 = Number(svg.dataset.x0 ?? 0);
   const x1 = Number(svg.dataset.x1 ?? 0);
-  const span = x1 - x0;
-  const packets = [...svg.querySelectorAll<SVGRectElement>('[data-packet]')];
-  const stages = [...svg.querySelectorAll('[data-stage]')];
+  const packet = svg.querySelector<SVGRectElement>('[data-packet]');
+  const stages = [...svg.querySelectorAll<SVGGElement>('[data-stage]')];
+  const lits = [...svg.querySelectorAll<SVGRectElement>('[data-stage-lit]')];
   const track = drawablesFor(svg, '.viz-track');
 
   if (motionOff()) {
     utils.set(stages, { opacity: 1 });
+    utils.set(lits, { opacity: 0 });
     finishDraw(track);
-    // Rest state: records spread along the track rather than stacked at the
-    // start, so the still frame still reads as a flow.
-    packets.forEach((p, i) => utils.set(p, { opacity: 1, translateX: (span / packets.length) * i }));
+    // Rest state: the record sits in the first stage rather than off the left
+    // edge, so the still frame is of a pipeline with something in it.
+    if (packet) utils.set(packet, { opacity: 0 });
+    if (lits[0]) utils.set(lits[0], { opacity: 1 });
     return;
   }
 
   utils.set(stages, { opacity: 0 });
+  utils.set(lits, { opacity: 0 });
   animate(track, { draw: '0 1', duration: 720, ease: 'inOut(2)' });
   animate(stages, {
     opacity: [0, 1],
@@ -87,20 +105,51 @@ function flow(svg: SVGSVGElement): void {
     delay: stagger(110, { start: 240 }),
     ease: 'out(3)',
   });
-  // The one loop on the site. The figure is about records in transit, and a
-  // still diagram of that is a diagram of something else.
-  animate(packets, {
-    translateX: [0, span],
-    opacity: [
-      { to: 1, duration: 220 },
-      { to: 1, duration: 2500 },
-      { to: 0, duration: 480 },
-    ],
-    duration: 3200,
-    delay: stagger(430, { start: 620 }),
-    loop: true,
-    ease: 'linear',
+
+  if (!packet || lits.length === 0) return;
+
+  // Where the record pauses: the centre of each stage box, then off the end.
+  const centres = lits.map((r) => Number(r.getAttribute('x')) + Number(r.getAttribute('width')) / 2);
+  const stops = [...centres, x1];
+
+  /* Written as one timeline rather than as separate looping animations: the
+     lights have to agree with the record about where it is, and separate loops
+     with their own delays drift apart within a few cycles. */
+  const hops: Array<Record<string, unknown>> = [];
+  const litAt: number[] = [];
+  let at = START;
+  stops.forEach((x, i) => {
+    hops.push({ to: x - x0, duration: HOP, ease: 'inOut(2)' });
+    at += HOP;
+    if (i < centres.length) {
+      litAt.push(at);
+      hops.push({ to: x - x0, duration: DWELL, ease: 'linear' });
+      at += DWELL;
+    }
   });
+
+  const tl = createTimeline({ loop: true });
+  tl.add(packet, { translateX: hops }, START);
+  tl.add(packet, { opacity: [0, 1], duration: 200, ease: 'out(2)' }, START);
+  tl.add(packet, { opacity: [1, 0], duration: 240, ease: 'out(2)' }, at - HOP * 0.35);
+
+  lits.forEach((lit, i) => {
+    tl.add(
+      lit,
+      {
+        opacity: [
+          { to: 1, duration: 200, ease: 'out(2)' },
+          { to: 1, duration: DWELL },
+          { to: 0, duration: 300, ease: 'out(2)' },
+        ],
+      },
+      litAt[i] - 200,
+    );
+  });
+
+  // Holds the timeline open for a beat after the record has left, so the loop
+  // reads as the next record rather than as a stutter.
+  tl.add(packet, { opacity: 0, duration: REST }, at);
 }
 
 /* ── the paper's uplift, grown from the baseline it is measured against ──── */

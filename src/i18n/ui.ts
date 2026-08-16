@@ -164,10 +164,14 @@ const strings = {
   ],
 
   /* ── § 5 about ─────────────────────────────────────────────────────── */
-  'about.lede': ['Awards, certifications, and the path here.', '수상, 자격증, 그리고 여기까지의 경로.'],
+  'about.lede': [
+    'The path here, the recognition along it, and what else I do.',
+    '여기까지의 경로, 그 과정에서의 수상과 자격, 그리고 그 밖의 활동.',
+  ],
   'about.awards': ['Awards and selections', '수상 및 선정'],
   'about.certs': ['Certifications', '자격증'],
-  'about.history': ['Education and service', '학력 및 경력'],
+  'about.timeline': ['Education and career', '학력 및 경력'],
+  'about.activities': ['Activities', '활동'],
 
   /* ── project pages ─────────────────────────────────────────────────── */
   'work.built': ['How it was built', '어떻게 만들었는지'],

@@ -7,6 +7,7 @@ import NoteLines from '../note/NoteLines.astro';
 import N from '../note/N.astro';
 import Section from '../doc/Section.astro';
 import Bullets from '../doc/Bullets.astro';
+import Timeline from '../doc/Timeline.astro';
 import PipelineProject from '../work/PipelineProject.astro';
 import CompactList from '../work/CompactList.astro';
 import PaperEntry from '../research/PaperEntry.astro';
@@ -47,9 +48,12 @@ const record = await recordOf(lang);
 const byKind = (kind: string) => record.filter((r) => r.data.kind === kind).sort(newestFirst);
 const awards = byKind('award');
 const certifications = byKind('certification');
-const history = record
-  .filter((r) => ['education', 'service', 'lab', 'teaching', 'writing'].includes(r.data.kind))
-  .sort(newestFirst);
+const activities = byKind('activity');
+/* Sorted on where each span starts, not where it ends: a degree that runs to
+   2027 is not more recent than a job that began last year. */
+const timeline = record
+  .filter((r) => ['career', 'education', 'service', 'lab'].includes(r.data.kind))
+  .sort((a, b) => b.data.date.localeCompare(a.data.date));
 
 // Reported once per build, after every page has resolved its own materials.
 reportMissingMaterials();
@@ -156,9 +160,12 @@ const nextFig = () => String(++fig);
       {/* ── § 5 ─────────────────────────────────────────────────────── */}
       <Section id="about" n="5" title={t(lang, 'section.about')} lede={t(lang, 'about.lede')}>
         <div class="column column--wide">
+          <h3 class="record__group">{t(lang, 'about.timeline')}</h3>
+          <Timeline items={timeline} />
+
           <div class="record__grid">
             <div>
-              <h3 class="record__group">{t(lang, 'about.awards')}</h3>
+              <h3 class="record__group record__group--wide">{t(lang, 'about.awards')}</h3>
               <ul class="record">
                 {
                   awards.map((r) => (
@@ -176,7 +183,7 @@ const nextFig = () => String(++fig);
             </div>
 
             <div>
-              <h3 class="record__group">{t(lang, 'about.certs')}</h3>
+              <h3 class="record__group record__group--wide">{t(lang, 'about.certs')}</h3>
               <ul class="record">
                 {
                   certifications.map((r) => (
@@ -196,10 +203,10 @@ const nextFig = () => String(++fig);
             </div>
           </div>
 
-          <h3 class="record__group record__group--wide">{t(lang, 'about.history')}</h3>
+          <h3 class="record__group record__group--wide">{t(lang, 'about.activities')}</h3>
           <ul class="record record--two">
             {
-              history.map((r) => (
+              activities.map((r) => (
                 <li class="record__row">
                   <span class="record__date">{r.data.date}</span>
                   <span class="record__body">
@@ -278,6 +285,7 @@ const nextFig = () => String(++fig);
   .record__grid {
     display: grid;
     gap: 1.75rem;
+    margin-top: 1.75rem;
   }
   @media (min-width: 44rem) {
     .record__grid {

@@ -229,19 +229,19 @@ const research = defineCollection({
 
 const recordSchema = z.object({
   id: z.string(),
-  kind: z.enum([
-    "award",
-    "certification",
-    "education",
-    "service",
-    "teaching",
-    "lab",
-    "writing",
-  ]),
+  /**
+   * `career`, `education`, `service` and `lab` draw on the timeline; `award`
+   * and `certification` are listed beside it; `activity` sits under it. The
+   * kind decides where an entry appears and which mark it takes.
+   */
+  kind: z.enum(['award', 'certification', 'career', 'education', 'service', 'lab', 'activity']),
   title: z.string(),
   issuer: z.string(),
+  /** A point (`2026.05`) or a span (`2025.07 – 2026.06`). Sorted on the start. */
   date: z.string(),
   detail: z.string().optional(),
+  /** Timeline entries carry what was done there, as lines rather than prose. */
+  bullets: z.array(z.string()).default([]),
   score: z.string().optional(),
   href: z.url().optional(),
   notes: z.array(z.string()).default([]),

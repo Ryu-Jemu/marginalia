@@ -1,0 +1,160 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+/**
+ * Where the years went, drawn as one line.
+ *
+ * A two-column list of dates and titles reads as a table of unrelated rows.
+ * Drawn as a spine with a mark per entry, the same facts read as a sequence —
+ * which is the question a reviewer is actually asking of this section.
+ *
+ * The mark is shaped by what the entry is: a job, a degree, a lab, national
+ * service. Colour is not doing that work, so it still reads printed, and the
+ * shapes carry it where colour is absent.
+ *
+ * The rule is drawn per item rather than as one long line behind the list, so
+ * it stops at the last mark instead of running past it into whitespace.
+ */
+interface Props {
+  items: CollectionEntry<'record'>[];
+}
+const { items } = Astro.props;
+
+/* Simple enough to draw inline: a case, a cap, a shield, a flask. Anything
+   more detailed would compete with the text at this size. */
+const MARKS: Record<string, string> = {
+  career: 'M3 6.5h10v6.5H3zM6 6.5V4.5h4v2',
+  education: 'M8 3.5 14 6.5 8 9.5 2 6.5zM4.5 8v3.2c0 0 1.4 1.3 3.5 1.3s3.5-1.3 3.5-1.3V8',
+  service: 'M8 2.8 13 4.6v4c0 2.6-2.2 4.1-5 4.9-2.8-.8-5-2.3-5-4.9v-4z',
+  lab: 'M6.5 2.8v3.4L3.4 11.6c-.5.9.1 2 1.1 2h7c1 0 1.6-1.1 1.1-2L9.5 6.2V2.8zM5.6 2.8h4.8',
+};
+---
+
+<ol class="tl">
+  {
+    items.map((entry) => {
+      const r = entry.data;
+      return (
+        <li class="tl__item">
+          <span class="tl__mark" aria-hidden="true">
+            <svg viewBox="0 0 16 16">
+              <path d={MARKS[r.kind] ?? MARKS.career} />
+            </svg>
+          </span>
+          <p class="meta tl__date">{r.date}</p>
+          <h4 class="tl__title">{r.title}</h4>
+          <p class="tl__issuer">{r.issuer}</p>
+          {r.bullets.length > 0 && (
+            <ul class="tl__points">
+              {r.bullets.map((b) => (
+                <li>{b}</li>
+              ))}
+            </ul>
+          )}
+        </li>
+      );
+    })
+  }
+</ol>
+
+<style>
+  .tl {
+    display: grid;
+    gap: 1.4rem;
+  }
+  .tl__item {
+    position: relative;
+    padding-left: 2.5rem;
+    padding-bottom: 0.1rem;
+  }
+  /* The spine. Every item draws its own segment down to the next mark, so the
+     line ends where the last entry does. */
+  .tl__item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 0.7rem;
+    top: 1.55rem;
+    bottom: -1.4rem;
+    width: 1px;
+    background: var(--rule);
+  }
+  .tl__mark {
+    position: absolute;
+    left: 0;
+    top: 0.1rem;
+    display: grid;
+    place-items: center;
+    width: 1.45rem;
+    height: 1.45rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: 50%;
+    background: var(--paper);
+  }
+  .tl__mark svg {
+    width: 0.8rem;
+    height: 0.8rem;
+    fill: none;
+    stroke: var(--ink-faint);
+    stroke-width: 1.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* The current position gets the accent, the same ink the rest of the page
+     uses to mark where the reader is. */
+  .tl__item:first-child .tl__mark {
+    border-color: var(--rubric);
+  }
+  .tl__item:first-child .tl__mark svg {
+    stroke: var(--rubric);
+  }
+
+  .tl__date {
+    color: var(--ink-faint);
+    margin-bottom: 0.2rem;
+  }
+  .tl__title {
+    font-size: 1rem;
+    line-height: 1.35;
+    letter-spacing: -0.012em;
+    font-weight: 600;
+    text-wrap: pretty;
+  }
+  .tl__issuer {
+    margin-top: 0.1rem;
+    color: var(--ink-muted);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+  .tl__points {
+    margin-top: 0.45rem;
+    display: grid;
+    gap: 0.25rem;
+  }
+  .tl__points li {
+    position: relative;
+    padding-left: 0.9rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--ink-muted);
+    text-wrap: pretty;
+  }
+  .tl__points li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.66em;
+    width: 0.35rem;
+    height: 1px;
+    background: var(--rule-strong);
+  }
+
+  /* Printed, the spine is ink for no reason — the dates already order it. */
+  @media print {
+    .tl__item::before {
+      display: none;
+    }
+    .tl__mark {
+      border-color: var(--rule);
+    }
+  }
+</style>

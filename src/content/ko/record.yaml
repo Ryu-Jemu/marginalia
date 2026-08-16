@@ -1,3 +1,65 @@
+# src/content/record.yaml의 한국어 미러. id와 순서, kind, date, href, score,
+# notes는 그대로 옮긴다.
+
+# ── 연표 ──────────────────────────────────────────────────────────────────
+
+- id: map-team
+  kind: career
+  title: MAP — 여행 일정 서비스
+  issuer: 5인 팀 · 백엔드 · AI
+  date: "2026.03 – 현재"
+  bullets:
+    - 여섯 서비스 담당 — 외부 데이터 게이트웨이, 추천 에이전트, Java BFF, vision, 인프라, 관리자 콘솔.
+    - 외부 피드 다섯 개를 하나의 통합 지점 뒤에서 폴링하고 캐싱합니다.
+
+- id: dartoo-team
+  kind: career
+  title: Dartoo — 창업 프로젝트
+  issuer: 6인 팀 · 백엔드 · 데이터 엔지니어링
+  date: "2025.07 – 2026.06"
+  bullets:
+    - 백엔드 여섯 서비스 중 넷을 담당 — 수집, 저장과 검색, 요약, 그리고 전달 경로 전체.
+    - 공시를 폴링해 디코딩·요약하고, 해당 기업을 구독한 사용자에게 푸시합니다.
+
+- id: ici-lab
+  kind: lab
+  title: 학부연구생
+  issuer: ICI Lab, 한양대학교 ERICA
+  date: "2025.03 – 2026.06"
+  bullets:
+    - 5G 슬라이스 가격 결정 강화학습 연구를 주도하고 제1저자로 논문을 작성했습니다.
+    - IEEE TAI 서베이 III.E절과 그 뒤의 빔 예측 구현을 맡았습니다.
+
+- id: hanyang
+  kind: education
+  title: 컴퓨터학부 학사, 융합보안 복수전공
+  issuer: 한양대학교 ERICA
+  date: "2023.03 – 2027.02"
+  bullets:
+    - 143학점 이수, 평점 4.18 / 4.5. 2027년 2월 졸업 예정.
+
+- id: air-force
+  kind: service
+  title: 무선통신정비체계병, 병장 만기 전역
+  issuer: 대한민국 공군 제827기
+  date: "2021.06 – 2023.03"
+  bullets:
+    - 복무 기간 만기 전역.
+
+- id: kau
+  kind: education
+  title: 항공전자정보공학부 — 중퇴
+  issuer: 한국항공대학교
+  date: "2020.03 – 2021.05"
+
+- id: ansan-dongsan
+  kind: education
+  title: 자연계열 졸업
+  issuer: 안산동산고등학교
+  date: "2017.03 – 2020.02"
+
+# ── 수상 및 선정 ───────────────────────────────────────────────────────────
+
 - id: ask-silver
   kind: award
   title: 논문 경진대회 은상
@@ -37,6 +99,8 @@
   date: "2026.05"
   detail: 여행 일정 파이프라인 MAP.
 
+# ── 자격증 ────────────────────────────────────────────────────────────────
+
 - id: aws-clf
   kind: certification
   title: AWS Certified Cloud Practitioner
@@ -62,35 +126,10 @@
   issuer: 한국데이터산업진흥원
   date: "2025.09"
 
-- id: hanyang
-  kind: education
-  title: 컴퓨터학부 학사, 융합보안 복수전공
-  issuer: 한양대학교 ERICA
-  date: "2023.03 – 2027.02"
-  detail: 143학점 이수, 평점 4.18 / 4.5. 2027년 2월 졸업 예정.
-
-- id: kau
-  kind: education
-  title: 항공전자정보공학부 — 중퇴
-  issuer: 한국항공대학교
-  date: "2020.03 – 2021.05"
-
-- id: air-force
-  kind: service
-  title: 무선통신장비 정비, 병장 전역
-  issuer: 대한민국 공군
-  date: "2021.06 – 2023.03"
-  detail: 복무 기간 만기 전역.
-
-- id: ici-lab
-  kind: lab
-  title: 학부연구생
-  issuer: ICI Lab, 한양대학교 ERICA
-  date: "2025.03 – 2026.06"
-  detail: 제1저자 가격 결정 논문, 서베이 공저자, 빔 예측 연구.
+# ── 활동 ──────────────────────────────────────────────────────────────────
 
 - id: teaching
-  kind: teaching
+  kind: activity
   title: C 프로그래밍 실습 조교
   issuer: 한양대학교
   date: "2026.03 – 2026.06"
@@ -98,9 +137,15 @@
     - teaching-assistant
 
 - id: blog
-  kind: writing
+  kind: activity
   title: 기술 블로그 — 30편
   issuer: velog
-  date: "2024 – present"
+  date: "2024 – 현재"
   detail: AWS 실습, Kubernetes, Spring, 백엔드 아키텍처.
   href: https://velog.io/@muqqi_bba
+
+- id: volunteering
+  kind: activity
+  title: 장애학생 이동도우미 봉사
+  issuer: 한양대학교 ERICA
+  date: "2023"

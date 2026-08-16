@@ -46,11 +46,18 @@ export function applyReadingState(): void {
   d.classList.remove('no-js');
 }
 
-const LABEL: Record<Control, Record<string, string>> = {
-  theme: { light: 'Light', dark: 'Dark' },
-  motion: { on: 'Motion on', off: 'Motion off' },
-  notes: { margin: 'Notes in margin', inline: 'Notes inline' },
-};
+/**
+ * The labels come off the button itself, server-rendered in the language of
+ * the page. Holding them here would mean an English word appearing on the
+ * Korean tree the first time someone pressed a control.
+ */
+function labelsOf(button: HTMLElement): Record<string, string> {
+  try {
+    return JSON.parse(button.dataset.labels ?? '{}') as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
 
 function current(control: Control): string {
   const v = document.documentElement.dataset[control];
@@ -71,7 +78,7 @@ function apply(control: Control, value: string): void {
 
 function sync(button: HTMLElement, control: Control): void {
   const value = current(control);
-  const label = LABEL[control][value] ?? value;
+  const label = labelsOf(button)[value] ?? value;
   button.dataset.value = value;
   button.setAttribute('aria-label', label);
   button.setAttribute('title', label);

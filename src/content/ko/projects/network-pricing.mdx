@@ -1,0 +1,65 @@
+---
+title: 5G 네트워크 슬라이스 동적 가격 결정
+tagline: 3부 요금제를 위한 강화학습 정책, 그리고 그 이점이 실제로 어디에서 오는지 보여 주는 통제 실험.
+period: "2026.01 – 2026.05"
+team: 제1저자, 교신저자는 ICI Lab
+role: 문제 정식화, 환경, 실험, 논문
+domain: research
+status: archived
+tier: 1
+order: 3
+stack:
+  - Python
+  - Gymnasium
+  - Stable-Baselines3
+  - PPO · SAC · TD3
+  - NumPy
+  - Matplotlib
+links:
+  - kind: repo
+    href: https://github.com/Ryu-Jemu/network-pricing
+    label: Ryu-Jemu/network-pricing
+ownership:
+  owned:
+    - 환경, 그 동역학과 캘리브레이션
+    - 실험, 베이스라인, 유의성 검정
+    - 논문
+  notOwned:
+    - 이 연구가 속한 연구실의 더 큰 연구 프로그램
+data:
+  - value: "+105.8%"
+    label: 최대가격 베이스라인 대비 수익
+    detail: 이탈 민감도 m=3, p<0.001
+  - value: "4"
+    label: 스윕 지점, m = 1 · 3 · 5 · 10
+    detail: 가격 민감도가 클수록 이득이 커집니다
+  - value: "3"
+    label: 알고리즘당 시드 수
+    detail: 같은 환경에서 m=1로 PPO, SAC, TD3 비교
+  - value: "97%"
+    label: m=3 격차 중 슬라이스 하나의 몫
+    detail: 분해 결과를 결과와 함께 공개
+---
+
+import N from '../../../components/note/N.astro';
+
+긴급과 대용량, 두 슬라이스를 3부 요금제로 가격 매깁니다 — 구독료, 포함 사용량,
+초과 요금. 높게 잡으면 고객이 떠나고, 낮게 잡으면 수익이 나지 않습니다. 정책은
+자신이 고객 기반에 미치는 영향을 상대로 가격을 정해야 하고, 이 점이 문제를
+최적화가 아니라 순차적 의사결정으로 만듭니다.
+
+학습된 정책은 최대가격 베이스라인을 앞서며, 그 폭은 고객이 가격에 얼마나
+민감한지에 따라 커집니다.<N id="rl-uplift" lang="ko" /> 통제 실험에서 같은
+알고리즘을 할인율 0으로 학습시키면 — 학습은 하되 앞을 내다보지는 못하는 상태 —
+모든 설정에서 베이스라인과 구별되지
+않습니다.<N id="rl-myopic" lang="ko" /> 이는 이점의 출처를 강화학습을 썼다는
+사실이 아니라 이탈을 미리 내다보는 데에 둡니다.
+
+수익 격차를 슬라이스별로 분해하면 거의 전부가 둘 중 하나에 몰리므로, 합산
+수치는 두 슬라이스가 아니라 한 슬라이스를
+설명합니다.<N id="rl-embb-attribution" lang="ko" /> 이탈 민감도가 가장 낮은
+m=1에서는 이점이 유의하지 않습니다.
+
+알고리즘 비교에서 결정론적 방법은 아래에 놓였고, 다른 on-policy 방법은 통계적으로
+구별되지 않았습니다.<N id="rl-algorithms" lang="ko" /> 이 논문은 제1저자이며,
+학술대회 논문 경진에서 은상을 받았습니다.<N id="rl-award" lang="ko" />

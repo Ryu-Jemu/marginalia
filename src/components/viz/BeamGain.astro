@@ -10,6 +10,13 @@
  * comparison is one quantity across three models, and a hue scale would imply
  * categories that are not there.
  */
+import { t, type Lang } from '../../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+
 const STEPS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const ROWS = [
   { name: 'BP-LLM', mine: true, v: [0.95, 0.92, 0.9, 0.89, 0.865, 0.855, 0.858, 0.845, 0.807, 0.82] },
@@ -33,8 +40,8 @@ const shade = (v: number) => (0.08 + ((v - lo) / (hi - lo)) * 0.84).toFixed(3);
 ---
 
 <svg class="viz gain" data-viz="gain" viewBox={`0 0 ${W} ${H}`} role="img"
-  aria-label="Normalised beamforming gain for BP-LLM, ODE and cascaded LSTM across prediction steps 1 to 10. BP-LLM is highest at every step, from 0.950 at step 1 to 0.820 at step 10.">
-  <text class="viz-label" x={LX} y="14">Normalised beamforming gain · DeepMIMO</text>
+  aria-label={t(lang, 'viz.beam.gain.aria')}>
+  <text class="viz-label" x={LX} y="14">{t(lang, 'viz.beam.gain.title')}</text>
 
   {
     ROWS.map((row, r) => (
@@ -86,7 +93,7 @@ const shade = (v: number) => (0.08 + ((v - lo) / (hi - lo)) * 0.84).toFixed(3);
     ))
   }
   <text class="viz-label" x={GRID_X} y={TOP + ROWS.length * CELL_H + 36}>
-    Prediction time step · BP-LLM leads at every horizon; all three fall away as it lengthens
+    {t(lang, 'viz.beam.gain.foot')}
   </text>
 </svg>
 

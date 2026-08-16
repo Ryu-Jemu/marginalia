@@ -1,12 +1,8 @@
+import { t, type Lang } from '../i18n/ui';
+
 /** Single source for identity and links. Nothing here is duplicated in a page. */
 export const site = {
   url: import.meta.env.SITE ?? 'https://ryu-jemu-marginalia.onrender.com',
-  name: 'Ryu Jemu',
-  role: 'Data · Backend',
-  /** The one line. Everything else on the page is evidence for it. */
-  lede:
-    'I build the path data takes — collected, decoded, cached, modelled, delivered — and I fix it where it breaks quietly.',
-  status: 'Graduating February 2027 · Hanyang University ERICA',
   email: 'decemryu77@gmail.com',
   links: {
     github: 'https://github.com/Ryu-Jemu',
@@ -24,36 +20,26 @@ export const site = {
  *
  * Which project each award is for is stated in About, next to the award.
  */
-export const standing = [
+export const standing = (lang: Lang) => [
+  { value: '4.18', label: t(lang, 'standing.gpa.label'), detail: t(lang, 'standing.gpa.detail') },
+  { value: '5', label: t(lang, 'standing.awards.label'), detail: t(lang, 'standing.awards.detail') },
+  { value: '4', label: t(lang, 'standing.certs.label'), detail: t(lang, 'standing.certs.detail') },
   {
-    value: '4.18',
-    label: 'GPA / 4.5',
-    detail: 'BSc Computer Science · 143 credits · Convergence Security',
+    value: t(lang, 'standing.service.value'),
+    label: t(lang, 'standing.service.label'),
+    detail: t(lang, 'standing.service.detail'),
   },
-  { value: '5', label: 'awards and selections', detail: 'ASK 2026 Silver · Hanyang Grand Prize' },
-  { value: '4', label: 'certifications', detail: 'AWS · SQLD · Azure AI · ADsP' },
-  {
-    value: 'Completed',
-    label: 'military service',
-    detail: 'ROK Air Force · discharged as sergeant',
-  },
-] as const;
+];
 
-export const sections = [
-  { id: 'pipelines', n: '1', title: 'Data pipelines' },
-  { id: 'research', n: '2', title: 'Research' },
-  { id: 'analysis', n: '3', title: 'Data analysis' },
-  { id: 'more', n: '4', title: 'More work' },
-  { id: 'about', n: '5', title: 'About' },
-] as const;
+export const SECTION_IDS = ['pipelines', 'research', 'analysis', 'more', 'about'] as const;
+
+export const sections = (lang: Lang) =>
+  SECTION_IDS.map((id, i) => ({ id, n: String(i + 1), title: t(lang, `section.${id}`) }));
 
 /**
  * The bar at the top. Awards and education sit several screens down the
  * document; a reader who wants them should not have to scroll for them, so
  * every section is one click away instead.
  */
-export const nav = sections.map((s) => ({
-  href: `#${s.id}`,
-  label: s.title,
-  watches: s.id,
-}));
+export const nav = (lang: Lang, base = '') =>
+  sections(lang).map((s) => ({ href: `${base}#${s.id}`, label: s.title, watches: s.id }));

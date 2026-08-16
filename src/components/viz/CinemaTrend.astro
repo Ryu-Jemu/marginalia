@@ -10,6 +10,13 @@
  * Values are the study's own dataset, summed per year at build time in the
  * generator that produced these arrays; nothing here is smoothed.
  */
+import { t, type Lang } from '../../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+
 const YEARS = [
   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018,
   2019, 2020, 2021,
@@ -51,11 +58,13 @@ const dropAdm = ((ADMISSIONS[last] / ADMISSIONS[peak] - 1) * 100).toFixed(1);
 ---
 
 <svg class="viz trend" data-viz="trend" viewBox={`0 0 ${W} ${H}`} role="img"
-  aria-label={`Box-office revenue and admissions per year from 2004 to 2021. Both peak in 2019 and fall ${dropRev} and ${dropAdm} percent respectively by 2021.`}>
+  aria-label={t(lang, 'viz.cinema.trend.aria', { rev: dropRev, adm: dropAdm })}>
   <!-- baseline and the peak year -->
   <line class="viz-track" x1={L} y1={T + PH} x2={W - R} y2={T + PH}></line>
   <path class="viz-limit" d={`M${x(peak)} ${T} V${T + PH}`} stroke-dasharray="3 3"></path>
-  <text class="viz-label" x={x(peak) - 8} y={T - 6} text-anchor="end">peak 2019</text>
+  <text class="viz-label" x={x(peak) - 8} y={T - 6} text-anchor="end">
+    {t(lang, 'viz.cinema.trend.peak')}
+  </text>
 
   <path class="trend__adm" data-trend-line d={line(ADMISSIONS, yAdm)}></path>
   <path class="trend__rev" data-trend-line d={line(REVENUE, yRev)}></path>
@@ -64,10 +73,10 @@ const dropAdm = ((ADMISSIONS[last] / ADMISSIONS[peak] - 1) * 100).toFixed(1);
     <circle class="viz-fill-accent" cx={x(peak)} cy={yRev(REVENUE[peak])} r="3.5"></circle>
     <circle class="viz-fill-accent" cx={x(last)} cy={yRev(REVENUE[last])} r="3.5"></circle>
     <text class="viz-value viz-value--rubric" x={x(last) - 10} y={yRev(REVENUE[last]) - 14} text-anchor="end">
-      {dropRev}% revenue
+      {t(lang, 'viz.cinema.trend.rev', { v: dropRev })}
     </text>
     <text class="trend__adm-label" x={x(last) - 10} y={yRev(REVENUE[last]) + 4} text-anchor="end">
-      {dropAdm}% admissions
+      {t(lang, 'viz.cinema.trend.adm', { v: dropAdm })}
     </text>
   </g>
 
@@ -82,7 +91,7 @@ const dropAdm = ((ADMISSIONS[last] / ADMISSIONS[peak] - 1) * 100).toFixed(1);
   }
 
   <text class="viz-label" x={L} y={T + PH + 34}>
-    Revenue (hundred-million won) and admissions (ten thousand), all releases
+    {t(lang, 'viz.cinema.trend.foot')}
   </text>
 </svg>
 

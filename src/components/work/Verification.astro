@@ -11,10 +11,13 @@ interface Item {
   count: number;
   detail?: string;
 }
+import { t, type Lang } from '../../i18n/ui';
+
 interface Props {
   items: Item[];
+  lang?: Lang;
 }
-const { items } = Astro.props;
+const { items, lang = 'en' } = Astro.props;
 
 const max = Math.max(...items.map((i) => i.count), 1);
 const total = items.reduce((sum, i) => sum + i.count, 0);
@@ -23,7 +26,7 @@ const total = items.reduce((sum, i) => sum + i.count, 0);
 <div class="verify" data-verify>
   <p class="verify__total">
     <span class="verify__total-value" data-countup>{total.toLocaleString('en-US')}</span>
-    <span class="meta verify__total-label">automated tests, counted in the repositories</span>
+    <span class="meta verify__total-label">{t(lang, 'verify.total')}</span>
   </p>
 
   <ul class="verify__list">

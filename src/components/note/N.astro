@@ -10,17 +10,20 @@
  * Both are `<span>` because `<aside>` is flow content and cannot sit inside a
  * `<p>`; Astro 7's compiler is strict about this.
  */
-import { getEntry } from 'astro:content';
+import { noteOf } from '../../lib/content';
+import { t, type Lang } from '../../i18n/ui';
 
 interface Props {
   id: string;
+  lang?: Lang;
 }
 
-const { id } = Astro.props;
+const { id, lang = 'en' } = Astro.props;
 
-const entry = await getEntry('notes', id);
+const entry = await noteOf(lang, id);
 if (!entry) {
-  throw new Error(`Unknown note id: "${id}" — add it to src/content/notes.yaml`);
+  const file = lang === 'ko' ? 'src/content/ko/notes.yaml' : 'src/content/notes.yaml';
+  throw new Error(`Unknown note id: "${id}" — add it to ${file}`);
 }
 const n = entry.data;
 ---
@@ -31,7 +34,7 @@ const n = entry.data;
   role="button"
   tabindex="0"
   aria-expanded="true"
-  aria-label={`Evidence for this claim: ${n.body.slice(0, 80)}`}></span><span
+  aria-label={t(lang, 'note.aria', { body: n.body.slice(0, 80) })}></span><span
   class="note"
   data-note
   data-kind={n.kind}
@@ -39,13 +42,13 @@ const n = entry.data;
   ><span class="note__body">{n.body}</span>{
     n.condition && (
       <span class="note__meta note__meta--scope">
-        <span class="note__meta-key">Measured</span> {n.condition}
+        <span class="note__meta-key">{t(lang, 'note.measured')}</span> {n.condition}
       </span>
     )
   }{
     n.href && (
       <a class="note__meta note__meta--source" href={n.href} rel="noopener">
-        Source
+        {t(lang, 'note.source')}
       </a>
     )
   }</span

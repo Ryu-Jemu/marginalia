@@ -20,15 +20,26 @@ just intended — `src/content.config.ts` refines the `notes` schema so a
 `measurement` without `condition` or a `source` without `href` fails the build.
 Verified: adding an unconditioned metric produces `InvalidContentEntryDataError`.
 
-`scripts/check-claims.mjs` is the second gate, for phrasing the schema cannot see.
+`scripts/check-claims.mjs` is the second gate, for phrasing the schema cannot
+see. `scripts/check-i18n.mjs` is the third: every UI string in both languages,
+every note and project mirrored, placeholders intact on both sides.
 
 ## Structure
 
-`/` is the whole résumé: masthead → §1 Data pipelines (Dartoo, MAP) → §2
-Research → §3 Data analysis → §4 More work → §5 About. `/work/<slug>/` carries
-the same project in full, with prose and figures. Content lives in
-`src/content/`; a project's `data[]` renders as the figure panel and its
-`fixes[]` as the defect list.
+`/` is the whole résumé: hero → §1 Data pipelines (Dartoo, MAP) → §2 Research
+→ §3 Data analysis → §4 More work → §5 About. `/work/<slug>/` carries the same
+project in full, with prose and figures; `/research/<id>/` carries a paper with
+the build behind it folded in as a section. Content lives in `src/content/`; a
+project's `data[]` renders as the figure panel and its `fixes[]` as the defect
+list.
+
+**Two languages, one document.** `/` is English and `/ko/` is Korean, mirrored
+route for route. Everything the site says in its own voice — labels, section
+titles, figure captions — is in `src/i18n/`; everything the *work* says is in
+`src/content/` with a Korean mirror under `src/content/ko/`. Both sides share
+one set of Zod schemas, so the rules hold identically in both. Pages are shared
+components under `src/components/pages/` that take a `lang` prop; the files in
+`src/pages/` are four-line wrappers that pick the language.
 
 ## Development
 
@@ -40,7 +51,8 @@ astro dev --background
 
 Manage it with `astro dev stop`, `astro dev status`, `astro dev logs`.
 
-Before every commit: `npm run verify` (astro check + claim gate + note gate).
+Before every commit: `npm run verify` (claim gate + note gate + i18n gate), and
+`npx astro check` for types.
 
 ## Source of truth for content
 
@@ -82,6 +94,10 @@ metrics implemented**, so no accuracy claim of any kind.
 
 ## Conventions
 
-- All site copy is in English.
+- Site copy is written in English first, then mirrored in Korean. A string that
+  exists in one language only fails `scripts/check-i18n.mjs`.
+- Korean copy is written as Korean, not as a translation: `word-break: keep-all`
+  is set for it, technical terms Korean engineers write in English stay in
+  English, and a figure label must not grow past the box it is drawn in.
 - Conventional Commits, in English. No AI co-author trailers.
 - Build one thing, render it, look at it, adjust, then commit. Not all at once.

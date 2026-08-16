@@ -1,24 +1,39 @@
 ---
+import { t, type Lang } from '../../i18n/ui';
+
 /**
  * Reading controls, styled like the settings strip on a proof sheet rather
  * than app chrome. Rendered server-side with the default state; the inline
  * head script has already corrected <html> before this paints, and
  * controls.ts relabels the buttons on load.
  *
+ * Each button carries its own labels, because the script that swaps them runs
+ * on both language trees and has no other way to know which one it is in.
+ *
  * Hidden entirely without JavaScript — a control that cannot work should not
  * advertise itself.
  */
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+
+const labels = {
+  theme: { light: t(lang, 'controls.theme.light'), dark: t(lang, 'controls.theme.dark') },
+  notes: { margin: t(lang, 'controls.notes.margin'), inline: t(lang, 'controls.notes.inline') },
+  motion: { on: t(lang, 'controls.motion.on'), off: t(lang, 'controls.motion.off') },
+} as const;
 ---
 
-<div class="controls" role="group" aria-label="Reading controls">
-  <button type="button" data-control="theme" class="controls__btn">
-    <span data-control-value>Light</span>
+<div class="controls" role="group" aria-label={t(lang, 'controls.group')}>
+  <button type="button" data-control="theme" data-labels={JSON.stringify(labels.theme)} class="controls__btn">
+    <span data-control-value>{labels.theme.light}</span>
   </button>
-  <button type="button" data-control="notes" class="controls__btn">
-    <span data-control-value>Notes in margin</span>
+  <button type="button" data-control="notes" data-labels={JSON.stringify(labels.notes)} class="controls__btn">
+    <span data-control-value>{labels.notes.margin}</span>
   </button>
-  <button type="button" data-control="motion" class="controls__btn">
-    <span data-control-value>Motion on</span>
+  <button type="button" data-control="motion" data-labels={JSON.stringify(labels.motion)} class="controls__btn">
+    <span data-control-value>{labels.motion.on}</span>
   </button>
 </div>
 
@@ -45,7 +60,9 @@
     color: var(--ink-faint);
     cursor: pointer;
     border-bottom: 1px solid transparent;
-    transition: color 120ms ease, border-color 120ms ease;
+    transition:
+      color 120ms ease,
+      border-color 120ms ease;
   }
 
   .controls__btn:hover {

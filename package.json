@@ -10,7 +10,7 @@
     "prebuild": "npm run verify",
     "build": "astro build",
     "preview": "astro preview",
-    "verify": "node scripts/check-claims.mjs && node scripts/check-notes.mjs",
+    "verify": "node scripts/check-claims.mjs && node scripts/check-notes.mjs && node scripts/check-i18n.mjs",
     "check": "astro check",
     "astro": "astro",
     "postbuild": "node scripts/check-spacing.mjs"

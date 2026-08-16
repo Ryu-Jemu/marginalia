@@ -28,13 +28,11 @@ ownership:
 
 import N from '../../../components/note/N.astro';
 
-Most of this project is upstream of the model. Ray-tracing output for the
-DeepMIMO o1_28 scenario at 28 GHz goes through a Saleh-Valenzuela channel over
-three paths, gets beamed against a 32-point DFT codebook, and the arg-max beam
-per position becomes the label. That produced 84,019 sliding windows of forty
-past steps against ten future ones.<N id="bp-llm-data" /> Beams are predicted
-every 16 ms, which is the number that later decides whether the model is
-affordable at all.
+Ray-tracing output for the DeepMIMO o1_28 scenario at 28 GHz goes through a
+Saleh-Valenzuela channel over three paths, gets beamed against a 32-point DFT
+codebook, and the arg-max beam per position becomes the label. That produced
+84,019 sliding windows of forty past steps against ten future
+ones.<N id="bp-llm-data" /> Beams are predicted every 16 ms.
 
 The model is a frozen GPT-2 with three trainable stages around it — patch
 embedding with reversible normalisation, cross-variable attention over beam
@@ -42,8 +40,7 @@ index and departure angle, and reprogramming onto 256 text prototypes — plus a
 prompt prefix carrying domain knowledge, the instruction and the series
 statistics. 339,338 parameters move; the backbone does not.<N id="bp-llm-training" />
 
-It trained. That is the entire honest claim for this repository. There is no
-held-out split — the normalisation statistics and the loss come from the same
-indices — so the curve says the model fitted what it saw and nothing about
-whether it predicts beams. The evaluation that produced the survey's beamforming
-gains was a separate run.
+It trained. There is no held-out split — the normalisation statistics and the
+loss come from the same indices — so the curve says the model fitted what it saw
+and nothing about whether it predicts beams. The evaluation that produced the
+survey's beamforming gains was a separate run.

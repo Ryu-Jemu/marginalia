@@ -2,22 +2,25 @@
 import type { CollectionEntry } from 'astro:content';
 import StatusLabel from './StatusLabel.astro';
 import Actions from './Actions.astro';
+import { t, localise, type Lang } from '../../i18n/ui';
+import { slugOf } from '../../lib/content';
 
 interface Props {
   entry: CollectionEntry<'projects'>;
   compact?: boolean;
   /** Heading level, so a project can sit under a section or under a subsection. */
   as?: 'h3' | 'h4';
+  lang?: Lang;
 }
 
-const { entry, compact = false, as = 'h3' } = Astro.props;
+const { entry, compact = false, as = 'h3', lang = 'en' } = Astro.props;
 const p = entry.data;
-const href = `/work/${entry.id.replace(/^tier2\//, '')}/`;
+const href = localise(lang, `/work/${slugOf(entry)}/`);
 const Heading = as;
 
 const actions = [
   ...p.links.map((l) => ({ href: l.href, label: l.label, kind: l.kind })),
-  { href, label: 'Full record', kind: 'detail' as const },
+  { href, label: t(lang, 'work.built'), kind: 'detail' as const },
 ];
 ---
 
@@ -26,7 +29,7 @@ const actions = [
     <span>{p.period}</span>
     <span class="entry__sep">·</span>
     <span>{p.team}</span>
-    <StatusLabel status={p.status} />
+    <StatusLabel status={p.status} lang={lang} />
   </p>
 
   <Heading class="entry__title"><a href={href}>{p.title}</a></Heading>
@@ -35,7 +38,7 @@ const actions = [
   {
     !compact && (
       <p class="meta entry__role">
-        <span class="entry__key">Owned</span> {p.ownership.owned.join(' · ')}
+        <span class="entry__key">{t(lang, 'work.owned')}</span> {p.ownership.owned.join(' · ')}
       </p>
     )
   }

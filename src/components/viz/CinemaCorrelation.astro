@@ -9,16 +9,23 @@
  * Coefficients are Pearson's r on the study's own regional tables, recomputed
  * rather than copied, so the plate and the sentence cannot disagree.
  */
+import { t, type Lang } from '../../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' }: Props = Astro.props;
+
 interface Row {
   label: string;
   r: number;
   p: number;
 }
 const ROWS: Row[] = [
-  { label: 'CGV screens vs share', r: 0.684, p: 0.0614 },
-  { label: 'Lotte screens vs share', r: 0.569, p: 0.1414 },
-  { label: 'Megabox screens vs share', r: 0.55, p: 0.1581 },
-  { label: 'Consumption vs share', r: 0.532, p: 0.1746 },
+  { label: t(lang, 'viz.cinema.corr.row.cgv'), r: 0.684, p: 0.0614 },
+  { label: t(lang, 'viz.cinema.corr.row.lotte'), r: 0.569, p: 0.1414 },
+  { label: t(lang, 'viz.cinema.corr.row.megabox'), r: 0.55, p: 0.1581 },
+  { label: t(lang, 'viz.cinema.corr.row.consumption'), r: 0.532, p: 0.1746 },
 ];
 
 const W = 760;
@@ -32,9 +39,9 @@ const H = TOP + ROWS.length * ROW_H + 44;
 ---
 
 <svg class="viz corr" data-viz="corr" viewBox={`0 0 ${W} ${H}`} role="img"
-  aria-label="Pearson correlation between regional screen count and market share for three cinema chains, and between per-capita consumption and share. All four coefficients fall between 0.53 and 0.69 and none is significant at n equals 8.">
-  <text class="viz-label" x={LX} y="14">Pearson r across 8 regions</text>
-  <text class="viz-label" x={BAR_X + BAR_W + 8} y="14">significance</text>
+  aria-label={t(lang, 'viz.cinema.corr.aria')}>
+  <text class="viz-label" x={LX} y="14">{t(lang, 'viz.cinema.corr.title')}</text>
+  <text class="viz-label" x={BAR_X + BAR_W + 8} y="14">{t(lang, 'viz.cinema.corr.sig')}</text>
 
   <!-- the axis, so a coefficient is read against 1 rather than against itself -->
   <line class="viz-track" x1={BAR_X} y1={TOP - 8} x2={BAR_X + BAR_W} y2={TOP - 8}></line>
@@ -72,7 +79,7 @@ const H = TOP + ROWS.length * ROW_H + 44;
   }
 
   <text class="viz-label" x={LX} y={H - 16}>
-    n = 8 regions · not one coefficient reaches p &lt; 0.05
+    {t(lang, 'viz.cinema.corr.foot')}
   </text>
 </svg>
 

@@ -9,7 +9,14 @@
  *
  * The diagram is generated from the project's own `pipeline` data, so it cannot
  * describe a stage the content file does not claim.
+ *
+ * Every word on the plate arrives as a prop — stage, service and store names
+ * come from the project's content file, which is mirrored per language — so
+ * `lang` is accepted for symmetry with the other plates and nothing here needs
+ * to look a string up.
  */
+import type { Lang } from '../../i18n/ui';
+
 interface Stage {
   name: string;
   service: string;
@@ -21,6 +28,7 @@ interface Props {
   to: string;
   feeds?: string[];
   stages: Stage[];
+  lang?: Lang;
 }
 const { from, to, feeds = [], stages } = Astro.props;
 

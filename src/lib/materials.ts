@@ -34,9 +34,22 @@ export interface Material {
   caption?: string;
 }
 
-export type ResolvedMaterial =
-  | { kind: 'figure' | 'poster'; label: string; caption?: string; image: ImageMetadata }
-  | { kind: 'pdf' | 'link'; label: string; caption?: string; href: string };
+export type ResolvedFigure = {
+  kind: 'figure' | 'poster';
+  label: string;
+  caption?: string;
+  image: ImageMetadata;
+};
+export type ResolvedDoc = { kind: 'pdf' | 'link'; label: string; caption?: string; href: string };
+export type ResolvedMaterial = ResolvedFigure | ResolvedDoc;
+
+/* Array.filter does not narrow a union on its own, so the split is written as
+   predicates. Without them the component reads `.image` off a value the type
+   system still believes might be a link. */
+export const isFigure = (m: ResolvedMaterial): m is ResolvedFigure =>
+  m.kind === 'figure' || m.kind === 'poster';
+export const isDoc = (m: ResolvedMaterial): m is ResolvedDoc =>
+  m.kind === 'pdf' || m.kind === 'link';
 
 const missing = new Set<string>();
 

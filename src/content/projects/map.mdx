@@ -169,13 +169,11 @@ safety:
   - title: A missing feed degrades rather than fails
     detail: >-
       An upstream that does not answer produces a warning on the itinerary, not
-      a 5xx. A missing forecast should not take down a trip that has nothing to
-      do with the weather.
+      a 5xx.
   - title: Re-recommendation is capped at the day boundary
     detail: >-
       Three per itinerary per day, counted by a Redis Lua INCR and EXPIREAT that
-      expires at midnight Korean time rather than on a rolling window, so the
-      limit means what the person reading it thinks it means.
+      expires at midnight Korean time rather than on a rolling window.
   - title: The rate-limit key cannot be chosen by the caller
     detail: >-
       The forwarded-address header is read only when the immediate peer falls
@@ -184,7 +182,7 @@ safety:
   - title: Internal guards fail closed
     detail: >-
       The internal token is compared as bytes, so a non-ASCII header returns 403
-      rather than raising and returning 500. Failure falls to the closed side.
+      rather than raising and returning 500.
   - title: The reuse cache never stores a failure
     detail: >-
       Only a successful recommendation enters the cache, a hit rewrites the
@@ -215,16 +213,14 @@ fixes:
     symptom: >-
       Short-term forecasts came back empty for most districts. Asking for a
       district that did not exist returned data, because the miss fell through
-      to a province-level path — the wrong query worked and the right one did not.
+      to a province-level path.
     cause: >-
       Forecasts accumulate only on the grid points the poller subscribes to, but
       lookups used the requesting district's own grid point. Only 19 of the 243
       district grid points coincide with a subscribed one.
     fix: >-
       Resolve to the nearest active grid inside the same province, never across
-      a province line — Gapyeong is fourteen times closer to a Gangwon grid than
-      to its own province's, and a plausible forecast from the wrong zone is
-      worse than none. The rule is a pure function, pinned by tests, and both
+      a province line. The rule is a pure function, pinned by tests, and both
       the forecast and the observation paths now call it.
   - title: The poller died silently and left the day empty
     area: hub · scheduler
@@ -251,9 +247,7 @@ fixes:
       The region-code table had the two identifiers transposed at the point they
       were seeded.
     fix: >-
-      Corrected the mapping and covered the region table with tests, because a
-      transposition inside valid-looking data is invisible to every check that
-      only inspects shape.
+      Corrected the mapping and covered the region table with tests.
   - title: The rate limiter let the caller choose its own counter
     area: user · Java BFF · edge proxy
     symptom: >-
@@ -294,8 +288,8 @@ fixes:
       connection was only detected when its first query failed, which is to say
       after the job had already claimed it.
     fix: >-
-      Check the connection at the point it is borrowed. That adds one round trip
-      per checkout, which a recommendation performs a handful of times.
+      Check the connection at the point it is borrowed, at the cost of one round
+      trip per checkout.
   - title: An internal guard answered 500 where it should have answered 403
     area: hub · gateway
     symptom: >-
@@ -306,8 +300,7 @@ fixes:
       a non-ASCII operand.
     fix: >-
       Encode both sides to bytes before comparing, and refuse with 403 when the
-      value is absent or different. An authentication failure has to fall to the
-      closed side, not the error side.
+      value is absent or different.
 ---
 
 import N from '../../components/note/N.astro';
@@ -318,10 +311,10 @@ road network — are polled on a schedule, cached and normalised behind one
 service. A request for an itinerary is accepted immediately, planned on a
 stream, and answered when it is done.<N id="map-ownership" />
 
-The order is the design. A model asked to pick places from an open field invents
-them; given a candidate list a deterministic engine has already filtered by
-travel radius, weather and exclusion zones, the worst it can do is choose a bad
-real place.<N id="map-llm-budget" /> Visit order and travel legs are not asked
+A model asked to pick places from an open field invents them; given a candidate
+list a deterministic engine has already filtered by travel radius, weather and
+exclusion zones, the worst it can do is choose a bad real
+place.<N id="map-llm-budget" /> Visit order and travel legs are not asked
 for at all — they are computed from coordinates, exhaustively while that is
 cheap.<N id="map-tsp" /> Of the agent's fourteen nodes, two call a
 model.<N id="map-graph" />
@@ -332,10 +325,10 @@ payload, and the publish node always runs, so a failed job emits a failure event
 rather than leaving a client polling a row that will never change. There are 981
 automated tests behind that behaviour.<N id="map-test-count" />
 
-The data side is where the defects were. Forecasts accumulate only on the grid
-points the poller subscribes to, and the lookup path was asking for a different
-set entirely, so most districts returned nothing while a malformed request
-returned a usable answer.<N id="map-grid-coverage" /> The road-routing batch had
+Forecasts accumulate only on the grid points the poller subscribes to, and the
+lookup path was asking for a different set entirely, so most districts returned
+nothing while a malformed request returned a usable
+answer.<N id="map-grid-coverage" /> The road-routing batch had
 a ceiling the caller did not know about, and crossing it cost the whole
 itinerary rather than the excess.<N id="map-batch-cap" />
 

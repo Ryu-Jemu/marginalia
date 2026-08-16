@@ -64,6 +64,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Korean has no spaces inside a word, so the default break-anywhere behaviour
+ * cuts 어절 in half at the end of a line. `keep-all` moves the whole unit down
+ * instead, which is how Korean is set. The looser line-height gives the taller
+ * Hangul glyphs the room the Latin measure does not need. */
+html[lang='ko'] body {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-height: 1.68;
+}
+
 /* Numbers in running prose stay in the serif — they are sentences.
  * Only evidence values in the margin become tabular mono. This inversion of
  * the previous site's "every number is mono" rule is the typographic form of

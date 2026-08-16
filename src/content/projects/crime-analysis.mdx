@@ -28,9 +28,9 @@ ownership:
     - the report and presentation, which were shared work
 summary:
   - Five variables across Seoul's twenty-five districts, fitted by OLS and cross-checked with cross-validated Lasso and Ridge.
-  - Collinearity was checked before any coefficient was read — the highest variance inflation factor is 2.61, well inside the usual threshold of 5.
-  - Population and the density of entertainment venues carry the model. CCTV count, the variable the project set out to confirm, is not significant.
-  - Residuals are mapped by district rather than predictions, so the districts the model gets wrong are named rather than hidden.
+  - The highest variance inflation factor is 2.61, well inside the usual threshold of 5.
+  - Population and the density of entertainment venues carry the model. CCTV count is not significant.
+  - Residuals are mapped by district rather than predictions, which names the districts the model gets wrong.
 data:
   - value: "0.843"
     label: R², adjusted 0.801
@@ -48,32 +48,25 @@ data:
 
 import N from '../../components/note/N.astro';
 
-The premise going in was that surveillance density explains crime. Install more
-cameras where crime is high — the policy writes itself. The data does not
-support it.
+The premise going in was that surveillance density explains crime. The data does
+not support it.
 
 Five variables across Seoul's twenty-five districts explain about 84% of the
 variation between them.<N id="crime-model" /> The two that carry it are
 population and the density of entertainment venues. CCTV count is not
 significant.<N id="crime-significant" /> Crime concentrates where people and
-nightlife concentrate, which is a different policy conclusion from the one the
-project set out to confirm.
+nightlife concentrate.
 
-Getting there took more care than the fit itself. Population, income and
-streetlight counts move together across districts, so I checked variance
-inflation before reading a single coefficient — an unstable fit produces signs
-that are noise, and every conclusion drawn from them is decoration. With
-twenty-five rows a single OLS fit is one draw, so I re-fit with cross-validated
-Lasso and Ridge; the same variables survived with the same explanatory power.
+Population, income and streetlight counts move together across districts, so
+variance inflation was checked for every variable, and one of the five rests on
+weaker data than the others.<N id="crime-streetlight" /> The fit was
+cross-checked against cross-validated Lasso and Ridge; the same variables
+survived with the same explanatory power.
 
-The last step was mapping the residuals rather than the predictions. A
-prediction map flatters the model. A residual map names the districts it gets
-wrong, and those are clustered in a way that points at a floating-population
-variable I could not get at district
-level.<N id="crime-streetlight" /> That gap is in the report, next to the
-result.
+Residuals are mapped by district rather than predictions, which names the
+districts the model gets wrong. They cluster in a way that points at a
+floating-population variable that was not available at district level.
 
-The residual map is the part I would put in front of someone first. It over-predicts
-Seongdong by 1,862 crimes and under-predicts Mapo by 1,387,<N id="crime-residuals" />
-and the districts it misses are the ones with a daytime population the model
-never sees.
+The map over-predicts Seongdong by 1,862 crimes and under-predicts Mapo by
+1,387,<N id="crime-residuals" /> and the districts it misses are the ones with a
+daytime population the model never sees.

@@ -1,5 +1,6 @@
 ---
 import { nav } from '../../lib/site';
+import { t, type Lang } from '../../i18n/ui';
 
 /**
  * Where you are in the document, held at the left edge.
@@ -15,12 +16,16 @@ import { nav } from '../../lib/site';
  * Only shown where there is margin outside the reading column to put it. On a
  * narrower window the bar is the whole answer.
  */
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
 ---
 
-<nav class="rail" aria-label="Document sections">
+<nav class="rail" aria-label={t(lang, 'nav.contents')}>
   <ol class="rail__list">
     {
-      nav.map((item) => (
+      nav(lang).map((item) => (
         <li>
           <a class="rail__link" href={item.href} data-nav-link data-watches={item.watches}>
             <span class="rail__mark" aria-hidden="true" />

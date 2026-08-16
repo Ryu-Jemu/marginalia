@@ -1,0 +1,41 @@
+---
+title: examiner
+tagline: 검사와 변호인이 각자 수집한 근거로 다투고, 계산은 둘 중 누구에게도 맡기지 않는 팩트체킹 서비스.
+period: "2026.03 – 2026.06"
+team: 1인
+role: 설계와 구현 전체
+domain: other
+status: deployed
+tier: 2
+order: 7
+stack:
+  - Python
+  - LangChain
+  - LangGraph
+  - Gemini embeddings
+  - Chroma
+  - FastAPI
+  - Docker
+links:
+  - kind: deployed
+    href: https://factchecker-nlvz.onrender.com
+    label: 데모 열기
+ownership:
+  owned:
+    - 전부
+  notOwned:
+    - 판정이 옳은지에 대한 평가
+---
+
+import N from '../../../../components/note/N.astro';
+
+검사와 변호인이 3라운드에 걸쳐 논박하고, 각 측에는 전담 리서처가 따로
+붙습니다. 그래서 양측은 같은 자료를 다르게 읽은 결과가 아니라 서로 다른 근거를
+들고 옵니다. 판사가 공방을 평가하고 어느 쪽 리서처든 추가 조사에 다시 보낼 수
+있으며, 종료 조건을 명시해 판정이 어려운 주장에서도 루프가 무한히 돌지
+않습니다.
+
+“판단 불가”도 시스템이 반환할 수 있는 판정입니다. 최종 신뢰도 수치는 모델이
+생성하지 않고 Python에서 계산합니다.<N id="examiner-determinism" lang="ko" />
+인용은 프롬프트에서 금지하는 데 그치지 않고 코드에서 검색된 문서와 대조해
+검증합니다.

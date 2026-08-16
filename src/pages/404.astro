@@ -1,36 +1,46 @@
 ---
 import Base from '../layouts/Base.astro';
-import { site } from '../lib/site';
+import { t } from '../i18n/ui';
+
+/**
+ * One page for both trees. A 404 is served for an address that does not exist,
+ * so there is no locale to read off the path — it says both things instead of
+ * guessing, and each half points at its own document.
+ */
 ---
 
-<Base title={`Not found — ${site.name}`}>
+<Base lang="en" title="404 — Ryu Jemu">
   <main class="shell">
     <div class="column">
       <p class="meta">404</p>
-      <h1>No page here</h1>
-      <p class="lede">
-        Nothing at this address. The document starts at the top, and every claim it makes is
-        indexed on one page.
-      </p>
+      <h1>{t('en', 'label.notfound')}</h1>
+      <p class="lede">{t('en', 'label.notfound.body')}</p>
+      <p class="lede lede--ko" lang="ko">{t('ko', 'label.notfound.body')}</p>
       <ul class="links">
-        <li><a href="/">The document</a></li>
-        <li><a href="/evidence/">Evidence</a></li>
-        <li><a href="/colophon/">Colophon</a></li>
+        <li><a href="/">{t('en', 'label.home')}</a></li>
+        <li><a href="/ko/" lang="ko">{t('ko', 'label.home')}</a></li>
       </ul>
     </div>
   </main>
 </Base>
 
 <style>
-  main { padding-block: 6rem 8rem; }
-  h1 { margin-top: 0.6rem; }
+  main {
+    padding-block: 6rem 8rem;
+  }
+  h1 {
+    margin-top: 0.6rem;
+  }
   .lede {
     margin-top: 1rem;
     font-size: var(--t-lede);
     line-height: var(--lh-lede);
     font-weight: 300;
-    font-style: italic;
     color: var(--ink-muted);
+  }
+  .lede--ko {
+    font-size: 1rem;
+    color: var(--ink-faint);
   }
   .links {
     margin-top: 2rem;

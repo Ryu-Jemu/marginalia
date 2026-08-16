@@ -1,0 +1,16 @@
+---
+import Paper from '../../../components/pages/Paper.astro';
+import { researchOf } from '../../../lib/content';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const research = await researchOf('ko');
+  return research.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const build = entry.data.implementation;
+---
+
+<Paper entry={entry} lang="ko" buildHref={build ? `/ko/work/${build.project}/` : undefined} />

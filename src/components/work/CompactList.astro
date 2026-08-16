@@ -9,17 +9,21 @@ import StatusLabel from './StatusLabel.astro';
  * read the rest. Giving them the same vertical weight as the main projects
  * would say something about them that is not true.
  */
+import { localise, type Lang } from '../../i18n/ui';
+import { slugOf } from '../../lib/content';
+
 interface Props {
   entries: CollectionEntry<'projects'>[];
+  lang?: Lang;
 }
-const { entries } = Astro.props;
+const { entries, lang = 'en' } = Astro.props;
 ---
 
 <ul class="compact">
   {
     entries.map((entry) => {
       const p = entry.data;
-      const href = `/work/${entry.id.replace(/^tier2\//, '')}/`;
+      const href = localise(lang, `/work/${slugOf(entry)}/`);
       return (
         <li class="compact__row">
           <span class="compact__period">{p.period}</span>
@@ -31,7 +35,7 @@ const { entries } = Astro.props;
             <span class="compact__stack">{p.stack.slice(0, 4).join(' · ')}</span>
           </span>
           <span class="compact__status">
-            <StatusLabel status={p.status} />
+            <StatusLabel status={p.status} lang={lang} />
           </span>
         </li>
       );

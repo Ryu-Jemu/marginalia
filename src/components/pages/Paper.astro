@@ -1,0 +1,275 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Nav from '../chrome/Nav.astro';
+import NoteLines from '../note/NoteLines.astro';
+import Section from '../doc/Section.astro';
+import Bullets from '../doc/Bullets.astro';
+import Actions from '../work/Actions.astro';
+import Materials from '../research/Materials.astro';
+import ResearchFigures from '../research/ResearchFigures.astro';
+import N from '../note/N.astro';
+import { resolveMaterials } from '../../lib/materials';
+import { t, localise, type Lang } from '../../i18n/ui';
+import { authorship } from '../../lib/authorship';
+import { platesFor } from '../../lib/figures';
+
+/**
+ * A paper, with the work that produced it.
+ *
+ * The build is a section of this page rather than a separate entry in the
+ * research list: the code and the paper are one piece of work, and listing
+ * them apart made the same project look like two.
+ */
+interface Props {
+  entry: CollectionEntry<'research'>;
+  lang: Lang;
+  /** The project entry the implementation section links through to. */
+  buildHref?: string;
+}
+const { entry, lang, buildHref } = Astro.props;
+const r = entry.data;
+const materials = resolveMaterials(r.materials);
+
+let n = 0;
+const next = () => String(++n);
+/* Figures are numbered continuously down the page, so the implementation
+   section starts after however many plates the findings section drew. */
+const findingsPlates = platesFor(entry.id, 'findings').length;
+---
+
+<Base lang={lang} title={`${r.title} — ${t(lang, 'site.name')}`} description={r.summary ?? r.title}>
+  <Nav lang={lang} base={localise(lang, '/')} />
+
+  <main class="shell">
+    <article class="document" data-annotated>
+      <NoteLines />
+
+      <header class="column column--wide head">
+        <p class="head__back">
+          <a href={localise(lang, '/#research')}>&larr; {t(lang, 'nav.back')}</a>
+        </p>
+        <p class="meta head__meta">
+          <span class="head__authorship">{authorship(lang, r.authorPosition)}</span>
+          <span class="head__sep">·</span>
+          <span class:list={['head__status', `head__status--${r.status}`]}>
+            {t(lang, `research.status.${r.status}`)}
+          </span>
+          <span class="head__sep">·</span>
+          <span>{r.date}</span>
+        </p>
+        <h1 class="head__title">{r.title}</h1>
+        <p class="head__venue">{r.venue}</p>
+
+        {
+          r.contribution && (
+            <p class="head__contribution">
+              <span class="head__contribution-key">{t(lang, 'research.mypart')}</span>
+              {r.contribution}
+            </p>
+          )
+        }
+
+        {
+          (r.manuscriptId || r.grant || r.award) && (
+            <p class="head__ids">
+              {r.award && <span class="head__award">{r.award}</span>}
+              {r.manuscriptId && <span>{r.manuscriptId}</span>}
+              {r.grant && <span>{r.grant}</span>}
+            </p>
+          )
+        }
+      </header>
+
+      {
+        r.summary && (
+          <div class="column head__summary">
+            <p>{r.summary}</p>
+          </div>
+        )
+      }
+
+      {
+        r.role.length > 0 && (
+          <Section id="role" n={next()} title={t(lang, 'research.what')}>
+            <div class="column column--wide">
+              <Bullets items={r.role} tone="ink" />
+            </div>
+          </Section>
+        )
+      }
+
+      {
+        r.method.length > 0 && (
+          <Section id="method" n={next()} title={t(lang, 'research.how')}>
+            <div class="column column--wide">
+              <Bullets items={r.method} />
+            </div>
+          </Section>
+        )
+      }
+
+      {
+        r.findings.length > 0 && (
+          <Section id="findings" n={next()} title={t(lang, 'research.found')}>
+            <div class="column column--wide">
+              <Bullets items={r.findings} tone="ink" />
+            </div>
+
+            <div class="column column--wide chart">
+              <ResearchFigures id={entry.id} part="findings" lang={lang} />
+            </div>
+
+            {
+              entry.id === 'ask-2026' && (
+                <div class="column">
+                  <p class="aside">
+                    {t(lang, 'research.aside.ask')}
+                    <N id="rl-myopic" lang={lang} />
+                  </p>
+                </div>
+              )
+            }
+          </Section>
+        )
+      }
+
+      {
+        r.implementation && (
+          <Section
+            id="implementation"
+            n={next()}
+            title={t(lang, 'research.build')}
+            lede={t(lang, 'research.build.lede')}
+          >
+            <div class="column column--wide">
+              <p class="build__summary">{r.implementation.summary}</p>
+              <Bullets items={r.implementation.points} tone="ink" />
+              {buildHref && (
+                <Actions
+                  actions={[{ href: buildHref, label: t(lang, 'work.built'), kind: 'detail' }]}
+                />
+              )}
+            </div>
+
+            <div class="column column--wide chart">
+              <ResearchFigures
+                id={entry.id}
+                part="implementation"
+                startAt={findingsPlates}
+                lang={lang}
+              />
+            </div>
+          </Section>
+        )
+      }
+
+      {
+        materials.length > 0 && (
+          <Section
+            id="materials"
+            n={next()}
+            title={t(lang, 'research.paper')}
+            lede={t(lang, 'research.paper.lede')}
+          >
+            <div class="column column--wide">
+              <Materials items={materials} lang={lang} />
+            </div>
+          </Section>
+        )
+      }
+    </article>
+  </main>
+</Base>
+
+<style>
+  main {
+    padding-block: 1.75rem 5rem;
+  }
+  .head__back {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    margin-bottom: 1.5rem;
+  }
+  .head__back a {
+    color: var(--ink-faint);
+    text-decoration: none;
+  }
+  .head__back a:hover {
+    color: var(--rubric);
+  }
+  .head__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-bottom: 0.6rem;
+  }
+  .head__authorship {
+    color: var(--rubric);
+  }
+  .head__sep {
+    color: var(--rule-strong);
+  }
+  .head__status--under-review,
+  .head__status--revision {
+    color: var(--boundary);
+  }
+  .head__title {
+    font-size: clamp(1.75rem, 2.2vw + 1rem, 2.5rem);
+    line-height: 1.12;
+    letter-spacing: -0.024em;
+    font-weight: 600;
+  }
+  .head__venue {
+    margin-top: 0.5rem;
+    color: var(--ink-muted);
+    font-style: italic;
+    font-size: var(--t-lede);
+  }
+  .head__contribution {
+    margin-top: 0.9rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    color: var(--ink);
+  }
+  .head__contribution-key {
+    font-size: var(--t-meta);
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--rubric);
+  }
+  .head__ids {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+    margin-top: 0.7rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    color: var(--ink-faint);
+  }
+  .head__award {
+    color: var(--rubric);
+  }
+  .head__summary {
+    margin-top: 1rem;
+    color: var(--ink-muted);
+    font-size: var(--t-lede);
+    line-height: var(--lh-lede);
+  }
+  .build__summary {
+    margin-bottom: 0.9rem;
+    color: var(--ink-muted);
+  }
+  .chart {
+    margin-top: 1.25rem;
+  }
+  .aside {
+    margin-top: 0.8rem;
+    color: var(--ink-faint);
+    font-size: 0.9375rem;
+  }
+</style>

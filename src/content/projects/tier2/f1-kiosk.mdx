@@ -23,8 +23,6 @@ ownership:
 A 1080 by 1920 portrait interface across six screens, with a shared header
 carrying the clock and the countdown to the next race.
 
-The interesting part is small: an unattended kiosk has to return to its landing
-screen, but a timer that fires while someone is mid-interaction is worse than no
-timer. Autoplay and manual control are the same state machine rather than two
-timers racing, so touching anything suspends the return and releases it fifty
-seconds after the last input.
+An unattended kiosk returns to its landing screen. Autoplay and manual control
+are the same state machine rather than two timers racing, so touching anything
+suspends the return and releases it fifty seconds after the last input.

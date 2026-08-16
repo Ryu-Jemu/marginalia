@@ -10,6 +10,13 @@
  * 4.73 ms the marker would sit three bar-widths off the plate, and a marker
  * that never lands is not a marker.
  */
+import { t, type Lang } from '../../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+
 interface Row {
   label: string;
   llm: number;
@@ -17,10 +24,10 @@ interface Row {
   unit: string;
 }
 const ROWS: Row[] = [
-  { label: 'Avg. latency', llm: 4.73, lstm: 1.74, unit: 'ms' },
-  { label: 'Peak memory', llm: 949.67, lstm: 24.73, unit: 'MB' },
-  { label: 'Avg. power', llm: 22.55, lstm: 37.41, unit: 'W' },
-  { label: 'Energy / inference', llm: 0.137, lstm: 0.054, unit: 'J' },
+  { label: t(lang, 'viz.beam.over.latency'), llm: 4.73, lstm: 1.74, unit: 'ms' },
+  { label: t(lang, 'viz.beam.over.memory'), llm: 949.67, lstm: 24.73, unit: 'MB' },
+  { label: t(lang, 'viz.beam.over.power'), llm: 22.55, lstm: 37.41, unit: 'W' },
+  { label: t(lang, 'viz.beam.over.energy'), llm: 0.137, lstm: 0.054, unit: 'J' },
 ];
 
 const W = 900;
@@ -37,13 +44,13 @@ const fmt = (v: number) => (v >= 100 ? v.toFixed(2) : v >= 1 ? v.toFixed(2) : v.
 ---
 
 <svg class="viz over" data-viz="over" viewBox={`0 0 ${W} ${H}`} role="img"
-  aria-label="Inference overhead. BP-LLM against cascaded LSTM: latency 4.73 versus 1.74 milliseconds, peak memory 949.67 versus 24.73 megabytes, average power 22.55 versus 37.41 watts, energy per inference 0.137 versus 0.054 joules.">
+  aria-label={t(lang, 'viz.beam.over.aria')}>
   <g data-over-key>
     <rect class="over__swatch over__swatch--llm" x={LX} y="6" width="12" height="9" rx="2" />
     <text class="viz-label" x={LX + 18} y="14">BP-LLM</text>
     <rect class="over__swatch over__swatch--lstm" x={LX + 92} y="6" width="12" height="9" rx="2" />
     <text class="viz-label" x={LX + 110} y="14">Cascaded LSTM</text>
-    <text class="viz-label" x={VAL_X + 92} y="14" text-anchor="end">ratio</text>
+    <text class="viz-label" x={VAL_X + 92} y="14" text-anchor="end">{t(lang, 'viz.beam.over.ratio')}</text>
   </g>
 
   {
@@ -81,7 +88,7 @@ const fmt = (v: number) => (v >= 100 ? v.toFixed(2) : v >= 1 ? v.toFixed(2) : v.
   }
 
   <text class="viz-label" x={LX} y={H - 12}>
-    The language model costs latency, memory and energy, and draws less power. The task allows 16 ms per prediction; both finish inside it.
+    {t(lang, 'viz.beam.over.foot')}
   </text>
 </svg>
 

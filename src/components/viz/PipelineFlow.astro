@@ -6,7 +6,13 @@
  * the stage boxes rather than over them, so a record visibly enters a stage and
  * comes out the other side — the animation is the diagram's content, not a
  * flourish on top of it.
+ *
+ * Every word on the plate arrives as a prop, already in the caller's language,
+ * so `lang` is accepted for symmetry with the other plates and nothing here
+ * needs to look a string up.
  */
+import type { Lang } from '../../i18n/ui';
+
 interface Stage {
   name: string;
   detail: string;
@@ -16,6 +22,7 @@ interface Props {
   /** Text at the two ends of the track. */
   from: string;
   to: string;
+  lang?: Lang;
 }
 const { stages, from, to } = Astro.props;
 

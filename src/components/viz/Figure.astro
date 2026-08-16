@@ -9,19 +9,22 @@
  * The caption is numbered like a paper's, and the SVG is hidden from assistive
  * technology because the caption and the prose carry the same content.
  */
+import { t, type Lang } from '../../i18n/ui';
+
 interface Props {
   n: string;
   title: string;
   /** Wider than the reading column, spilling into the margin. */
   wide?: boolean;
+  lang?: Lang;
 }
-const { n, title, wide = false } = Astro.props;
+const { n, title, wide = false, lang = 'en' } = Astro.props;
 ---
 
 <figure class:list={['figure', wide && 'figure--wide']}>
   <div class="figure__plate"><slot /></div>
   <figcaption class="figure__caption">
-    <span class="figure__n">Fig. {n}</span>
+    <span class="figure__n">{t(lang, 'label.figure')} {n}</span>
     {title}
   </figcaption>
 </figure>

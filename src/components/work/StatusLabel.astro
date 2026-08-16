@@ -5,22 +5,19 @@
  *  `hosting` is a separate fact from `status`. A service can have been
  *  deployed and demonstrated and have its servers powered down now; saying
  *  only "deployed" would let a reader assume they can open it. */
+import { t, type Lang } from '../../i18n/ui';
+
 interface Props {
   status: 'deployed' | 'in-progress' | 'archived' | 'on-hold';
   hosting?: 'offline' | 'reachable' | 'none';
+  lang?: Lang;
 }
-const { status, hosting = 'none' } = Astro.props;
-const LABEL = {
-  deployed: 'Deployed',
-  'in-progress': 'In progress',
-  archived: 'Archived',
-  'on-hold': 'On hold',
-} as const;
+const { status, hosting = 'none', lang = 'en' } = Astro.props;
 ---
 
 <span class="status-set">
-  <span class:list={['status', `status--${status}`]}>{LABEL[status]}</span>
-  {hosting === 'offline' && <span class="status status--offline">Servers off</span>}
+  <span class:list={['status', `status--${status}`]}>{t(lang, `status.${status}`)}</span>
+  {hosting === 'offline' && <span class="status status--offline">{t(lang, 'status.offline')}</span>}
 </span>
 
 <style>

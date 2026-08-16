@@ -14,7 +14,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, relative } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const DIRS = ['src/content', 'src/pages', 'src/components', 'src/layouts', 'src/data'];
+const DIRS = ['src/content', 'src/pages', 'src/components', 'src/layouts', 'src/i18n'];
 const EXTS = new Set(['.md', '.mdx', '.yaml', '.yml', '.astro', '.ts', '.js', '.json']);
 
 const RULES = [
@@ -92,6 +92,48 @@ const RULES = [
     re: /\b(beam prediction|BP-LLM)\b[^.]{0,80}\b(accuracy|top-?k|precision|achiev)\w*/i,
     why: 'BP-LLM has no evaluation metrics implemented; there is no accuracy to report.',
     instead: 'Report only the training loss and state that evaluation is not implemented.',
+  },
+  /* ── the same rules, in Korean ─────────────────────────────────────────
+   * A gate that only reads English would let the Korean mirror say anything.
+   * These are the claims that mattered enough to be banned in the first place,
+   * written the way they would actually appear in Korean copy. */
+  {
+    id: 'ko-second-author',
+    re: /제\s?2\s?저자|공동\s?제\s?1\s?저자/,
+    why: 'The IEEE TAI author list places him 4th of 7.',
+    instead: 'authorPosition {index, of} renders the position mechanically.',
+  },
+  {
+    id: 'ko-zero-loss',
+    re: /무손실|손실\s?없이|유실\s?없이|누락\s?없이/,
+    exempt: /(조건|검증|해당|그)\s?(에서|하에서|기준)/,
+    why: 'A loss claim with no stated scope reads as a durability guarantee.',
+    instead: '해당 E2E 검증 조건에서 누락 이벤트 0건 (3,948 = 3,948).',
+  },
+  {
+    id: 'ko-operations-metrics',
+    re: /가동률|무중단|고가용성|대규모\s?트래픽|\bSLAs?\b|\bSLOs?\b/,
+    why: 'Nothing here is operated, so there are no availability figures to report.',
+    instead: 'Remove.',
+  },
+  {
+    id: 'ko-built-infra',
+    re: /(CI\/?CD|파이프라인)[^.]{0,20}구축|쿠버네티스[^.]{0,20}(운영|구축|관리)|모니터링[^.]{0,10}운영/,
+    exempt: /(않|없|미수행|아님)/,
+    why: 'The repository audit records CI/CD and cluster operation as not done.',
+    instead: '배포 매니페스트 작성과 설정 참조 오류 수정까지가 실제 범위.',
+  },
+  {
+    id: 'ko-bp-llm-accuracy',
+    re: /(빔\s?예측|BP-LLM)[^.]{0,60}(정확도|성능\s?달성|달성했)/,
+    why: 'BP-LLM has no evaluation metrics implemented; there is no accuracy to report.',
+    instead: '학습 손실만 보고하고, 평가는 구현되지 않았음을 함께 적는다.',
+  },
+  {
+    id: 'ko-domain-expert',
+    re: /금융\s?도메인\s?(전문가|전문성)|데이터\s?전문가/,
+    why: 'None of these were measured, and student projects do not support them.',
+    instead: 'Describe the mechanism instead.',
   },
   {
     id: 'sensitive-personal-data',

@@ -7,27 +7,29 @@ import DataPanel from '../doc/DataPanel.astro';
 import ProductDeck from '../viz/ProductDeck.astro';
 import Figure from '../viz/Figure.astro';
 import SystemFlow from '../viz/SystemFlow.astro';
+import { t, localise, type Lang } from '../../i18n/ui';
+import { slugOf } from '../../lib/content';
 
 /**
  * A product on the overview page.
  *
  * The whole pipeline first, then what it is in four bullets, then the figures
- * and the phones. Nothing here explains how a defect was fixed — that is a
+ * and the phone. Nothing here explains how a defect was fixed — that is a
  * click away, which is what keeps this page scannable.
  */
 interface Props {
   entry: CollectionEntry<'projects'>;
   n: string;
+  lang: Lang;
 }
-const { entry, n } = Astro.props;
+const { entry, n, lang } = Astro.props;
 const p = entry.data;
-const slug = entry.id.replace(/^tier2\//, '');
-const href = `/work/${slug}/`;
+const href = localise(lang, `/work/${slugOf(entry)}/`);
 
 /* The one filled button points at the write-up, not at an address whose
    servers are off. */
 const actions = [
-  { href, label: 'How it was built', kind: 'deployed' as const },
+  { href, label: t(lang, 'work.built'), kind: 'deployed' as const },
   ...p.links.map((l) => ({
     href: l.href,
     label: l.label,
@@ -42,7 +44,7 @@ const actions = [
       <span>{p.period}</span>
       <span class="project__sep">·</span>
       <span>{p.team}</span>
-      <StatusLabel status={p.status} hosting={p.hosting} />
+      <StatusLabel status={p.status} hosting={p.hosting} lang={lang} />
     </p>
     <h3 class="project__title"><a href={href}>{p.title}</a></h3>
     <p class="project__tagline">{p.tagline}</p>
@@ -51,12 +53,13 @@ const actions = [
   {
     p.pipeline && (
       <div class="column column--wide project__flow">
-        <Figure n={n} title={`${p.title} — the pipeline end to end.`}>
+        <Figure n={n} title={t(lang, 'fig.pipeline', { title: p.title })} lang={lang}>
           <SystemFlow
             from={p.pipeline.from}
             to={p.pipeline.to}
             feeds={p.pipeline.feeds}
             stages={p.pipeline.stages}
+            lang={lang}
           />
         </Figure>
       </div>
@@ -65,7 +68,7 @@ const actions = [
 
   <div class="column column--wide project__body">
     <div class="project__side">
-      <ProductDeck slug={slug} />
+      <ProductDeck slug={slugOf(entry)} lang={lang} />
     </div>
 
     <div class="project__lead">
@@ -125,7 +128,7 @@ const actions = [
   }
   @media (min-width: 52rem) {
     .project__body {
-      grid-template-columns: 15.5rem minmax(0, 1fr);
+      grid-template-columns: 20.5rem minmax(0, 1fr);
       gap: 2rem;
       align-items: start;
     }

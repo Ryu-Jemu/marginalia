@@ -1,0 +1,314 @@
+# 이 사이트의 모든 수치는 여기 항목 하나로 환원됩니다.
+#
+# 조건 없는 measurement는 빌드를 통과하지 못하고, 링크 없는 source도
+# 마찬가지입니다. src/content.config.ts를 참고하세요.
+# npm run verify는 아무 곳에서도 인용하지 않는 note도 거부합니다.
+
+# ── Dartoo ────────────────────────────────────────────────────────────────
+
+- id: dartoo-publisher-gap
+  kind: measurement
+  body: >-
+    공시 테이블에는 959건이 적재됐지만 publisher가 발행한 이벤트는 805건이었습니다.
+    누락된 154건을 가리키는 로그는 어디에도 없었습니다.
+  condition: >-
+    하루치 수집분을 대상으로, 적재된 행 수와 발행된 이벤트 수를 대조해
+    집계했습니다.
+
+- id: dartoo-e2e-parity
+  kind: measurement
+  body: >-
+    lazy-reconnect 수정 이후 동일한 E2E 실행에서 적재 3,948건, 발행 이벤트
+    3,948건이 나왔습니다.
+  condition: >-
+    해당 fixture 세트에 대한 E2E 검증 1회이며, 위 격차와 같은 방식으로
+    집계했습니다.
+
+- id: dartoo-test-count
+  kind: measurement
+  body: >-
+    직접 담당한 세 서비스에 자동화 테스트 319건이 있습니다. ingestion 110,
+    notification 156, disclosure 53건입니다.
+  condition: >-
+    세 저장소의 tests/ 아래 def test_ 함수 개수이며, virtualenv는 제외하고
+    2026-08-13에 측정했습니다.
+
+- id: dartoo-not-ready-experiment
+  kind: measurement
+  body: >-
+    재시도 카운터가 영구 실패로 처리한 공시 4건이 일주일 뒤 재요청에서 정상
+    응답을 반환했습니다.
+  condition: >-
+    4월 1일 영구 실패로 표시된 접수번호 4건을 4월 8일 같은 상위 endpoint에
+    다시 요청했습니다.
+
+- id: dartoo-normaliser
+  kind: measurement
+  body: >-
+    문서 정규화 모듈이 105줄에서 566줄이 됐습니다. charset 자동 감지, 한국어
+    codec 우선순위 목록, 레거시 인코딩 alias 정규화가 들어갔습니다.
+  condition: >-
+    파싱 브랜치 병합 전후의 content_normalizer.py 줄 수입니다.
+
+- id: dartoo-ownership
+  kind: scope
+  body: >-
+    ingestion, disclosure, notification을 처음부터 끝까지 담당했고 summary와
+    나머지 서비스와의 연동을 구현했습니다. 시스템의 네 개 서비스입니다.
+
+- id: dartoo-notification-scope
+  kind: scope
+  body: >-
+    sha256 idempotency key, 10단계 orchestration, 7일 TTL dead-letter queue는
+    notification 서비스에 한정된 내용입니다.
+
+- id: dartoo-lua-scope
+  kind: scope
+  body: >-
+    Redis Lua atomic counter는 summary 서비스에 한정됩니다. 만료 없는 key가
+    남을 수 있던 INCR과 별도 EXPIRE를 대체했습니다.
+
+- id: dartoo-award
+  kind: source
+  body: >-
+    한양대학교 SW/ICT/AI 학술대회 IT/CSE 응용연구개발 부문 대상, 2025년 12월.
+  href: https://dartoo.co.kr
+
+# ── MAP ───────────────────────────────────────────────────────────────────
+
+- id: map-terminal-state
+  kind: scope
+  body: >-
+    완료 이벤트가 자기 job 레코드보다 먼저 도착하면, 뒤늦은 in_progress 쓰기가
+    종료 상태를 덮어썼습니다. 회귀 테스트 3건이 문제가 되던 순서를 고정합니다.
+
+- id: map-grid-coverage
+  kind: measurement
+  body: >-
+    행정구역 격자점 243개 중 구독 중인 예보 격자와 일치한 것은 19개뿐이어서,
+    단기예보 조회의 92.5%가 빈 응답이었습니다.
+  condition: >-
+    구별 대표 격자점을 poller가 실제로 구독하는 격자 집합과 조인해 seed 테이블
+    전체에서 집계했습니다.
+
+- id: map-batch-cap
+  kind: measurement
+  body: >-
+    gateway가 한 요청에서 받는 경로 구간은 최대 20개여서, 22개 지점을 넘는
+    일정은 통째로 거부되고 직선으로 그려졌습니다.
+  condition: >-
+    gateway 자체 요청 검증기에서 읽은 상한값을 BFF가 보내던 batch 크기와
+    대조했습니다.
+
+- id: map-rate-limit
+  kind: scope
+  body: >-
+    재추천은 일정당 하루 3회로 제한되며, Redis Lua INCR과 EXPIREAT로 rolling
+    window가 아니라 KST 자정에 만료됩니다.
+
+- id: map-cache-tiers
+  kind: scope
+  body: >-
+    gateway 캐시는 2계층입니다. Redis L1 뒤에, 요청이 오기 전에 외부 데이터를
+    미리 채워 두는 예약 prefetch가 있습니다.
+
+- id: map-llm-budget
+  kind: scope
+  body: >-
+    agent는 요청당 모델을 최대 3회 호출합니다. 후보는 결정론적 규칙 엔진이
+    먼저 걸러내고, 모델은 남은 것 중에서만 고릅니다.
+
+- id: map-tsp
+  kind: scope
+  body: >-
+    방문지가 8개 미만이면 방문 순서를 전수 탐색으로 풉니다. 최대
+    5,040가지입니다. 그보다 많으면 nearest-neighbour와 2-opt로 넘어갑니다.
+
+- id: map-ownership
+  kind: scope
+  body: >-
+    gateway, agent, Java BFF, vision, infrastructure, 관리자 콘솔 여섯 서비스가
+    제 담당입니다. Flutter 클라이언트에서는 기능 단위로 기여했습니다.
+
+# ── 5G 가격 결정 강화학습 ─────────────────────────────────────────────────
+
+- id: rl-uplift
+  kind: measurement
+  body: >-
+    max-price 기준선 대비 학습된 정책이 m=1에서 2.1%, m=3에서 105.8%, m=5에서
+    195.8%, m=10에서 363.2% 높았습니다.
+  condition: >-
+    시뮬레이션 환경, 이탈 민감도 계수 m. p<0.001에서 유의한 구간은 m≥3뿐이며
+    m=1은 p=0.472입니다.
+
+- id: rl-embb-attribution
+  kind: measurement
+  body: >-
+    m=3 매출 격차의 97%가 eMBB slice 하나에서 나오며, eMBB 유지율은 기준선의
+    3.3%에 대해 88.8%를 유지합니다.
+  condition: >-
+    대표 비교와 같은 실행을 slice별 매출로 분해했습니다.
+
+- id: rl-myopic
+  kind: measurement
+  body: >-
+    같은 정책을 할인율 0으로 학습시킨 근시안 버전은 모든 m에서 max-price
+    기준선과 구분되지 않습니다.
+  condition: >-
+    본 비교와 같은 환경과 seed입니다. 학습 알고리즘과 미래 고려를 분리하는
+    대조군입니다.
+
+- id: rl-algorithms
+  kind: measurement
+  body: >-
+    m=1에서 순보상은 PPO 7,334, SAC 7,370, TD3 6,862입니다. 결정론적 방법은
+    PPO보다 6.4% 낮고, SAC는 PPO와 구분되지 않습니다.
+  condition: >-
+    같은 환경, 정책당 seed 3개, PPO와 SAC 사이는 p=0.938입니다. SAC와 TD3는
+    m=1에서만 실행했습니다.
+
+- id: rl-award
+  kind: source
+  body: >-
+    제1저자. 한국정보처리학회 ASK 2026 춘계학술발표대회 논문 경진대회 은상.
+    논문 C2026A0229, 과제 NRF RS-2024-00336983.
+  href: https://github.com/Ryu-Jemu/network-pricing
+
+# ── 서울 범죄 요인 분석 ───────────────────────────────────────────────────
+
+- id: crime-model
+  kind: measurement
+  body: >-
+    다섯 개 변수가 서울 25개 자치구 범죄 변동의 84%를 설명합니다. R² 0.843,
+    조정 R² 0.801입니다.
+  condition: >-
+    25개 자치구 OLS이며, LassoCV와 RidgeCV 5-fold로 교차 확인했습니다.
+
+- id: crime-significant
+  kind: measurement
+  body: >-
+    인구(p=0.0006)와 유흥주점 밀도(p=0.0004)가 유의합니다. CCTV 수는 p=0.297로
+    유의하지 않습니다.
+  condition: >-
+    같은 OLS 적합을 연구 자체 데이터로 재적합했습니다. 다섯 변수의 VIF는
+    1.10에서 2.61 사이여서 다중공선성이 계수를 왜곡하지 않습니다.
+
+- id: crime-residuals
+  kind: measurement
+  body: >-
+    모형은 성동구를 1,862건 과대, 마포구를 1,387건 과소 예측합니다. 변동의
+    84%를 설명하는 적합에서 3,249건의 폭입니다.
+  condition: >-
+    같은 OLS 적합의 자치구별 실측값에서 예측값을 뺀 값입니다.
+
+- id: crime-streetlight
+  kind: scope
+  body: >-
+    가로등 수는 일부 자치구만 공개돼 있어 나머지는 전력 사용량에서
+    추정했습니다. 그래서 이 변수 하나는 다른 변수보다 근거가 약합니다.
+
+# ── 멀티플렉스 매출 분석 ──────────────────────────────────────────────────
+
+- id: cinema-fall
+  kind: measurement
+  body: >-
+    극장 매출은 2019년 정점 대비 2021년까지 87.6%, 관객 수는 88.9%
+    줄었습니다. 2억 2,700만 명에서 2,500만 명입니다.
+  condition: >-
+    2004–2021년 전국 박스오피스 시계열을 국내외 개봉작 합산으로 연도별
+    집계해, 연구 자체 데이터에서 재계산했습니다.
+
+- id: cinema-correlation
+  kind: measurement
+  body: >-
+    스크린 수와 권역 점유율의 상관은 세 체인에서 각각 r = 0.684, 0.569,
+    0.550입니다. 어느 것도 p < 0.05에 이르지 못하며 가장 근접한 값이
+    p = 0.061입니다.
+  condition: >-
+    8개 권역에 대한 Pearson r을 연구의 권역별 표에서 재계산했습니다. 1인당
+    소비와 점유율도 같은 양상입니다.
+
+# ── 연구 ──────────────────────────────────────────────────────────────────
+
+- id: ieee-position
+  kind: source
+  body: >-
+    서베이 논문 저자 7인 중 4번째이며, 심사 중입니다.
+  href: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=9078688
+
+- id: ieee-beam-section
+  kind: scope
+  body: >-
+    제가 쓴 부분은 Section III.E, Beam Prediction입니다. 빔 예측을 언어 모델을
+    위한 시계열 문제로 다루는 절입니다.
+
+- id: beam-reprogramming
+  kind: scope
+  body: >-
+    해당 절이 다루는 접근입니다. 빔 인덱스와 출발각을 patch embedding하고,
+    모델이 이미 아는 토큰으로 reprogramming한 뒤, 도메인 지식과 과제 설명,
+    시계열 통계를 prefix로 붙입니다.
+
+- id: bp-llm-training
+  kind: measurement
+  body: >-
+    빔 예측용으로 reprogramming한 frozen GPT-2입니다. 학습 가능한 파라미터는
+    339,338개, 학습 손실은 10 epoch 동안 2.0826에서 0.0009로 내려갔습니다.
+  condition: >-
+    run log의 epoch 평균 손실이며, 생성된 84,019개 샘플 중 20,000개를 Apple
+    silicon에서 34분간 학습했습니다. 학습 손실뿐이고, held-out 분할을
+    구현하지 않아 보고할 평가 지표가 없습니다.
+
+- id: bp-llm-data
+  kind: measurement
+  body: >-
+    DeepMIMO o1_28 시나리오의 ray-tracing 세트 378개가 sliding window
+    84,019개가 됐습니다. 과거 40스텝에 대해 미래 10스텝입니다.
+  condition: >-
+    전처리 run log에서 집계했습니다. beam search가 빈 시퀀스를 반환한 세트는
+    값을 채우지 않고 건너뛰었습니다.
+
+- id: teaching-assistant
+  kind: source
+  body: >-
+    한 학기 동안 주 2시간 C 프로그래밍 실습을 맡았습니다. 과제 5건을
+    출제·채점하고 시험을 감독했습니다.
+  href: https://www.hanyang.ac.kr/
+
+# ── 그 외 작업 ────────────────────────────────────────────────────────────
+
+- id: repo-spread
+  kind: measurement
+  body: >-
+    Python, Java, C#, JavaScript로 작성한 개인 저장소 12개, 그리고 팀 조직
+    안에서 담당한 Dartoo 네 개 서비스와 MAP 여섯 개 서비스가 있습니다.
+  condition: >-
+    github.com/Ryu-Jemu의 비-fork 저장소 기준으로 2026-08-13에 집계했습니다.
+    12개에 팀 작업은 포함하지 않았습니다.
+
+- id: invader-collaboration
+  kind: scope
+  body: >-
+    6인 Java 프로젝트를 GitHub Actions와 Jira로 진행했습니다. 배정된 기능을
+    맡았고, 아키텍처와 리드의 결정은 제 몫이 아니었습니다.
+
+- id: map-test-count
+  kind: measurement
+  body: >-
+    담당한 MAP 여섯 개 서비스에 자동화 테스트 981건이 있습니다. Java BFF 429,
+    gateway 301, agent 220, vision 17, admin 14건입니다.
+  condition: >-
+    Java 서비스는 src/test 아래 JUnit @Test 어노테이션, Python 서비스는 tests/
+    아래 def test_ 함수 기준이며 2026-08-16에 측정했습니다.
+
+- id: map-graph
+  kind: scope
+  body: >-
+    추천 agent는 14개 노드의 LangGraph입니다. 모델을 호출하는 노드는 둘이고,
+    방문 순서와 이동 구간은 좌표에서 계산합니다.
+
+- id: examiner-determinism
+  kind: scope
+  body: >-
+    최종 신뢰도 수치는 모델이 만드는 것이 아니라 Python에서 계산하고, 인용은
+    코드에서 검색된 문서와 대조해 검증합니다.

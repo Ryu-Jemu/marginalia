@@ -6,6 +6,8 @@ import BeamArchitecture from '../viz/BeamArchitecture.astro';
 import BeamGain from '../viz/BeamGain.astro';
 import BeamOverhead from '../viz/BeamOverhead.astro';
 import BeamTraining from '../viz/BeamTraining.astro';
+import { platesFor, type Plate } from '../../lib/figures';
+import { t, type Lang } from '../../i18n/ui';
 
 /**
  * The plates that belong to a given paper.
@@ -13,71 +15,41 @@ import BeamTraining from '../viz/BeamTraining.astro';
  * Every one is drawn from the manuscript's own published values rather than
  * lifted as an image, so the numbers on the page and the numbers in the paper
  * are the same numbers.
+ *
+ * `part` splits them between the two places a paper's page has for a plate:
+ * what the paper found, and what the code behind it did. Which plates go where
+ * is `lib/figures.ts`, which the page also reads to keep the numbering
+ * continuous across the two.
  */
 interface Props {
   id: string;
+  part?: 'findings' | 'implementation';
+  startAt?: number;
+  lang?: Lang;
 }
-const { id } = Astro.props;
-let n = 0;
-const next = () => String(++n);
+const { id, part = 'findings', startAt = 0, lang = 'en' } = Astro.props;
+
+const CAPTION: Record<Plate, string> = {
+  pricing: 'fig.pricing',
+  pricingAlgorithms: 'fig.pricing.alg',
+  beamGain: 'fig.beam.gain',
+  beamOverhead: 'fig.beam.overhead',
+  beamArchitecture: 'fig.beam.arch',
+  beamTraining: 'fig.beam.train',
+};
+
+const plates = platesFor(id, part);
 ---
 
 {
-  id === 'ask-2026' && (
-    <>
-      <Figure
-        n={next()}
-        title="Revenue over the max-price baseline, by churn sensitivity. The m=1 bar is faint because it is not significant."
-      >
-        <PricingChart />
-      </Figure>
-      <Figure
-        n={next()}
-        title="Figure 2(b), redrawn. At the setting where price sensitivity is lowest, the learned policy has nothing to beat."
-      >
-        <PricingAlgorithms />
-      </Figure>
-    </>
-  )
-}
-
-{
-  id === 'ieee-tai-survey' && (
-    <>
-      <Figure
-        n={next()}
-        title="The pipeline Section III.E describes: patched, reprogrammed, prefixed, and passed through a backbone that never moves."
-      >
-        <BeamArchitecture />
-      </Figure>
-      <Figure
-        n={next()}
-        title="Figure 7, redrawn. Every cell is the published value; BP-LLM and the cascaded LSTM are the two rows I implemented."
-      >
-        <BeamGain />
-      </Figure>
-      <Figure n={next()} title="Table V, redrawn. What the gain costs at inference.">
-        <BeamOverhead />
-      </Figure>
-    </>
-  )
-}
-
-{
-  id === 'bp-llm-lab' && (
-    <>
-      <Figure
-        n={next()}
-        title="The model behind the survey section: three trainable stages over a frozen backbone."
-      >
-        <BeamArchitecture />
-      </Figure>
-      <Figure
-        n={next()}
-        title="Average loss per epoch, from the run's own log. A training curve — there was no held-out split to draw anything else from."
-      >
-        <BeamTraining />
-      </Figure>
-    </>
-  )
+  plates.map((plate, i) => (
+    <Figure n={String(startAt + i + 1)} title={t(lang, CAPTION[plate])} lang={lang}>
+      {plate === 'pricing' && <PricingChart lang={lang} />}
+      {plate === 'pricingAlgorithms' && <PricingAlgorithms lang={lang} />}
+      {plate === 'beamGain' && <BeamGain lang={lang} />}
+      {plate === 'beamOverhead' && <BeamOverhead lang={lang} />}
+      {plate === 'beamArchitecture' && <BeamArchitecture lang={lang} />}
+      {plate === 'beamTraining' && <BeamTraining lang={lang} />}
+    </Figure>
+  ))
 }

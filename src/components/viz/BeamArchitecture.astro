@@ -8,6 +8,13 @@
  * beam indices. Only the shaded blocks carry trainable weights — which is the
  * whole argument for reprogramming rather than training a sequence model.
  */
+import { t, type Lang } from '../../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+
 const W = 980;
 const H = 236;
 
@@ -17,11 +24,11 @@ const BOX_W = 132;
 const GAP = 24;
 
 const STAGES = [
-  { name: 'Patch embed', sub: 'beam index · AoD', train: true },
-  { name: 'Reprogram', sub: 'prototype tokens', train: true },
-  { name: 'Prefix', sub: 'Z = [Z prompt ; Z data]', train: false },
-  { name: 'Frozen LLM', sub: 'GPT-2 · M(Z) → E', train: false, frozen: true },
-  { name: 'Project', sub: 'Ŷ = EW + b', train: true },
+  { name: t(lang, 'viz.beam.arch.s1'), sub: t(lang, 'viz.beam.arch.s1.sub'), train: true },
+  { name: t(lang, 'viz.beam.arch.s2'), sub: t(lang, 'viz.beam.arch.s2.sub'), train: true },
+  { name: t(lang, 'viz.beam.arch.s3'), sub: 'Z = [Z prompt ; Z data]', train: false },
+  { name: t(lang, 'viz.beam.arch.s4'), sub: 'GPT-2 · M(Z) → E', train: false, frozen: true },
+  { name: t(lang, 'viz.beam.arch.s5'), sub: 'Ŷ = EW + b', train: true },
 ];
 
 const startX = 12;
@@ -33,14 +40,18 @@ const boxes = STAGES.map((s, i) => ({
 const lastRight = boxes[boxes.length - 1].x + BOX_W;
 
 /** The three prefixes the section names, stacked above the concatenation. */
-const PREFIX = ['Domain knowledge', 'Statistical trend — drift', 'Lag structure'];
+const PREFIX = [
+  t(lang, 'viz.beam.arch.prefix.1'),
+  t(lang, 'viz.beam.arch.prefix.2'),
+  t(lang, 'viz.beam.arch.prefix.3'),
+];
 const prefixBox = boxes[2];
 ---
 
 <svg class="viz arch" data-viz="arch" viewBox={`0 0 ${W} ${H}`} role="img"
-  aria-label="Beam prediction pipeline: patch embedding of beam indices and departure angles, patch reprogramming into prototype tokens, concatenation with a three-part prompt prefix, a frozen GPT-2 backbone, and a linear projection back to beam indices. Only the embedding, reprogramming and projection carry trainable weights.">
-  <text class="viz-label" x={startX} y="16">Beam index sequence · angle of departure</text>
-  <text class="viz-label" x={lastRight} y="16" text-anchor="end">Beam indices, H steps ahead</text>
+  aria-label={t(lang, 'viz.beam.arch.aria')}>
+  <text class="viz-label" x={startX} y="16">{t(lang, 'viz.beam.arch.in')}</text>
+  <text class="viz-label" x={lastRight} y="16" text-anchor="end">{t(lang, 'viz.beam.arch.out')}</text>
 
   <!-- prompt-as-prefix, feeding the concatenation -->
   <g data-arch-prefix>
@@ -56,7 +67,7 @@ const prefixBox = boxes[2];
     }
     <path class="viz-track" d={`M${prefixBox.cx} ${24 + PREFIX.length * 17} V${ROW_Y}`} />
     <text class="viz-label" x={prefixBox.x - 32} y={24 + PREFIX.length * 17 + 4} text-anchor="end">
-      prompt-as-prefix
+      {t(lang, 'viz.beam.arch.promptprefix')}
     </text>
   </g>
 
@@ -91,15 +102,15 @@ const prefixBox = boxes[2];
       stroke-dasharray="3 3"
     ></path>
     <text class="viz-value viz-value--boundary" x={boxes[2].cx} y={ROW_Y + BOX_H + 38} text-anchor="middle">
-      MSE over the H-step horizon · 339,338 trainable parameters
+      {t(lang, 'viz.beam.arch.loss')}
     </text>
   </g>
 
   <g data-arch-key>
     <rect class="viz-box arch__box--train" x={startX} y={H - 22} width={16} height="10" rx="2" />
-    <text class="viz-label" x={startX + 22} y={H - 13}>trainable</text>
+    <text class="viz-label" x={startX + 22} y={H - 13}>{t(lang, 'viz.beam.arch.key.train')}</text>
     <rect class="viz-box arch__box--frozen" x={startX + 96} y={H - 22} width={16} height="10" rx="2" />
-    <text class="viz-label" x={startX + 118} y={H - 13}>frozen backbone</text>
+    <text class="viz-label" x={startX + 118} y={H - 13}>{t(lang, 'viz.beam.arch.key.frozen')}</text>
   </g>
 </svg>
 

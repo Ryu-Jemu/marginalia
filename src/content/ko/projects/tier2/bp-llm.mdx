@@ -1,0 +1,46 @@
+---
+title: 동결 언어 모델 기반 빔 시퀀스 예측
+tagline: 밀리미터파 빔 시퀀스를 위한 GPT-2 재프로그래밍. 평가는 구현되지 않았습니다.
+period: "2025.10 – 2026.01"
+team: 1인, 학부연구생
+role: 데이터 준비, 모델, 학습
+domain: research
+status: on-hold
+tier: 2
+order: 6
+stack:
+  - Python
+  - PyTorch
+  - Hugging Face Transformers
+  - NumPy
+  - SciPy
+  - DeepMIMO
+links: []
+ownership:
+  owned:
+    - 레이 트레이싱 출력에서 학습 시퀀스까지의 전처리 파이프라인
+    - 채널 모델, DFT 코드북, 빔 레이블링
+    - 패치 임베딩, cross-attention 재프로그래밍, 프롬프트 프리픽스
+    - 학습 루프와 비교 대상인 cascaded LSTM 베이스라인
+  notOwned:
+    - 연구실에서 정한 연구 방향
+---
+
+import N from '../../../../components/note/N.astro';
+
+28 GHz DeepMIMO o1_28 시나리오의 레이 트레이싱 출력을 3개 경로의
+Saleh-Valenzuela 채널에 통과시키고, 32-point DFT 코드북으로 빔포밍한 뒤, 위치별
+arg-max 빔을 레이블로 씁니다. 과거 40스텝 대 미래 10스텝의 슬라이딩 윈도우
+84,019개가 만들어졌습니다.<N id="bp-llm-data" lang="ko" /> 빔은 16 ms마다
+예측합니다.
+
+모델은 동결된 GPT-2에 학습 가능한 세 단계를 붙인 구조입니다. 가역 정규화를
+포함한 패치 임베딩, 빔 인덱스와 출발각에 대한 변수 간 attention, 256개 텍스트
+프로토타입으로의 재프로그래밍입니다. 여기에 도메인 지식과 지시문, 시계열 통계를
+담은 프롬프트 프리픽스를 덧붙입니다. 움직이는 파라미터는 339,338개이고
+backbone은 학습하지 않습니다.<N id="bp-llm-training" lang="ko" />
+
+학습은 돌았습니다. held-out 분할이 없어 정규화 통계와 손실이 같은 인덱스에서
+나오므로, 손실 곡선은 모델이 본 데이터에 적합했다는 사실만 말할 뿐 빔을
+맞히는지에 대해서는 아무것도 말하지 않습니다. 서베이 논문의 빔포밍 이득을 낸
+평가는 별도의 실행입니다.

@@ -10,7 +10,7 @@ warning at build time. Nothing here breaks the build by being absent —
 |---|---|
 | `public/papers/ask-2026.pdf` | `KIPS_C2026A0229F.pdf`. Verified as the ASK 2026 paper: first of two authors, C2026A0229, and every figure in the site's text matches its abstract. Embedded on `/research/ask-2026/` |
 | `src/assets/projects/dartoo/screen-{start,home,disclosure,company,chat}.png` | five product captures |
-| `src/assets/projects/map/screen-{home,itinerary,place}.png` | three product captures |
+| `src/assets/projects/map/screen-{signin,home,itinerary,place}.png` | four product captures. `screen-signin.png` is `iPhone 17 Pro.png` with the supplied device frame and cut-out cropped away — the deck draws its own, and two frames read as a screenshot of a screenshot. `screen-home.png` is `홈화면.png`, trimmed at the last row that carries anything |
 
 The crime residual map and the multiplex figures are **not** images. They are
 generated from the studies' own data — `CrimeResiduals.astro` from
@@ -56,3 +56,6 @@ interval the paper states, p = 0.938 between PPO and SAC, is drawn.
 Product captures, into `src/assets/projects/map/`: the camera recognition
 screen — held for now at your request. The vision service is one of the six
 owned and the only surface with no picture of it.
+
+A clean author version of the IEEE TAI manuscript, if it should be readable
+here — see **Withheld on purpose** above.

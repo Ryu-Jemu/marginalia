@@ -1,0 +1,269 @@
+---
+title: Dartoo
+tagline: 공시 데이터 파이프라인입니다. 전자공시 시스템을 폴링해 원본 문서를 디코딩·정규화하고, 요약한 뒤, 사용자가 구독한 기업의 공시를 푸시합니다.
+period: "2025.07 – 2026.06"
+team: 6인 창업 팀
+role: 백엔드 — 서비스 네 개 소유
+domain: pipeline
+status: deployed
+hosting: offline
+tier: 1
+order: 1
+stack:
+  - Python
+  - FastAPI
+  - Celery
+  - RabbitMQ
+  - PostgreSQL 16
+  - Redis
+  - MinIO
+  - LangChain
+  - Firebase FCM
+  - Docker
+links:
+  - kind: deployed
+    href: https://dartoo.co.kr
+    label: dartoo.co.kr
+  - kind: org
+    href: https://github.com/team-dartoo
+    label: team-dartoo
+summary:
+  - 백엔드 여섯 개 서비스 중 네 개가 처음부터 끝까지 제 소유입니다 — 수집, 저장과 검색, 요약, 그리고 전달 경로 전체.
+  - 공시를 폴링해 원본 아카이브를 세 가지 레거시 인코딩에서 디코딩하고, 객체로 저장하고, 요약한 뒤, 해당 기업을 구독한 사용자에게 푸시합니다.
+  - 전달은 콘텐츠 해시 기준으로 멱등하며, 일시적 업스트림 실패에는 단계적 백오프를, 영구 실패에는 데드레터 큐를 씁니다.
+  - 제가 소유한 세 서비스에 걸쳐 자동화 테스트 319건이 있습니다.
+pipeline:
+  from: 전자공시 시스템
+  to: 푸시 알림
+  feeds:
+    - 공시 목록 API
+    - 원본 문서 아카이브
+  stages:
+    - name: 폴링
+      service: ingestion · producer
+      store: 작업 큐
+    - name: 디코딩
+      service: ingestion · consumer
+      store: MinIO
+    - name: 저장
+      service: disclosure
+      store: PostgreSQL 16
+    - name: 팬아웃
+      service: disclosure · publisher
+      store: RabbitMQ
+    - name: 요약
+      service: summary
+      store: OpenAI
+      model: true
+    - name: 전달
+      service: notification
+      store: Firebase FCM
+architecture:
+  externalLabel: 외부 제공자
+  external:
+    - name: DART 공시 목록 API
+    - name: DART 문서 아카이브
+    - name: OpenAI
+    - name: Firebase Cloud Messaging
+  services:
+    - name: ingestion
+      detail: 폴링 · 디코딩 · 저장 · 디스패치
+      mine: true
+    - name: disclosure
+      detail: CRUD · 검색 · 팬아웃 · 캐시
+      mine: true
+    - name: summary
+      detail: 모델 호출 · 비용 상한
+      mine: true
+    - name: notification
+      detail: 오케스트레이션 · 멱등성 · DLQ
+      mine: true
+    - name: user
+      detail: 계정 · 구독
+    - name: gateway · discovery
+      detail: 라우팅 · 서비스 레지스트리
+    - name: chat
+      detail: 어시스턴트 화면
+    - name: infrastructure
+      detail: CI/CD · 모니터링
+  clients:
+    - name: 모바일 클라이언트
+    - name: 웹 클라이언트
+  stores:
+    - PostgreSQL 16
+    - MinIO
+    - RabbitMQ
+    - Redis
+verification:
+  - surface: notification
+    count: 156
+    detail: 오케스트레이션, 전달, 스케줄러, mock, 엔드투엔드 골격
+  - surface: ingestion
+    count: 110
+    detail: 폴링, 디코딩, 저장, 디스패치, 재시도 정책
+  - surface: disclosure
+    count: 53
+    detail: CRUD, 검색, 캐싱, 레이트 리밋, 이벤트 팬아웃
+safety:
+  - title: 전달은 콘텐츠 해시 기준으로 멱등합니다
+    detail: >-
+      알림 자체의 콘텐츠에서 파생한 sha256 키가 반복된 이벤트를 두 번째 푸시가
+      아니라 무연산으로 만듭니다. 컨슈머 재시작 뒤의 재전달이 같은 단말에 두 번
+      도달할 수 없습니다.
+  - title: 실패한 메시지는 데드레터 큐에 도달합니다
+    detail: >-
+      컨슈머는 수신 시점이 아니라 처리 결과 시점에 ack 합니다. 예외를 던진
+      메시지는 nack 되어 TTL 7일의 데드레터 익스체인지로 라우팅됩니다.
+  - title: 일시적 업스트림 실패와 영구 실패를 분리합니다
+    detail: >-
+      단계적 백오프가 업스트림이 아직 게시하지 않은 문서를 기다립니다. 그 뒤에도
+      계속 실패하는 건은 재시도로 일일 API 쿼터를 소진하는 대신 데드레터 경로에
+      격리합니다.
+  - title: 퍼블리셔는 스스로 꺼지지 않고 재연결합니다
+    detail: >-
+      시작 시점에 브로커가 없어도 프로세스 수명 내내 발행이 비활성화된 채로
+      남지 않습니다. 최초 사용 시 지연 재연결하며, 지수 백오프와 동시 연결 시도
+      방지 가드를 둡니다.
+  - title: 두 카운트를 주기적으로 대조합니다
+    detail: >-
+      스케줄 작업이 적재된 행 수와 발행된 이벤트 수를 비교하므로, 두 카운트의
+      불일치가 누군가 상태 코드를 지켜보지 않아도 드러납니다.
+  - title: 일일 모델 비용 상한은 원자적입니다
+    detail: >-
+      Lua 스크립트 하나가 증가와 만료 설정을 함께 수행하므로, 카운터가 만료 없이
+      남아 초기화가 멈추는 상태가 생기지 않습니다. 날짜 경계는 컨테이너 시계가
+      아니라 Asia/Seoul입니다.
+  - title: 식별자 하나가 공시를 네 서비스에 걸쳐 따라갑니다
+    detail: >-
+      correlation id를 이벤트에서 모든 로그 라인으로 전달하므로, 전달 한 건을
+      수집부터 요약을 거쳐 푸시까지 타임스탬프를 손으로 맞추지 않고 추적할 수
+      있습니다.
+  - title: 요약기는 자기 입력도 자기 출력도 신뢰하지 않습니다
+    detail: >-
+      공시 텍스트는 모델에 닿기 전에 프롬프트 인젝션에 대해 방어하고, 응답은
+      가정하지 않고 검증하며, XML은 외부 엔티티에 안전한 파서로 파싱합니다.
+ownership:
+  owned:
+    - ingestion — 폴링, 디코딩, 객체 저장, 작업 디스패치
+    - disclosure — CRUD와 검색, 이벤트 팬아웃, 캐싱과 레이트 리밋
+    - notification — 전달 경로 전체를 처음부터 다시 구현
+    - summary — 구현, 그리고 다른 서비스와의 연결
+  notOwned:
+    - 프론트엔드와 디자인
+    - CI/CD 파이프라인
+    - 모니터링 스택
+    - 인프라 프로비저닝
+data:
+  - value: "5"
+    label: 엔드투엔드 단계
+    detail: 폴링 → 디코딩 → 저장 → 요약 → 전달
+  - value: "3,948"
+    label: 적재 행 = 발행 이벤트
+    detail: 퍼블리셔 수정 후 검증 실행
+  - value: "319"
+    label: 자동화 테스트
+    detail: ingestion 110 · notification 156 · disclosure 53
+  - value: "154"
+    label: 대조로 찾아낸 누락 이벤트
+    detail: 적재 959건 대비 발행 805건
+fixes:
+  - title: 파이프라인이 아무것도 전달하지 않으면서 성공을 보고했습니다
+    area: disclosure · ingestion
+    symptom: >-
+      모든 요청이 200을 반환했고, 모든 워커가 성공을 보고했으며, disclosure
+      테이블은 예정대로 채워졌습니다. 959건이 적재되는 동안 큐에 도달한 이벤트는
+      805건이었습니다. 나머지 154건을 표시한 로그 라인은 없었습니다.
+    cause: >-
+      브로커가 disclosure 서비스보다 늦게 올라오면 퍼블리셔는 활성 플래그를
+      false로 내리고 다시 되돌리지 않았습니다. 브로커가 복구된 뒤에도 퍼블리셔는
+      꺼진 채로 남아 모든 이벤트를 조용히 버렸습니다.
+    fix: >-
+      최초 발행 시 지연 재연결, 지수 백오프, 동시 연결 시도 방지 가드, 그리고
+      접수번호를 담은 경고 로그를 넣었습니다. 이제 버려진 이벤트는 로그에
+      남습니다. 이어진 엔드투엔드 실행에서는 3,948행과 3,948건의 이벤트가
+      기록되었습니다.
+  - title: 재시도 카운터가 엉뚱한 대상을 영구 실패로 판정했습니다
+    area: ingestion
+    symptom: >-
+      원본 문서가 아직 준비되지 않은 공시는, 1분 뒤 준비될 건이든 영영 준비되지
+      않을 건이든 같은 상태 코드로 돌아왔습니다. 고정된 재시도 상한이 이들을 모두
+      실패로 처리했고, 실패 로그가 쌓였습니다.
+    cause: >-
+      그 상태 코드는 종결 신호가 아니라 두 경우가 섞인 값이어서, 카운터만으로는
+      둘을 나눌 수 없었습니다. 일주일 전 영구 실패로 표시된 공시 네 건은 다시
+      요청하자 정상 응답을 반환했습니다.
+    fix: >-
+      업스트림이 실제로 게시하기까지 걸리는 시간에 맞춘 단계적 백오프, 진짜
+      영구 실패에 대한 데드레터 격리, 그리고 재시도가 API 쿼터를 소진하지
+      못하도록 하는 일일 호출 상한을 넣었습니다.
+  - title: 원본 문서가 인코딩 하나 때문에 파싱에 실패했습니다
+    area: ingestion
+    symptom: >-
+      공시 아카이브에는 cp949, euc-kr, utf-8 문서가 섞여 있었고 charset 선언이
+      아예 없는 것도 있었습니다. 그런 문서에서 파싱이 실패했습니다.
+    cause: >-
+      정규화기가 선언된 charset을 그대로 신뢰했는데, ks_c_5601-1987 같은 레거시
+      선언은 Python이 아는 코덱 이름과 일치하지 않습니다.
+    fix: >-
+      선언이 없는 문서에 대한 charset 자동 탐지, 한국어 코덱 우선순위 목록,
+      별칭 정규화, 더 엄격한 HTML charset 추출을 넣었습니다. 정규화기는 105줄에서
+      566줄이 되었고, 파싱 실패는 사라졌습니다.
+  - title: 실패한 메시지가 데드레터로 가지 않고 사라졌습니다
+    area: notification
+    symptom: >-
+      처리 중 예외를 던진 메시지가 사라졌습니다. 데드레터 큐는 비어 있어서
+      들여다볼 것도, 다시 처리할 것도 없었습니다.
+    cause: >-
+      컨슈머가 처리 결과가 아니라 수신 시점에 ack 해서, 브로커는 실패한 메시지를
+      처리 완료로 간주했습니다.
+    fix: >-
+      성공 시 명시적 ack, 실패 시 nack — 메시지를 데드레터 익스체인지로 보내는
+      것이 이 nack입니다. 여기에 correlation id를 이벤트에서 모든 로그 라인으로
+      전달해, 전달 한 건을 네 서비스에 걸쳐 따라갈 수 있게 했습니다.
+  - title: 일일 모델 비용 상한이 적용되지 않을 수 있었습니다
+    area: summary
+    symptom: >-
+      하루에 요약할 문서 수를 제한하는 카운터가 간헐적으로 초기화되지 않았고,
+      그 뒤로는 요약을 한 건도 허용하지 않았습니다.
+    cause: >-
+      증가 연산과 별도의 만료 설정 호출은 그 사이에서 끊길 수 있고, 그러면
+      만료가 설정되지 않은 카운터가 남습니다.
+    fix: >-
+      Lua 스크립트 하나로 둘 다 수행되거나 둘 다 수행되지 않게 하고, 날짜
+      경계를 컨테이너 시계가 아니라 Asia/Seoul에 고정했습니다.
+  - title: 모델 출력이 코드 펜스에 감싸인 채로 도착했습니다
+    area: summary
+    symptom: >-
+      요약 요청은 업스트림에서 성공한 뒤 파싱에서 실패했고, 그래서 공시는 알림이
+      의존하는 요약 없이 저장되었습니다.
+    cause: >-
+      모델이 펜스로 감싼 코드 블록 안에 유효한 JSON을 반환했고, 파서에는 펜스까지
+      함께 넘어갔습니다.
+    fix: >-
+      파싱 전에 펜스를 벗기고, importance 라벨을 시스템의 나머지가 쓰는 값으로
+      매핑하고, 실행마다 비용을 내지 않고도 전체 경로를 통합 테스트할 수 있도록
+      mock 모드를 추가했습니다.
+---
+
+import N from '../../../components/note/N.astro';
+
+Dartoo는 끝에 휴대폰이 달린 데이터 파이프라인입니다. 전자공시 시스템에서 공시를
+폴링하고, 원본 아카이브를 디코딩·정규화하고, 본문을 요약해, 해당 기업을 구독한
+사용자에게 푸시합니다. 이 경로 위의 서비스 네 개가 제 소유였습니다.<N id="dartoo-ownership" lang="ko" />
+
+결함 두 건은 조용했습니다. 어느 쪽도 상태 코드에 나타나지 않았고, 같은 것을 두
+곳에서 세어 수가 다르다는 것을 확인해야만 보였습니다.<N id="dartoo-publisher-gap" lang="ko" />
+앞단의 모든 요청이 200을 반환하는 동안 퍼블리셔는 실행 내내 꺼져 있었습니다.
+지연 재연결 수정 이후, 같은 엔드투엔드 검증 실행에서 적재된 행 수와 발행된
+이벤트 수가 일치했습니다.<N id="dartoo-e2e-parity" lang="ko" />
+
+두 번째 결함은 크래시가 아니라 분류 오류였습니다. 재시도 카운터가 아직 준비되지
+않았다는 응답 묶음을 영구 실패로 써 버렸는데, 그중 네 건은 일주일 뒤 다시
+요청하자 정상 응답을 반환했습니다.<N id="dartoo-not-ready-experiment" lang="ko" />
+수정은 일시적인 경우를 위한 단계적 백오프와 영구적인 경우를 위한 데드레터
+격리입니다.
+
+전달 경로는 기존 것을 손보지 않고 다시 만들었습니다 — 비동기 컨슈머, sha256
+멱등키, 10단계 오케스트레이션, TTL 7일의 데드레터 큐.<N id="dartoo-notification-scope" lang="ko" />
+summary 서비스의 비용 상한은 Lua 스크립트 하나입니다.<N id="dartoo-lua-scope" lang="ko" />
+제가 소유한 세 서비스에는 자동화 테스트 319건이 있습니다.<N id="dartoo-test-count" lang="ko" />

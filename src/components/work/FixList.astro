@@ -14,10 +14,13 @@ interface Fix {
   cause: string;
   fix: string;
 }
+import { t, type Lang } from '../../i18n/ui';
+
 interface Props {
   fixes: Fix[];
+  lang?: Lang;
 }
-const { fixes } = Astro.props;
+const { fixes, lang = 'en' } = Astro.props;
 ---
 
 <ol class="fixes" data-fixes>
@@ -32,15 +35,15 @@ const { fixes } = Astro.props;
         <h4 class="fix__title">{f.title}</h4>
         <dl class="fix__body">
           <div>
-            <dt>Symptom</dt>
+            <dt>{t(lang, 'label.symptom')}</dt>
             <dd>{f.symptom}</dd>
           </div>
           <div>
-            <dt>Cause</dt>
+            <dt>{t(lang, 'label.cause')}</dt>
             <dd>{f.cause}</dd>
           </div>
           <div class="fix__row--fix">
-            <dt>Fix</dt>
+            <dt>{t(lang, 'label.fix')}</dt>
             <dd>{f.fix}</dd>
           </div>
         </dl>

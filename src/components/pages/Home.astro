@@ -1,0 +1,361 @@
+---
+import Base from '../../layouts/Base.astro';
+import Nav from '../chrome/Nav.astro';
+import Hero from '../chrome/Hero.astro';
+import SectionRail from '../chrome/SectionRail.astro';
+import NoteLines from '../note/NoteLines.astro';
+import N from '../note/N.astro';
+import Section from '../doc/Section.astro';
+import Bullets from '../doc/Bullets.astro';
+import PipelineProject from '../work/PipelineProject.astro';
+import CompactList from '../work/CompactList.astro';
+import PaperEntry from '../research/PaperEntry.astro';
+import Actions from '../work/Actions.astro';
+import Figure from '../viz/Figure.astro';
+import CrimeModel from '../viz/CrimeModel.astro';
+import CrimeFit from '../viz/CrimeFit.astro';
+import CrimeResiduals from '../viz/CrimeResiduals.astro';
+import CinemaTrend from '../viz/CinemaTrend.astro';
+import CinemaCorrelation from '../viz/CinemaCorrelation.astro';
+import { site } from '../../lib/site';
+import { t, tl, localise, type Lang } from '../../i18n/ui';
+import { projectsOf, researchOf, recordOf, byOrder, byStanding, newestFirst, slugOf } from '../../lib/content';
+import { reportMissingMaterials } from '../../lib/materials';
+
+/**
+ * The whole résumé, in one document.
+ *
+ * The same component renders both language trees. Everything it says in its own
+ * voice comes from `i18n/ui.ts`; everything the work says comes from the
+ * collection for that language.
+ */
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+
+const projects = (await projectsOf(lang)).sort(byOrder);
+const bySlug = (slug: string) => projects.find((p) => slugOf(p) === slug)!;
+
+const dartoo = bySlug('dartoo');
+const map = bySlug('map');
+const other = projects.filter((p) => p.data.domain === 'other');
+
+const research = (await researchOf(lang)).sort(byStanding);
+const record = await recordOf(lang);
+
+const byKind = (kind: string) => record.filter((r) => r.data.kind === kind).sort(newestFirst);
+const awards = byKind('award');
+const certifications = byKind('certification');
+const history = record
+  .filter((r) => ['education', 'service', 'lab', 'teaching', 'writing'].includes(r.data.kind))
+  .sort(newestFirst);
+
+// Reported once per build, after every page has resolved its own materials.
+reportMissingMaterials();
+
+let fig = 0;
+const nextFig = () => String(++fig);
+---
+
+<Base
+  lang={lang}
+  title={`${t(lang, 'site.name')} — ${t(lang, 'site.role')}`}
+  description={t(lang, 'site.description')}
+>
+  <Nav lang={lang} />
+  <SectionRail lang={lang} />
+
+  <Hero lang={lang} />
+
+  <main class="shell">
+    <article class="document" data-annotated>
+      <NoteLines />
+
+      {/* ── § 1 ─────────────────────────────────────────────────────── */}
+      <Section id="pipelines" n="1" title={t(lang, 'section.pipelines')} lede={t(lang, 'pipelines.lede')}>
+        <PipelineProject entry={dartoo} n={nextFig()} lang={lang} />
+        <PipelineProject entry={map} n={nextFig()} lang={lang} />
+
+        <div class="column follow">
+          <p class="aside">
+            {t(lang, 'pipelines.aside')}<N id="map-terminal-state" lang={lang} />
+            {t(lang, 'pipelines.aside.2')}<N id="dartoo-normaliser" lang={lang} />
+          </p>
+        </div>
+      </Section>
+
+      {/* ── § 2 ─────────────────────────────────────────────────────── */}
+      <Section id="research" n="2" title={t(lang, 'section.research')} lede={t(lang, 'research.lede')}>
+        <div class="column column--wide">
+          {research.map((entry) => <PaperEntry entry={entry} lang={lang} />)}
+        </div>
+      </Section>
+
+      {/* ── § 3 ─────────────────────────────────────────────────────── */}
+      <Section id="analysis" n="3" title={t(lang, 'section.analysis')} lede={t(lang, 'analysis.lede')}>
+        {/* Two studies, two datasets, two questions. Each opens on its own
+            heading so a reader is never a paragraph into the second one
+            before working out that the subject changed. */}
+        <div class="column column--wide study">
+          <h3 class="study__title">{t(lang, 'analysis.crime.title')}</h3>
+          <p class="meta study__sub">{t(lang, 'analysis.crime.sub')}</p>
+          <Bullets items={tl(lang, 'analysis.crime.points')} />
+          <Actions
+            actions={[
+              { href: localise(lang, '/work/crime-analysis/'), label: t(lang, 'work.built'), kind: 'detail' },
+            ]}
+          />
+        </div>
+
+        <div class="column column--wide analysis__figures">
+          <Figure n={nextFig()} title={t(lang, 'fig.crime.model')} lang={lang}>
+            <CrimeModel lang={lang} />
+          </Figure>
+          <Figure n={nextFig()} title={t(lang, 'fig.crime.fit')} lang={lang}>
+            <CrimeFit lang={lang} />
+          </Figure>
+          <Figure n={nextFig()} title={t(lang, 'fig.crime.resid')} lang={lang}>
+            <CrimeResiduals lang={lang} />
+          </Figure>
+        </div>
+
+        <div class="column column--wide study study--next">
+          <h3 class="study__title">{t(lang, 'analysis.cinema.title')}</h3>
+          <p class="meta study__sub">{t(lang, 'analysis.cinema.sub')}</p>
+          <Bullets items={tl(lang, 'analysis.cinema.points')} />
+          <Actions
+            actions={[
+              { href: localise(lang, '/work/cinema-dashboard/'), label: t(lang, 'work.built'), kind: 'detail' },
+            ]}
+          />
+        </div>
+
+        <div class="column column--wide analysis__figures">
+          <Figure n={nextFig()} title={t(lang, 'fig.cinema.trend')} lang={lang}>
+            <CinemaTrend lang={lang} />
+          </Figure>
+          <Figure n={nextFig()} title={t(lang, 'fig.cinema.corr')} lang={lang}>
+            <CinemaCorrelation lang={lang} />
+          </Figure>
+        </div>
+      </Section>
+
+      {/* ── § 4 ─────────────────────────────────────────────────────── */}
+      <Section id="more" n="4" title={t(lang, 'section.more')} lede={t(lang, 'more.lede')}>
+        <div class="column">
+          <p class="aside aside--lead">
+            {t(lang, 'more.aside')}<N id="repo-spread" lang={lang} />
+          </p>
+        </div>
+        <div class="column column--wide">
+          <CompactList entries={other} lang={lang} />
+        </div>
+      </Section>
+
+      {/* ── § 5 ─────────────────────────────────────────────────────── */}
+      <Section id="about" n="5" title={t(lang, 'section.about')} lede={t(lang, 'about.lede')}>
+        <div class="column column--wide">
+          <div class="record__grid">
+            <div>
+              <h3 class="record__group">{t(lang, 'about.awards')}</h3>
+              <ul class="record">
+                {
+                  awards.map((r) => (
+                    <li class="record__row">
+                      <span class="record__date">{r.data.date}</span>
+                      <span class="record__body">
+                        <strong>{r.data.title}</strong>
+                        <span class="record__issuer">{r.data.issuer}</span>
+                        {r.data.detail && <span class="record__detail">{r.data.detail}</span>}
+                      </span>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+
+            <div>
+              <h3 class="record__group">{t(lang, 'about.certs')}</h3>
+              <ul class="record">
+                {
+                  certifications.map((r) => (
+                    <li class="record__row">
+                      <span class="record__date">{r.data.date}</span>
+                      <span class="record__body">
+                        <strong>{r.data.title}</strong>
+                        <span class="record__issuer">
+                          {r.data.issuer}
+                          {r.data.score && ` · ${r.data.score}`}
+                        </span>
+                      </span>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </div>
+
+          <h3 class="record__group record__group--wide">{t(lang, 'about.history')}</h3>
+          <ul class="record record--two">
+            {
+              history.map((r) => (
+                <li class="record__row">
+                  <span class="record__date">{r.data.date}</span>
+                  <span class="record__body">
+                    <strong>
+                      {r.data.href ? (
+                        <a href={r.data.href} rel="noopener">
+                          {r.data.title}
+                        </a>
+                      ) : (
+                        r.data.title
+                      )}
+                    </strong>
+                    <span class="record__issuer">{r.data.issuer}</span>
+                    {r.data.detail && <span class="record__detail">{r.data.detail}</span>}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </Section>
+
+      {/* ── contact ─────────────────────────────────────────────────── */}
+      <section id="contact" class="contact-block">
+        <div class="column column--wide">
+          <h2 class="contact__head">{t(lang, 'section.contact')}</h2>
+          <ul class="contact">
+            <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+            <li><a href={site.links.github} rel="noopener">github.com/Ryu-Jemu</a></li>
+            <li><a href={site.links.blog} rel="noopener">velog.io/@muqqi_bba</a></li>
+          </ul>
+        </div>
+      </section>
+    </article>
+  </main>
+</Base>
+
+<style>
+  main {
+    padding-block: 0.5rem 4rem;
+  }
+
+  .follow {
+    margin-top: 1.6rem;
+  }
+  .aside {
+    color: var(--ink-faint);
+    font-size: 0.9375rem;
+  }
+  .aside--lead {
+    margin-bottom: 1.1rem;
+  }
+
+  /* ── analysis ──────────────────────────────────────────────────────── */
+  .study--next {
+    margin-top: 2rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--rule);
+  }
+  .study__title {
+    font-size: 1.25rem;
+    line-height: 1.25;
+    letter-spacing: -0.018em;
+    font-weight: 600;
+  }
+  .study__sub {
+    margin-top: 0.3rem;
+    margin-bottom: 0.8rem;
+    color: var(--scope);
+  }
+  .analysis__figures {
+    margin-top: 1.25rem;
+  }
+
+  /* ── record ────────────────────────────────────────────────────────── */
+  .record__grid {
+    display: grid;
+    gap: 1.75rem;
+  }
+  @media (min-width: 44rem) {
+    .record__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 2.25rem;
+    }
+  }
+  .record__group {
+    margin-bottom: 0.7rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-meta);
+    letter-spacing: var(--ls-meta);
+    text-transform: uppercase;
+    color: var(--scope);
+    font-weight: 500;
+  }
+  .record__group--wide {
+    margin-top: 1.75rem;
+  }
+  .record {
+    display: grid;
+    gap: 0.6rem;
+  }
+  @media (min-width: 44rem) {
+    .record--two {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem 2.25rem;
+    }
+  }
+  .record__row {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.15rem 0.85rem;
+    align-items: baseline;
+  }
+  @media (max-width: 30rem) {
+    .record__row {
+      grid-template-columns: 1fr;
+    }
+  }
+  .record__date {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-faint);
+  }
+  .record__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+    font-size: 0.9375rem;
+  }
+  .record__issuer,
+  .record__detail {
+    color: var(--ink-muted);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+  .record__detail {
+    color: var(--ink-faint);
+  }
+
+  /* ── contact ───────────────────────────────────────────────────────── */
+  .contact-block {
+    margin-top: var(--space-section);
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    scroll-margin-top: 5rem;
+  }
+  .contact__head {
+    font-size: var(--t-h3);
+  }
+  .contact {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.5rem;
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+  }
+</style>

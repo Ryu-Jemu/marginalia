@@ -1,5 +1,6 @@
 ---
-import PhoneScroll from './PhoneScroll.astro';
+import PhoneDeck from './PhoneDeck.astro';
+import { t, type Lang } from '../../i18n/ui';
 
 import dartooStart from '../../assets/projects/dartoo/screen-start.png';
 import dartooHome from '../../assets/projects/dartoo/screen-home.png';
@@ -7,6 +8,7 @@ import dartooDisclosure from '../../assets/projects/dartoo/screen-disclosure.png
 import dartooCompany from '../../assets/projects/dartoo/screen-company.png';
 import dartooChat from '../../assets/projects/dartoo/screen-chat.png';
 
+import mapSignin from '../../assets/projects/map/screen-signin.png';
 import mapHome from '../../assets/projects/map/screen-home.png';
 import mapItinerary from '../../assets/projects/map/screen-itinerary.png';
 import mapPlace from '../../assets/projects/map/screen-place.png';
@@ -17,25 +19,27 @@ import mapPlace from '../../assets/projects/map/screen-place.png';
  */
 interface Props {
   slug: string;
+  lang?: Lang;
 }
-const { slug } = Astro.props;
+const { slug, lang = 'en' } = Astro.props;
 
-const SETS: Record<string, Array<{ src: ImageMetadata; alt: string; screen: string }>> = {
+const SETS: Record<string, Array<{ src: ImageMetadata; alt: string; key: string }>> = {
   dartoo: [
-    { src: dartooStart, alt: 'Dartoo — sign-in screen', screen: 'Sign in' },
-    { src: dartooHome, alt: 'Dartoo — the day’s filings and watched companies', screen: 'Today' },
-    { src: dartooDisclosure, alt: 'Dartoo — a filing with its generated summary', screen: 'Filing' },
-    { src: dartooCompany, alt: 'Dartoo — a company page with its filing history', screen: 'Company' },
-    { src: dartooChat, alt: 'Dartoo — the assistant answering a question about a filing', screen: 'Ask' },
+    { src: dartooStart, alt: 'Dartoo — sign-in screen', key: 'screen.signin' },
+    { src: dartooHome, alt: 'Dartoo — the day’s filings and watched companies', key: 'screen.today' },
+    { src: dartooDisclosure, alt: 'Dartoo — a filing with its generated summary', key: 'screen.filing' },
+    { src: dartooCompany, alt: 'Dartoo — a company page with its filing history', key: 'screen.company' },
+    { src: dartooChat, alt: 'Dartoo — the assistant answering a question about a filing', key: 'screen.ask' },
   ],
   map: [
-    { src: mapHome, alt: 'MAP — home, with the trip countdown and the day’s weather', screen: 'Home' },
-    { src: mapItinerary, alt: 'MAP — a generated itinerary with the route drawn', screen: 'Itinerary' },
-    { src: mapPlace, alt: 'MAP — a place with its photo, rating and review summary', screen: 'Place' },
+    { src: mapSignin, alt: 'MAP — sign in with Kakao or with an email address', key: 'screen.signin' },
+    { src: mapHome, alt: 'MAP — home, with the trip countdown and the day’s weather', key: 'screen.home' },
+    { src: mapItinerary, alt: 'MAP — a generated itinerary with the route drawn', key: 'screen.itinerary' },
+    { src: mapPlace, alt: 'MAP — a place with its photo, rating and review summary', key: 'screen.place' },
   ],
 };
 
-const shots = SETS[slug] ?? [];
+const shots = (SETS[slug] ?? []).map((s) => ({ ...s, screen: t(lang, s.key) }));
 ---
 
-{shots.length > 0 && <PhoneScroll shots={shots} />}
+{shots.length > 0 && <PhoneDeck shots={shots} lang={lang} />}

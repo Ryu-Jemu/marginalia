@@ -1,0 +1,360 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Nav from '../chrome/Nav.astro';
+import NoteLines from '../note/NoteLines.astro';
+import Section from '../doc/Section.astro';
+import Bullets from '../doc/Bullets.astro';
+import DataPanel from '../doc/DataPanel.astro';
+import StatusLabel from '../work/StatusLabel.astro';
+import Actions from '../work/Actions.astro';
+import FixList from '../work/FixList.astro';
+import SafetyList from '../work/SafetyList.astro';
+import Verification from '../work/Verification.astro';
+import ProductDeck from '../viz/ProductDeck.astro';
+import Architecture from '../viz/Architecture.astro';
+import Figure from '../viz/Figure.astro';
+import SystemFlow from '../viz/SystemFlow.astro';
+import ProjectFigures from '../viz/ProjectFigures.astro';
+import { t, localise, type Lang } from '../../i18n/ui';
+import { slugOf } from '../../lib/content';
+
+interface Props {
+  entry: CollectionEntry<'projects'>;
+  lang: Lang;
+}
+const { entry, lang } = Astro.props;
+const p = entry.data;
+const slug = slugOf(entry);
+const { Content } = await render(entry);
+
+const backTo =
+  p.domain === 'pipeline'
+    ? '#pipelines'
+    : p.domain === 'research'
+      ? '#research'
+      : p.domain === 'analysis'
+        ? '#analysis'
+        : '#more';
+
+let n = 0;
+const next = () => String(++n);
+let fig = 0;
+const nextFig = () => String(++fig);
+---
+
+<Base lang={lang} title={`${p.title} — ${t(lang, 'site.name')}`} description={p.tagline}>
+  <Nav lang={lang} base={localise(lang, '/')} />
+
+  <main class="shell">
+    <article class="document" data-annotated>
+      <NoteLines />
+
+      <header class="column column--wide head">
+        <p class="head__back">
+          <a href={localise(lang, `/${backTo}`)}>&larr; {t(lang, 'nav.back')}</a>
+        </p>
+        <p class="meta head__meta">
+          <span>{p.period}</span>
+          <span class="head__sep">·</span>
+          <span>{p.team}</span>
+          <StatusLabel status={p.status} hosting={p.hosting} lang={lang} />
+        </p>
+        <h1>{p.title}</h1>
+        <p class="head__tagline">{p.tagline}</p>
+        <p class="meta head__role">{p.role}</p>
+
+        {p.hosting === 'offline' && <p class="head__hosting">{t(lang, 'work.hosting.offline')}</p>}
+
+        {
+          p.links.length > 0 && (
+            <Actions
+              actions={p.links.map((l) => ({
+                href: l.href,
+                label: l.label,
+                // A filled button says "this is running". Nothing here is.
+                kind: p.hosting === 'offline' && l.kind === 'deployed' ? 'doc' : l.kind,
+              }))}
+            />
+          )
+        }
+      </header>
+
+      {
+        p.data.length > 0 && (
+          <div class="column column--wide head__panel">
+            <DataPanel items={p.data} />
+          </div>
+        )
+      }
+
+      {
+        p.pipeline && (
+          <Section id="pipeline" n={next()} title={t(lang, 'work.pipeline')}>
+            <div class="column column--wide">
+              <Figure
+                n={nextFig()}
+                title={t(lang, 'fig.pipeline.full', { title: p.title })}
+                lang={lang}
+              >
+                <SystemFlow
+                  from={p.pipeline.from}
+                  to={p.pipeline.to}
+                  feeds={p.pipeline.feeds}
+                  stages={p.pipeline.stages}
+                  lang={lang}
+                />
+              </Figure>
+            </div>
+            {p.summary.length > 0 && (
+              <div class="column column--wide summary">
+                <Bullets items={p.summary} tone="ink" />
+              </div>
+            )}
+
+            {p.architecture && (
+              <div class="column column--wide arch">
+                <Figure
+                  n={nextFig()}
+                  title={t(lang, 'fig.architecture', { title: p.title })}
+                  lang={lang}
+                >
+                  <Architecture
+                    external={p.architecture.external}
+                    services={p.architecture.services}
+                    clients={p.architecture.clients}
+                    stores={p.architecture.stores}
+                    externalLabel={p.architecture.externalLabel}
+                    lang={lang}
+                  />
+                </Figure>
+              </div>
+            )}
+          </Section>
+        )
+      }
+
+      <Section id="scope" n={next()} title={t(lang, 'work.scope')}>
+        <div class="column column--wide scope">
+          <div>
+            <p class="meta scope__key">{t(lang, 'work.owned')}</p>
+            <ul class="scope__list">
+              {p.ownership.owned.map((o) => <li>{o}</li>)}
+            </ul>
+          </div>
+          {
+            p.ownership.notOwned.length > 0 && (
+              <div>
+                <p class="meta scope__key scope__key--not">{t(lang, 'work.notowned')}</p>
+                <ul class="scope__list scope__list--not">
+                  {p.ownership.notOwned.map((o) => (
+                    <li>{o}</li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+        </div>
+      </Section>
+
+      <Section id="what" n={next()} title={t(lang, 'work.how')}>
+        <div class="column prose">
+          <Content />
+        </div>
+        {/* The device and the plates share a row. Given its own full-width
+            band the phone leaves two thirds of the page empty beside it, and
+            the diagram that explains the same screens ends up a scroll
+            further down than the thing it explains. */}
+        <div class="column column--wide media">
+          <div class="media__device">
+            <ProductDeck slug={slug} lang={lang} />
+          </div>
+          <div class="media__plates">
+            <ProjectFigures slug={slug} startAt={fig} lang={lang} />
+          </div>
+        </div>
+      </Section>
+
+      {
+        p.safety.length > 0 && (
+          <Section
+            id="safety"
+            n={next()}
+            title={t(lang, 'work.safety')}
+            lede={t(lang, 'work.safety.lede')}
+          >
+            <div class="column column--wide">
+              <SafetyList items={p.safety} />
+            </div>
+          </Section>
+        )
+      }
+
+      {
+        p.fixes.length > 0 && (
+          <Section
+            id="fixes"
+            n={next()}
+            title={t(lang, 'work.fixes')}
+            lede={t(lang, 'work.fixes.lede')}
+          >
+            <div class="column column--wide">
+              <FixList fixes={p.fixes} lang={lang} />
+            </div>
+          </Section>
+        )
+      }
+
+      {
+        p.verification.length > 0 && (
+          <Section
+            id="verification"
+            n={next()}
+            title={t(lang, 'work.verification')}
+            lede={t(lang, 'work.verification.lede')}
+          >
+            <div class="column column--wide">
+              <Verification items={p.verification} lang={lang} />
+            </div>
+          </Section>
+        )
+      }
+
+      <Section id="stack" n={next()} title={t(lang, 'work.stack')}>
+        <div class="column column--wide">
+          <ul class="stack">
+            {p.stack.map((s) => <li>{s}</li>)}
+          </ul>
+        </div>
+      </Section>
+    </article>
+  </main>
+</Base>
+
+<style>
+  main {
+    padding-block: 1.75rem 5rem;
+  }
+
+  .head__back {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    margin-bottom: 1.5rem;
+  }
+  .head__back a {
+    color: var(--ink-faint);
+    text-decoration: none;
+  }
+  .head__back a:hover {
+    color: var(--rubric);
+  }
+  .head__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.7rem;
+  }
+  .head__sep {
+    color: var(--rule-strong);
+  }
+  .head__tagline {
+    margin-top: 0.8rem;
+    font-size: var(--t-lede);
+    line-height: var(--lh-lede);
+    font-weight: 400;
+    color: var(--ink-muted);
+    max-width: 72ch;
+    text-wrap: pretty;
+  }
+  .head__role {
+    margin-top: 0.9rem;
+  }
+  /* Stated where the links are, because that is where the assumption forms. */
+  .head__hosting {
+    margin-top: 0.9rem;
+    padding-left: 0.85rem;
+    border-left: 2px solid var(--boundary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--ink-muted);
+    max-width: 62ch;
+  }
+  .head__panel {
+    margin-top: 1.5rem;
+  }
+  .summary {
+    margin-top: 1.25rem;
+  }
+  .arch {
+    margin-top: 1.25rem;
+  }
+
+  .media {
+    margin-top: 1.25rem;
+    display: grid;
+    gap: 1.5rem;
+  }
+  @media (min-width: 52rem) {
+    .media {
+      grid-template-columns: 20.5rem minmax(0, 1fr);
+      gap: 2rem;
+      align-items: start;
+    }
+  }
+  /* The first plate carries a top rule of its own; without this the device and
+     the plate beside it start on two different lines. */
+  .media__plates > :global(.figure:first-child) {
+    margin-top: 0;
+  }
+
+  .scope {
+    display: grid;
+    gap: 1.5rem;
+  }
+  @media (min-width: 34rem) {
+    .scope {
+      grid-template-columns: 1fr 1fr;
+      gap: 2.25rem;
+    }
+  }
+  .scope__key {
+    color: var(--scope);
+    margin-bottom: 0.45rem;
+  }
+  .scope__key--not {
+    color: var(--boundary);
+  }
+  .scope__list {
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.97em;
+  }
+  .scope__list li {
+    position: relative;
+    padding-left: 1rem;
+  }
+  .scope__list li::before {
+    content: '·';
+    position: absolute;
+    left: 0.15rem;
+    color: var(--rule-strong);
+  }
+  .scope__list--not {
+    color: var(--ink-faint);
+  }
+
+  .stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.5rem;
+  }
+  .stack li {
+    font-family: var(--family-mono);
+    font-size: var(--t-data);
+    color: var(--ink-muted);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.25em 0.7em;
+  }
+</style>

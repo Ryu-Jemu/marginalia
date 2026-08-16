@@ -5,21 +5,31 @@ import '../styles/base.css';
 import '../styles/document.css';
 import '../styles/print.css';
 
+import { HTML_LANG, altPath, type Lang } from '../i18n/ui';
+
 interface Props {
   title: string;
   description?: string;
+  lang: Lang;
 }
 
-const { title, description } = Astro.props;
+const { title, description, lang } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+/* Both trees carry the same content, so each has to name the other or a search
+   engine picks one of them and calls the other a duplicate. */
+const alternates: Array<[Lang, string]> = [
+  ['en', lang === 'en' ? Astro.url.pathname : altPath(lang, Astro.url.pathname)],
+  ['ko', lang === 'ko' ? Astro.url.pathname : altPath(lang, Astro.url.pathname)],
+];
 ---
 
-<html lang="en" class="no-js">
+<html lang={HTML_LANG[lang]} class="no-js">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="canonical" href={canonical} />
+    {alternates.map(([l, path]) => <link rel="alternate" hreflang={l} href={new URL(path, Astro.site)} />)}
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     <meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)" />

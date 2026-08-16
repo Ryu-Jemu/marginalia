@@ -168,8 +168,8 @@
     At m=1 the net rewards are PPO 7,334, SAC 7,370 and TD3 6,862. The
     deterministic method is 6.4% below PPO; SAC is indistinguishable from it.
   condition: >-
-    Same environment, three seeds per policy, p=0.938 between PPO and SAC.
-    Reported so the algorithm choice reads as a finding rather than a preference.
+    Same environment, three seeds per policy, p=0.938 between PPO and SAC. SAC
+    and TD3 were run at m=1 only.
 
 - id: rl-award
   kind: source
@@ -204,8 +204,7 @@
     The model over-predicts Seongdong by 1,862 crimes and under-predicts Mapo by
     1,387 — a spread of 3,249 across a fit that explains 84% of the variation.
   condition: >-
-    Actual minus predicted, per district, from the same OLS fit. The residual
-    map is drawn from these values rather than from a screenshot.
+    Actual minus predicted, per district, from the same OLS fit.
 
 - id: crime-streetlight
   kind: scope
@@ -238,8 +237,7 @@
 - id: ieee-position
   kind: source
   body: >-
-    Fourth of seven authors on the survey, under review. The position is stored
-    as a number so it cannot drift into a different claim.
+    Fourth of seven authors on the survey, under review.
   href: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=9078688
 
 - id: ieee-beam-section
@@ -293,19 +291,11 @@
     Non-fork repositories under github.com/Ryu-Jemu, counted 2026-08-13. Team
     work is not included in the twelve.
 
-- id: poc-habit
-  kind: scope
-  body: >-
-    Three of those repositories exist only to settle a question before it
-    reached a real service — an auth flow, an agent graph, and a two-service
-    integration.
-
 - id: invader-collaboration
   kind: scope
   body: >-
-    A six-person Java project run on GitHub Actions and Jira. I held features
-    rather than the lead, and it is the first place I worked to someone else's
-    review.
+    A six-person Java project run on GitHub Actions and Jira. I held assigned
+    features; the architecture and the lead's decisions were not mine.
 
 - id: map-test-count
   kind: measurement
@@ -325,5 +315,6 @@
 - id: examiner-determinism
   kind: scope
   body: >-
-    The final confidence figure is computed in Python, not produced by the
-    model. The agents argue; the arithmetic is not theirs to do.
+    The final confidence figure is computed in Python rather than produced by
+    the model, and citations are verified against the retrieved documents in
+    code.

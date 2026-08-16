@@ -1,0 +1,71 @@
+---
+title: 서울에서 범죄를 실제로 예측하는 변수
+tagline: 변수 다섯 개, 자치구 스물다섯 곳, 그리고 모두가 효과를 전제하는 정책과 어긋나는 결과.
+period: "2025.05 – 2025.06"
+team: 4인 팀
+role: 분석
+domain: analysis
+status: archived
+tier: 1
+order: 5
+stack:
+  - Python
+  - pandas
+  - statsmodels
+  - scikit-learn
+  - folium
+  - GeoJSON
+links:
+  - kind: repo
+    href: https://github.com/Ryu-Jemu/crime-analysis
+    label: Ryu-Jemu/crime-analysis
+ownership:
+  owned:
+    - 데이터 수집과 정제, 자치구 단위 조인
+    - 회귀, 다중공선성 점검, 정규화 회귀 교차 확인
+    - 잔차 지도
+  notOwned:
+    - 보고서와 발표 — 공동 작업이었습니다
+summary:
+  - 서울 25개 자치구에 걸친 변수 다섯 개를 OLS로 적합하고, 교차검증 Lasso와 Ridge로 교차 확인했습니다.
+  - 가장 높은 분산팽창계수는 2.61로, 통상 기준인 5 안쪽입니다.
+  - 모델을 끌고 가는 것은 인구와 유흥주점 밀도입니다. CCTV 대수는 유의하지 않습니다.
+  - 예측값이 아니라 잔차를 자치구별로 지도에 올려, 모델이 틀리는 자치구를 이름으로 드러냅니다.
+data:
+  - value: "0.843"
+    label: R², 조정 0.801
+    detail: F 검정 p = 4.95e-07, n = 25
+  - value: "2.61"
+    label: 가장 높은 분산팽창계수
+    detail: 유흥주점이 1.10으로 가장 낮음
+  - value: "5개 중 2개"
+    label: 유의한 변수
+    detail: 인구 p=0.0006 · 유흥주점 p=0.0004
+  - value: "3,249"
+    label: 잔차 폭, 범죄 건수
+    detail: 성동 −1,862에서 마포 +1,387까지
+---
+
+import N from '../../../components/note/N.astro';
+
+들어갈 때의 전제는 감시 밀도가 범죄를 설명한다는 것이었습니다. 데이터는 그
+전제를 받쳐 주지 않습니다.
+
+서울 25개 자치구에 걸친 변수 다섯 개가 자치구 간 변동의 약 84%를
+설명합니다.<N id="crime-model" lang="ko" /> 그중 모델을 끌고 가는 둘은 인구와
+유흥주점 밀도입니다. CCTV 대수는 유의하지
+않습니다.<N id="crime-significant" lang="ko" /> 범죄는 사람과 유흥이 몰리는 곳에
+몰립니다.
+
+인구, 소득, 가로등 수는 자치구 사이에서 함께 움직이므로 변수마다 분산팽창계수를
+확인했고, 다섯 변수 중 하나는 나머지보다 약한 데이터 위에
+서 있습니다.<N id="crime-streetlight" lang="ko" /> 적합은 교차검증 Lasso와
+Ridge로 교차 확인했고, 같은 변수들이 같은 설명력으로 살아남았습니다.
+
+예측값이 아니라 잔차를 자치구별로 지도에 올리면 모델이 틀리는 자치구가 이름으로
+드러납니다. 잔차는 자치구 단위로는 구할 수 없었던 유동인구 변수를 가리키는
+방향으로 뭉칩니다.
+
+지도는 성동구를 1,862건 과대예측하고 마포구를 1,387건
+과소예측하며,<N id="crime-residuals" lang="ko" /> 빗나가는 자치구는 모델이 보지
+못하는 주간인구를 가진 곳들입니다.

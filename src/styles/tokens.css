@@ -37,8 +37,16 @@
    * the intended behaviour rather than a compromise: the page then looks native
    * wherever it is read. */
   --family-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
-    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --family-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+    'Segoe UI', Roboto, 'Apple SD Gothic Neo', 'Pretendard Variable', Pretendard,
+    'Malgun Gothic', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
+  /* The Korean faces sit after the Latin ones on purpose: a browser picks the
+     first family that has the glyph, so Latin text still resolves to SF Pro
+     while Hangul falls through to Apple SD Gothic Neo — the same arrangement
+     the OS itself uses. Naming them at all matters on Windows and Linux, where
+     the default sans has no Hangul and the page would otherwise be rendered in
+     whatever the fallback happened to be. */
+  --family-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Apple SD Gothic Neo', 'Malgun Gothic', monospace;
 
   /* Type scale.
    * Display is weight 400, not 800. This is a title page, not a poster —

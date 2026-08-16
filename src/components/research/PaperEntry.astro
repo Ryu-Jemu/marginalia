@@ -2,53 +2,38 @@
 import type { CollectionEntry } from 'astro:content';
 import Bullets from '../doc/Bullets.astro';
 import Actions from '../work/Actions.astro';
+import { t, localise, type Lang } from '../../i18n/ui';
+import { authorship } from '../../lib/authorship';
 
 interface Props {
   entry: CollectionEntry<'research'>;
+  lang: Lang;
 }
 
-const { entry } = Astro.props;
+const { entry, lang } = Astro.props;
 const r = entry.data;
-
-/**
- * Rendered from {index, of}. The position cannot be mistyped into a stronger
- * claim, because it is never written as prose anywhere in the content.
- */
-const ORDINAL = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
-const authorship =
-  r.authorPosition.of === 1
-    ? 'Sole author'
-    : r.authorPosition.index === 1
-      ? `First author of ${r.authorPosition.of}`
-      : `Co-author — ${ORDINAL[r.authorPosition.index] ?? r.authorPosition.index} of ${r.authorPosition.of}`;
-
-const STATUS = {
-  accepted: 'Accepted',
-  'under-review': 'Under review',
-  revision: 'In revision',
-  assisting: 'Lab work',
-} as const;
 
 /** Two lines of what I did — the rest is on the paper's own page. */
 const role = r.role.slice(0, 2);
+const href = localise(lang, `/research/${entry.id}/`);
 ---
 
 <article class="paper">
   <p class="meta paper__meta">
-    <span class="paper__authorship">{authorship}</span>
+    <span class="paper__authorship">{authorship(lang, r.authorPosition)}</span>
     <span class="paper__sep">·</span>
-    <span class="paper__status" data-status={r.status}>{STATUS[r.status]}</span>
+    <span class="paper__status" data-status={r.status}>{t(lang, `research.status.${r.status}`)}</span>
     <span class="paper__sep">·</span>
     <span>{r.date}</span>
   </p>
 
-  <h3 class="paper__title"><a href={`/research/${entry.id}/`}>{r.title}</a></h3>
+  <h3 class="paper__title"><a href={href}>{r.title}</a></h3>
   <p class="paper__venue">{r.venue}</p>
 
   {
     r.contribution && (
       <p class="paper__contribution">
-        <span class="paper__contribution-key">My part</span>
+        <span class="paper__contribution-key">{t(lang, 'research.mypart')}</span>
         {r.contribution}
       </p>
     )
@@ -66,9 +51,7 @@ const role = r.role.slice(0, 2);
     )
   }
 
-  <Actions
-    actions={[{ href: `/research/${entry.id}/`, label: 'Read the paper', kind: 'detail' }]}
-  />
+  <Actions actions={[{ href, label: t(lang, 'research.read'), kind: 'detail' }]} />
 </article>
 
 <style>

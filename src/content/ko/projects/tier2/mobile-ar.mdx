@@ -1,0 +1,28 @@
+---
+title: 허공에 그리기
+tagline: 손끝 추적을 AR 3D 스트로크로 잇는 구현. 실기기 빌드는 아직 남아 있습니다.
+period: "2026.06"
+team: 1인
+role: 전부
+domain: other
+status: on-hold
+tier: 2
+order: 9
+stack:
+  - Unity 6
+  - C#
+  - AR Foundation
+  - MediaPipe
+links: []
+ownership:
+  owned:
+    - 입력 추상화, 스트로크 버퍼, 손끝 투영
+  notOwned: []
+---
+
+손 랜드마크 모델이 검지 끝점을 주고, 투영이 그 점을 월드 공간에 놓으며, 검지와
+엄지를 붙이는 동작이 그리기를 켜고 끕니다. 입력 소스는 인터페이스 뒤에 두어,
+상위 코드 입장에서는 시뮬레이터와 웹캠, 실기기가 모두 같은 것입니다.
+
+폰에서 돌려본 적은 없습니다. ARCore 기기가 없어 합성 입력과 노트북 카메라로만
+검증했습니다.

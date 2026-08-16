@@ -114,7 +114,7 @@ safety:
     detail: >-
       The consumer acknowledges on outcome, not on delivery, so a message that
       raises is negatively acknowledged and routed to the dead-letter exchange
-      with a seven-day time to live — long enough to inspect and replay.
+      with a seven-day time to live.
   - title: Transient and permanent upstream failures are separated
     detail: >-
       A staged backoff waits out documents the upstream has not published yet;
@@ -127,9 +127,9 @@ safety:
       exponential backoff and a guard against concurrent connection attempts.
   - title: Two counts are reconciled on a schedule
     detail: >-
-      A scheduled job compares rows persisted against events published. It is
-      how the 154-event gap was found, and it runs whether or not anyone is
-      watching a status code.
+      A scheduled job compares rows persisted against events published, so a
+      divergence between the two counts surfaces without anyone watching a
+      status code.
   - title: The daily model spend cap is atomic
     detail: >-
       One Lua script performs the increment and the expiry together, so the
@@ -193,8 +193,8 @@ fixes:
       retry ceiling wrote them all off, and the failure log grew.
     cause: >-
       The status code was mixed rather than terminal, so a counter could not
-      separate the two cases. I re-fetched four filings that had been marked
-      permanently failed a week earlier; all four returned normally.
+      separate the two cases. Four filings marked permanently failed a week
+      earlier returned normal responses when re-fetched.
     fix: >-
       A staged backoff with a delay tuned to how long the upstream actually
       takes to publish, dead-letter isolation for the genuinely permanent case,
@@ -203,8 +203,7 @@ fixes:
     area: ingestion
     symptom: >-
       Filing archives contained documents in cp949, euc-kr and utf-8, some with
-      no charset declared at all. Parsing failed on those, and the failure
-      looked like bad data rather than a decoding problem.
+      no charset declared at all. Parsing failed on those.
     cause: >-
       The normaliser trusted the declared charset, and legacy declarations such
       as ks_c_5601-1987 do not match any codec name Python knows.
@@ -257,21 +256,21 @@ polled from the national disclosure system, their source archives decoded and
 normalised, the text summarised, and the result pushed to whoever was watching
 that company. I owned four of the services on that path.<N id="dartoo-ownership" />
 
-The two defects worth showing were both silent. Neither appeared in a status
-code, and both were only visible by counting the same thing in two places and
-finding the numbers different.<N id="dartoo-publisher-gap" /> The publisher had
-been switched off for an entire run while every request in front of it returned
-200; reconciling persisted rows against published events was the only signal
-that existed.<N id="dartoo-e2e-parity" />
+Two of the defects were silent. Neither appeared in a status code, and both were
+visible only by counting the same thing in two places and finding the numbers
+different.<N id="dartoo-publisher-gap" /> The publisher had been switched off for
+an entire run while every request in front of it returned 200; after the
+lazy-reconnect fix, the end-to-end run persisted and published equal
+counts.<N id="dartoo-e2e-parity" />
 
 The second was a classification error rather than a crash. A retry counter had
-written off a batch of not-ready responses as permanent, so I re-fetched four of
-them a week later and all four came back normally.<N id="dartoo-not-ready-experiment" />
-That made it a policy problem rather than a bug: a staged backoff for the
-transient case, dead-letter isolation for the permanent one.
+written off a batch of not-ready responses as permanent; four of them, re-fetched
+a week later, came back normally.<N id="dartoo-not-ready-experiment" /> The fix
+is a staged backoff for the transient case and dead-letter isolation for the
+permanent one.
 
 The delivery path was rebuilt rather than adapted — an asynchronous consumer,
 sha256 idempotency keys, a ten-step orchestration and a seven-day dead-letter
 queue.<N id="dartoo-notification-scope" /> The spend cap on the summary service
-is one Lua script for the same reason.<N id="dartoo-lua-scope" /> Across the
-three services I owned there are 319 automated tests.<N id="dartoo-test-count" />
+is one Lua script.<N id="dartoo-lua-scope" /> Across the three services I owned
+there are 319 automated tests.<N id="dartoo-test-count" />

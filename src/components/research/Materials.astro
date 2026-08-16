@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets';
-import type { ResolvedMaterial } from '../../lib/materials';
+import { isDoc, isFigure, type ResolvedMaterial } from '../../lib/materials';
 
 /**
  * The paper, readable on this page.
@@ -9,14 +9,17 @@ import type { ResolvedMaterial } from '../../lib/materials';
  * link underneath, because an embedded object is blocked or unsupported often
  * enough that it cannot be the only way through to the file.
  */
+import { t, type Lang } from '../../i18n/ui';
+
 interface Props {
   items: ResolvedMaterial[];
+  lang?: Lang;
 }
-const { items } = Astro.props;
+const { items, lang = 'en' } = Astro.props;
 
-const figures = items.filter((m) => m.kind === 'figure' || m.kind === 'poster');
-const docs = items.filter((m) => m.kind === 'pdf');
-const links = items.filter((m) => m.kind === 'link');
+const figures = items.filter(isFigure);
+const docs = items.filter(isDoc).filter((m) => m.kind === 'pdf');
+const links = items.filter(isDoc).filter((m) => m.kind === 'link');
 ---
 
 {
@@ -48,17 +51,16 @@ const links = items.filter((m) => m.kind === 'link');
       <p class="meta doc__key">{d.label}</p>
       <object class="doc__frame" data={d.href} type="application/pdf" aria-label={d.label}>
         <p class="doc__fallback">
-          This browser will not display the file inline.{' '}
+          {t(lang, 'materials.inline')}{' '}
           <a href={d.href} rel="noopener">
-            Open it in a new tab
+            {t(lang, 'materials.newtab')}
           </a>
-          .
         </p>
       </object>
       <p class="doc__after">
         {d.caption && <span>{d.caption} </span>}
         <a href={d.href} rel="noopener">
-          Open the full document ↗
+          {t(lang, 'materials.open')} ↗
         </a>
       </p>
     </div>
@@ -69,7 +71,7 @@ const links = items.filter((m) => m.kind === 'link');
   links.length > 0 && (
     <p class="links">
       {links.map((l) => (
-        <a class="links__item" href={l.src ?? ''} rel="noopener">
+        <a class="links__item" href={l.href} rel="noopener">
           {l.label} ↗
         </a>
       ))}

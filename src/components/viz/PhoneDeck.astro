@@ -1,17 +1,20 @@
 ---
 import { Image } from 'astro:assets';
+import { t, type Lang } from '../../i18n/ui';
 
 /**
- * One device, whose screen advances as the page moves past it.
+ * One device, whose screen the reader advances.
  *
  * A row of five framed screenshots asks a reader to compare them; a product is
- * not used that way. One phone, and scrolling walks through it, is closer to
- * what the thing is.
+ * not used that way. One phone with a control either side of it is closer to
+ * what the thing is, and unlike a scroll-driven version it moves only when
+ * someone asks it to.
  *
  * The fallback is the row. Markup ships every screen in the flow, and the
  * script collapses them into a single frame only once it has run — so with
  * scripting off, or if the initialiser throws, the screens are all still on
- * the page rather than nine tenths of them being invisible.
+ * the page rather than nine tenths of them being invisible. The arrows ship
+ * hidden for the same reason: a control that cannot work should not appear.
  */
 interface Shot {
   src: ImageMetadata;
@@ -20,10 +23,9 @@ interface Shot {
 }
 interface Props {
   shots: Shot[];
-  /** Aspect of the frame; taken from the first capture. */
-  label?: string;
+  lang?: Lang;
 }
-const { shots } = Astro.props;
+const { shots, lang = 'en' } = Astro.props;
 const ratio = shots.length > 0 ? `${shots[0].src.width} / ${shots[0].src.height}` : '9 / 19.5';
 ---
 
@@ -31,6 +33,18 @@ const ratio = shots.length > 0 ? `${shots[0].src.width} / ${shots[0].src.height}
   shots.length > 0 && (
     <div class="deck" data-phone-deck data-notes-inline>
       <div class="deck__stage">
+        <button
+          class="deck__arrow deck__arrow--prev"
+          type="button"
+          data-deck-step="-1"
+          aria-label={t(lang, 'deck.prev')}
+          hidden
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M15 4 L7 12 L15 20" />
+          </svg>
+        </button>
+
         <div class="deck__frame">
           <div class="deck__screen" style={`--ratio:${ratio}`}>
             {shots.map((s, i) => (
@@ -52,6 +66,18 @@ const ratio = shots.length > 0 ? `${shots[0].src.width} / ${shots[0].src.height}
           <span class="deck__btn deck__btn--pwr" aria-hidden="true" />
         </div>
 
+        <button
+          class="deck__arrow deck__arrow--next"
+          type="button"
+          data-deck-step="1"
+          aria-label={t(lang, 'deck.next')}
+          hidden
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M9 4 L17 12 L9 20" />
+          </svg>
+        </button>
+
         <div class="deck__meter" data-deck-meter hidden>
           <p class="deck__now" data-deck-label>{shots[0].screen}</p>
           <ol class="deck__dots">
@@ -62,7 +88,7 @@ const ratio = shots.length > 0 ? `${shots[0].src.width} / ${shots[0].src.height}
                   type="button"
                   data-deck-dot
                   data-i={i}
-                  aria-label={`Show ${s.screen}`}
+                  aria-label={t(lang, 'deck.show', { screen: s.screen })}
                 />
               </li>
             ))}
@@ -110,12 +136,14 @@ const ratio = shots.length > 0 ? `${shots[0].src.width} / ${shots[0].src.height}
   /* ── once the script has collapsed the stack ─────────────────────────── */
   .deck[data-stacked] .deck__stage {
     display: grid;
-    gap: 0.85rem;
-    justify-items: center;
+    grid-template-columns: auto minmax(0, 15rem) auto;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     width: 100%;
-    max-width: 15rem;
   }
   .deck[data-stacked] .deck__frame {
+    grid-column: 2;
     width: 100%;
     padding: 0.45rem;
     border-radius: 2.1rem;
@@ -178,10 +206,59 @@ const ratio = shots.length > 0 ? `${shots[0].src.width} / ${shots[0].src.height}
     height: 16%;
   }
 
+  /* ── the controls ────────────────────────────────────────────────────── */
+  .deck__arrow {
+    appearance: none;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--rule-strong);
+    border-radius: 999px;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition:
+      color 140ms ease,
+      border-color 140ms ease;
+  }
+  .deck__arrow[hidden] {
+    display: none;
+  }
+  .deck__arrow--prev {
+    grid-column: 1;
+  }
+  .deck__arrow--next {
+    grid-column: 3;
+  }
+  .deck__arrow svg {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .deck__arrow:hover:not(:disabled) {
+    color: var(--rubric);
+    border-color: var(--rubric);
+  }
+  /* Kept in the layout when it runs out of screens, so the frame does not
+     shift sideways at either end of the set. */
+  .deck__arrow:disabled {
+    color: var(--rule-strong);
+    border-color: var(--rule);
+    cursor: default;
+  }
+
   .deck__meter {
+    grid-column: 2;
     display: grid;
     gap: 0.4rem;
     justify-items: center;
+    margin-top: 0.85rem;
   }
   .deck__now {
     font-family: var(--family-mono);
@@ -210,7 +287,8 @@ const ratio = shots.length > 0 ? `${shots[0].src.width} / ${shots[0].src.height}
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .deck__dot {
+    .deck__dot,
+    .deck__arrow {
       transition: none;
     }
   }
@@ -233,7 +311,8 @@ const ratio = shots.length > 0 ? `${shots[0].src.width} / ${shots[0].src.height}
     .deck[data-stacked] .deck__caption {
       display: block;
     }
-    .deck__meter {
+    .deck__meter,
+    .deck__arrow {
       display: none;
     }
   }

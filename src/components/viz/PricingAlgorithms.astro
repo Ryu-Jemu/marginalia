@@ -10,6 +10,13 @@
  * The dashed rule separates the learned policies from the two that do not look
  * ahead, which is the comparison the figure exists to make.
  */
+import { t, type Lang } from '../../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+
 const BARS = [
   { name: 'PPO', v: 7334, kind: 'learned' as const },
   { name: 'SAC', v: 7370, kind: 'learned' as const },
@@ -43,18 +50,18 @@ const splitAt = 3;
 ---
 
 <svg class="viz alg" data-viz="alg" viewBox={`0 0 ${W} ${H}`} role="img"
-  aria-label="Net reward at churn multiplier one: PPO 7,334, SAC 7,370, TD3 6,862, Myopic-PPO 7,169, Max-Price 7,183. PPO and SAC are not statistically distinguishable at p equals 0.938.">
+  aria-label={t(lang, 'viz.alg.aria')}>
   {
-    TICKS.map((t) => (
+    TICKS.map((tick) => (
       <>
-        <line class="viz-track" x1={L} y1={y(t)} x2={W - R} y2={y(t)} />
-        <text class="viz-label" x={L - 8} y={y(t) + 4} text-anchor="end">
-          {t.toLocaleString('en-US')}
+        <line class="viz-track" x1={L} y1={y(tick)} x2={W - R} y2={y(tick)} />
+        <text class="viz-label" x={L - 8} y={y(tick) + 4} text-anchor="end">
+          {tick.toLocaleString('en-US')}
         </text>
       </>
     ))
   }
-  <text class="viz-label" x={L} y={T - 14}>net reward</text>
+  <text class="viz-label" x={L} y={T - 14}>{t(lang, 'viz.alg.axis')}</text>
   <!-- axis break, because the scale does not start at zero -->
   <path class="viz-rule" d={`M${L - 12} ${T + PH - 6} l8 -4 M${L - 12} ${T + PH - 1} l8 -4`}></path>
 
@@ -83,7 +90,7 @@ const splitAt = 3;
 
   <!-- the divider between policies that look ahead and those that do not -->
   <path class="viz-limit" d={`M${L + SLOT * splitAt} ${T - 4} V${T + PH}`} stroke-dasharray="3 3"></path>
-  <text class="viz-label" x={L + SLOT * splitAt + 8} y={T + 4}>no foresight</text>
+  <text class="viz-label" x={L + SLOT * splitAt + 8} y={T + 4}>{t(lang, 'viz.alg.noforesight')}</text>
 
   <!-- the one interval the paper states -->
   <g data-alg-ns>
@@ -94,7 +101,7 @@ const splitAt = 3;
   </g>
 
   <text class="viz-label" x={L} y={H - 12}>
-    Churn multiplier m = 1 · three seeds per policy · same environment
+    {t(lang, 'viz.alg.foot')}
   </text>
 </svg>
 

@@ -33,9 +33,9 @@ data:
   - value: "4"
     label: sweep points, m = 1 · 3 · 5 · 10
     detail: the gain scales with price sensitivity
-  - value: "5"
+  - value: "3"
     label: seeds per algorithm
-    detail: PPO, SAC and TD3 compared on the same environment
+    detail: PPO, SAC and TD3 compared at m=1 on the same environment
   - value: "97%"
     label: of the m=3 gap from one slice
     detail: the decomposition is published with the result
@@ -49,25 +49,19 @@ leave; too low and the revenue is not there. The policy has to price against its
 own effect on the customer base, which is what makes it a sequential problem
 rather than an optimisation.
 
-The result is that the learned policy beats a max-price baseline by a margin
-that grows with how sensitive customers are to
-price.<N id="rl-uplift" /> The number I would defend in an interview, though, is
-not the largest one. It is the control: the same algorithm trained with its
-discount factor set to zero — able to learn, unable to look ahead — is
-indistinguishable from the baseline at every
-setting.<N id="rl-myopic" /> That is the experiment that says the advantage
-comes from anticipating churn rather than from having used reinforcement
-learning.
+The learned policy beats a max-price baseline by a margin that grows with how
+sensitive customers are to price.<N id="rl-uplift" /> In the control, the same
+algorithm trained with its discount factor set to zero — able to learn, unable
+to look ahead — is indistinguishable from the baseline at every
+setting,<N id="rl-myopic" /> which locates the advantage in anticipating churn
+rather than in the use of reinforcement learning.
 
-Two things cut against the headline. Decomposing the revenue gap by slice shows
-almost all of it in one of the two, so the aggregate figure describes one slice
-wearing the average as a
-disguise.<N id="rl-embb-attribution" /> And at the lowest churn sensitivity
-the advantage is not significant at all — a result worth keeping, because it
-marks the boundary of where the approach is worth anything.
+Decomposing the revenue gap by slice puts almost all of it in one of the two, so
+the aggregate figure describes one slice rather than
+both.<N id="rl-embb-attribution" /> At the lowest churn sensitivity the
+advantage is not significant.
 
-The algorithm comparison went the same way: a deterministic method landed below,
-another on-policy method was statistically indistinguishable, and reporting that
-honestly is more useful than presenting the choice as
-obvious.<N id="rl-algorithms" /> The paper took first author and a silver award
-at the conference's paper competition.<N id="rl-award" />
+In the algorithm comparison a deterministic method landed below and another
+on-policy method was statistically
+indistinguishable.<N id="rl-algorithms" /> The paper took first author and a
+silver award at the conference's paper competition.<N id="rl-award" />

@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import Actions from '../work/Actions.astro';
 import { site, standing } from '../../lib/site';
+import { t, type Lang } from '../../i18n/ui';
 import photo from '../../assets/profile/photo.jpg';
 
 /**
@@ -11,24 +12,27 @@ import photo from '../../assets/profile/photo.jpg';
  * beneath it draws itself when the page loads and the figures count up, which
  * is the only decoration on the page that is not also information.
  */
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
 ---
 
 <header class="hero" data-hero>
   <div class="shell hero__inner">
     <div class="hero__body">
-      <p class="meta hero__eyebrow">{site.role} · {site.status}</p>
-      <h1 class="hero__name">{site.name}</h1>
-      <p class="hero__lede">{site.lede}</p>
+      <p class="meta hero__eyebrow">{t(lang, 'site.role')} · {t(lang, 'site.status')}</p>
+      <h1 class="hero__name">{t(lang, 'site.name')}</h1>
+      <p class="hero__lede">{t(lang, 'site.lede')}</p>
 
       <ul class="hero__points">
-        <li>Two data pipelines carrying a mobile product each — ten services owned between them, and 1,300 automated tests behind them.</li>
-        <li>First author on a paper that took a silver award; Section III.E of a survey under review at IEEE TAI.</li>
-        <li>Two statistical studies where the data contradicted the premise the project started from.</li>
+        <li>{t(lang, 'hero.point.1')}</li>
+        <li>{t(lang, 'hero.point.2')}</li>
+        <li>{t(lang, 'hero.point.3')}</li>
       </ul>
 
       <Actions
         actions={[
-          { href: '#pipelines', label: 'See the pipelines', kind: 'deployed' },
           { href: `mailto:${site.email}`, label: site.email, kind: 'doc' },
           { href: site.links.github, label: 'GitHub', kind: 'repo' },
         ]}
@@ -38,7 +42,7 @@ import photo from '../../assets/profile/photo.jpg';
     <Image
       class="hero__photo"
       src={photo}
-      alt="Ryu Jemu"
+      alt={t(lang, 'site.name')}
       widths={[240, 480]}
       sizes="12rem"
       loading="eager"
@@ -48,7 +52,7 @@ import photo from '../../assets/profile/photo.jpg';
   <div class="shell">
     <dl class="hero__figures" data-panel>
       {
-        standing.map((s) => (
+        standing(lang).map((s) => (
           <div class="hero__figure">
             <dt class="hero__value" data-countup>
               {s.value}

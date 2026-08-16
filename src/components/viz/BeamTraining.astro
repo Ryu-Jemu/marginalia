@@ -10,6 +10,13 @@
  * This is a training curve and nothing else: there was no held-out split, so
  * the plate is annotated to say so rather than leaving a reader to assume it.
  */
+import { t, type Lang } from '../../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+
 const LOSS = [2.0826, 0.0084, 0.0032, 0.0018, 0.0014, 0.0011, 0.001, 0.0009, 0.0009, 0.0009];
 
 const W = 760;
@@ -32,7 +39,7 @@ const last = LOSS.length - 1;
 ---
 
 <svg class="viz train" data-viz="train" viewBox={`0 0 ${W} ${H}`} role="img"
-  aria-label="Average training loss per epoch, falling from 2.0826 at epoch one to 0.0009 by epoch eight and flat thereafter. Logarithmic axis. No held-out split was implemented.">
+  aria-label={t(lang, 'viz.beam.train.aria')}>
   {
     DECADES.map((d) => (
       <>
@@ -43,7 +50,7 @@ const last = LOSS.length - 1;
       </>
     ))
   }
-  <text class="viz-label" x={L} y={T - 10}>average loss per epoch · log scale</text>
+  <text class="viz-label" x={L} y={T - 10}>{t(lang, 'viz.beam.train.title')}</text>
 
   <path class="train__line" data-train-line d={path}></path>
 
@@ -67,20 +74,20 @@ const last = LOSS.length - 1;
       ) : null,
     )
   }
-  <text class="viz-label" x={L} y={T + PH + 34}>Epoch</text>
+  <text class="viz-label" x={L} y={T + PH + 34}>{t(lang, 'viz.beam.train.axis')}</text>
 
   <!-- the setup, beside the curve rather than in a caption nobody reads -->
   <g data-train-key>
-    <text class="viz-label" x={L + PW + 18} y={T + 4}>run</text>
+    <text class="viz-label" x={L + PW + 18} y={T + 4}>{t(lang, 'viz.beam.train.run')}</text>
     {
       [
-        ['GPT-2, frozen', ''],
-        ['trainable', '339,338'],
-        ['samples used', '20,000'],
-        ['input window', '40 steps'],
-        ['horizon', '10 steps'],
-        ['device', 'MPS'],
-        ['run time', '34 min'],
+        [t(lang, 'viz.beam.train.run.backbone'), ''],
+        [t(lang, 'viz.beam.train.run.trainable'), '339,338'],
+        [t(lang, 'viz.beam.train.run.samples'), '20,000'],
+        [t(lang, 'viz.beam.train.run.window'), t(lang, 'viz.beam.train.run.window.v')],
+        [t(lang, 'viz.beam.train.run.horizon'), t(lang, 'viz.beam.train.run.horizon.v')],
+        [t(lang, 'viz.beam.train.run.device'), 'MPS'],
+        [t(lang, 'viz.beam.train.run.time'), t(lang, 'viz.beam.train.run.time.v')],
       ].map(([k, v], i) => (
         <>
           <text class="train__k" x={L + PW + 18} y={T + 24 + i * 17}>
@@ -92,8 +99,12 @@ const last = LOSS.length - 1;
         </>
       ))
     }
-    <text class="train__note" x={L + PW + 18} y={T + 24 + 7 * 17 + 10}>no held-out split</text>
-    <text class="train__note-sub" x={L + PW + 18} y={T + 24 + 7 * 17 + 24}>training loss only</text>
+    <text class="train__note" x={L + PW + 18} y={T + 24 + 7 * 17 + 10}>
+      {t(lang, 'viz.beam.train.nosplit')}
+    </text>
+    <text class="train__note-sub" x={L + PW + 18} y={T + 24 + 7 * 17 + 24}>
+      {t(lang, 'viz.beam.train.trainonly')}
+    </text>
   </g>
 </svg>
 

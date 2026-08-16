@@ -1,0 +1,106 @@
+- id: ask-silver
+  kind: award
+  title: 논문 경진대회 은상
+  issuer: 한국정보처리학회 ASK 2026 춘계학술발표대회
+  date: "2026.05"
+  detail: 5G 슬라이스 가격 결정 논문. 2인 중 제1저자.
+  notes:
+    - rl-award
+
+- id: hanyang-grand-prize
+  kind: award
+  title: IT/CSE 응용연구개발 부문 대상
+  issuer: 한양대학교 SW/ICT/AI 학술대회
+  date: "2025.12"
+  detail: 공시 데이터 파이프라인 Dartoo.
+  notes:
+    - dartoo-award
+
+- id: ai-top-100
+  kind: award
+  title: AI_TOP_100 CAMPUS 최종 선정
+  issuer: 카카오임팩트 · 브라이언임팩트
+  date: "2026.04"
+  detail: 여행 일정 파이프라인 MAP. 선정 100팀 중 하나.
+
+- id: tourism-data
+  kind: award
+  title: 관광 데이터 공모전 서비스 심사 통과
+  issuer: 한국관광공사 · 카카오
+  date: "2026.05"
+  detail: MAP. 웹서비스 부문.
+
+- id: ai-rookie
+  kind: award
+  title: AI ROOKIE 100팀 선정
+  issuer: 과학기술정보통신부
+  date: "2026.05"
+  detail: 여행 일정 파이프라인 MAP.
+
+- id: aws-clf
+  kind: certification
+  title: AWS Certified Cloud Practitioner
+  issuer: Amazon Web Services
+  date: "2025.03"
+
+- id: sqld
+  kind: certification
+  title: SQL Developer
+  issuer: 한국데이터산업진흥원
+  date: "2025.04"
+
+- id: azure-ai
+  kind: certification
+  title: Microsoft Certified — Azure AI Fundamentals
+  issuer: Microsoft
+  date: "2025.07"
+  score: 890 / 1000
+
+- id: adsp
+  kind: certification
+  title: Advanced Data Analytics Semi-Professional
+  issuer: 한국데이터산업진흥원
+  date: "2025.09"
+
+- id: hanyang
+  kind: education
+  title: 컴퓨터학부 학사, 융합보안 복수전공
+  issuer: 한양대학교 ERICA
+  date: "2023.03 – 2027.02"
+  detail: 143학점 이수, 평점 4.18 / 4.5. 2027년 2월 졸업 예정.
+
+- id: kau
+  kind: education
+  title: 항공전자정보공학부 — 중퇴
+  issuer: 한국항공대학교
+  date: "2020.03 – 2021.05"
+
+- id: air-force
+  kind: service
+  title: 무선통신장비 정비, 병장 전역
+  issuer: 대한민국 공군
+  date: "2021.06 – 2023.03"
+  detail: 복무 기간 만기 전역.
+
+- id: ici-lab
+  kind: lab
+  title: 학부연구생
+  issuer: ICI Lab, 한양대학교 ERICA
+  date: "2025.03 – 2026.06"
+  detail: 제1저자 가격 결정 논문, 서베이 공저자, 빔 예측 연구.
+
+- id: teaching
+  kind: teaching
+  title: C 프로그래밍 실습 조교
+  issuer: 한양대학교
+  date: "2026.03 – 2026.06"
+  notes:
+    - teaching-assistant
+
+- id: blog
+  kind: writing
+  title: 기술 블로그 — 30편
+  issuer: velog
+  date: "2024 – present"
+  detail: AWS 실습, Kubernetes, Spring, 백엔드 아키텍처.
+  href: https://velog.io/@muqqi_bba

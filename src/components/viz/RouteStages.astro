@@ -6,6 +6,13 @@
  * only adjusts the ordering it is handed. Drawing it this way makes the budget
  * legible: the expensive, unbounded component is the last and smallest step.
  */
+import { t, type Lang } from '../../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+
 const W = 620;
 const H = 200;
 const STOPS = [
@@ -23,17 +30,35 @@ const path = (order: number[]) =>
   data-viz="route"
   viewBox={`0 0 ${W} ${H}`}
   role="img"
-  aria-label="Three stages: a haversine distance matrix under one millisecond, an exhaustive tour search under eight stops, then at most three model calls that only reorder what the first two produced."
+  aria-label={t(lang, 'viz.route.aria')}
 >
   {
     [
-      { x: 0, n: '1', title: 'distance matrix', sub: 'haversine N×N · under 1ms', order: [0, 1, 2, 3] },
-      { x: 210, n: '2', title: 'tour search', sub: 'exhaustive under 8 stops', order: [0, 2, 1, 3] },
-      { x: 420, n: '3', title: 'model pass', sub: 'at most 3 calls', order: [0, 2, 3, 1] },
+      {
+        x: 0,
+        n: '1',
+        title: t(lang, 'viz.route.s1.title'),
+        sub: t(lang, 'viz.route.s1.sub'),
+        order: [0, 1, 2, 3],
+      },
+      {
+        x: 210,
+        n: '2',
+        title: t(lang, 'viz.route.s2.title'),
+        sub: t(lang, 'viz.route.s2.sub'),
+        order: [0, 2, 1, 3],
+      },
+      {
+        x: 420,
+        n: '3',
+        title: t(lang, 'viz.route.s3.title'),
+        sub: t(lang, 'viz.route.s3.sub'),
+        order: [0, 2, 3, 1],
+      },
     ].map((stage, si) => (
       <g transform={`translate(${stage.x} 0)`} data-stage={si}>
         <text class="viz-label" x="8" y="18">
-          stage {stage.n}
+          {t(lang, 'viz.route.stage', { n: stage.n })}
         </text>
         <text class="viz-value" x="8" y="36" style="font-size:12px">
           {stage.title}
@@ -73,9 +98,9 @@ const path = (order: number[]) =>
   }
 
   <text class="viz-label" x="8" y={H - 6}>
-    deterministic
+    {t(lang, 'viz.route.deterministic')}
   </text>
   <text class="viz-label" x={W - 8} y={H - 6} text-anchor="end" style="fill: var(--rubric)">
-    model — reorders only what it was given
+    {t(lang, 'viz.route.modelscope')}
   </text>
 </svg>

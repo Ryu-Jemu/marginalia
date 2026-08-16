@@ -2,9 +2,6 @@
 import { Image } from 'astro:assets';
 import { t, type Lang } from '../../i18n/ui';
 
-import crimeResidual from '../../assets/analysis/crime/residual-map.png';
-import crimeHeatmap from '../../assets/analysis/crime/correlation-heatmap.png';
-
 import cinemaRevenue from '../../assets/analysis/cinema/revenue-by-year.png';
 import cinemaScreens from '../../assets/analysis/cinema/screens-vs-share.png';
 import cinemaConsumption from '../../assets/analysis/cinema/consumption-vs-share.png';
@@ -26,6 +23,10 @@ import cinemaMap from '../../assets/analysis/cinema/theatre-map.png';
  *
  * Each caption names the script that produced it, so a reviewer can go from the
  * plate to the file.
+ *
+ * The crime study has no plates here: its residual choropleth is already drawn
+ * in code on the document, and its correlation matrix now is too. An image of a
+ * figure the site can draw is a second copy that can go out of date.
  */
 interface Props {
   slug: string;
@@ -33,6 +34,9 @@ interface Props {
 }
 const { slug, lang = 'en' } = Astro.props;
 
+/* `quality: 70` on every plate: a map screenshot is mostly texture, and
+   encoding one at full fidelity costs half a megabyte for detail nobody
+   reads. */
 interface Plate {
   src: ImageMetadata;
   key: string;
@@ -43,10 +47,6 @@ interface Plate {
 }
 
 const SETS: Record<string, Plate[]> = {
-  'crime-analysis': [
-    { src: crimeResidual, key: 'plate.crime.residual', script: 'visualization.py', wide: true },
-    { src: crimeHeatmap, key: 'plate.crime.heatmap', script: 'value_heatmap.py' },
-  ],
   'cinema-dashboard': [
     { src: cinemaRevenue, key: 'plate.cinema.revenue', script: 'Visualization.py', wide: true },
     { src: cinemaScreens, key: 'plate.cinema.screens', script: 'Number_Share_Analysis.py', wide: true },
@@ -78,8 +78,6 @@ const plates = SETS[slug] ?? [];
             widths={[640, 1280]}
             sizes="(max-width: 46rem) 92vw, 40rem"
             loading="lazy"
-            {/* A map screenshot is mostly texture, and lossless-ish encoding of
-                it costs half a megabyte for detail nobody reads. */}
             quality={70}
           />
           <figcaption class="plate__caption">

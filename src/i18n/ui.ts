@@ -229,14 +229,6 @@ const strings = {
     'The plots as they came out of the scripts. Every other figure on this site is redrawn from the study’s own data; these are the originals, and each names the file that drew it.',
     '스크립트에서 나온 그대로의 그림입니다. 이 사이트의 다른 그림은 모두 원본 데이터에서 다시 그린 것이고, 이 자료는 원본입니다. 각각 어떤 파일이 그렸는지 함께 적었습니다.',
   ],
-  'plate.crime.residual': [
-    'Residuals by district on a folium choropleth, from −1,862 in Seongdong to +1,387 in Mapo. Red is where the model expects more crime than there is.',
-    'folium 단계구분도로 그린 자치구별 잔차입니다. 성동 −1,862에서 마포 +1,387까지이며, 붉은 쪽이 모델이 실제보다 많이 예측한 곳입니다.',
-  ],
-  'plate.crime.heatmap': [
-    'Correlation matrix across the six variables, drawn before the regression was read. Streetlights and average income sit at 0.71.',
-    '회귀 결과를 읽기 전에 그린 여섯 변수 간 상관행렬입니다. 가로등 수와 평균소득이 0.71로 가장 높습니다.',
-  ],
   'plate.cinema.revenue': [
     'Revenue by year, Korean against foreign releases, 2004 to 2021. The same series the study starts from.',
     '연도별 매출액을 한국영화와 외국영화로 나눈 2004–2021년 추이입니다. 분석이 출발한 계열입니다.',
@@ -292,6 +284,10 @@ const strings = {
   'fig.pricing.alg': [
     'Figure 2(b), redrawn. At the setting where price sensitivity is lowest, the learned policy has nothing to beat.',
     'Figure 2(b)를 다시 그렸습니다. 가격 민감도가 가장 낮은 설정에서는 학습된 정책이 이길 대상이 없습니다.',
+  ],
+  'fig.crime.heatmap': [
+    'Every pair of variables, before any coefficient was read. Streetlights and average income move together at 0.71 — the reason the collinearity check was run.',
+    '계수를 읽기 전에 확인한 변수 쌍 전체입니다. 가로등 수와 평균소득이 0.71로 함께 움직이며, 다중공선성을 점검한 이유가 여기 있습니다.',
   ],
   'fig.crime.model': [
     'Five inputs, one model. The variable the project set out to confirm is the one that failed.',

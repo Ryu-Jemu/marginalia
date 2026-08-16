@@ -23,6 +23,22 @@
  * a full sentence in both languages.
  */
 export const vizStrings = {
+  /* ── the correlation matrix, crime study ───────────────────────────── */
+  'viz.heat.aria': [
+    'Correlation matrix over six variables across 25 Seoul districts. Every coefficient is positive; the strongest pair that is not a variable with itself is streetlights and average income at 0.71.',
+    '서울 25개 자치구, 여섯 변수의 상관행렬입니다. 모든 계수가 양수이며, 자기 자신을 뺀 가장 강한 쌍은 가로등 수와 평균소득의 0.71입니다.',
+  ],
+  'viz.heat.cctv': ['CCTV', 'CCTV'],
+  'viz.heat.crime': ['crime', '범죄'],
+  'viz.heat.population': ['population', '인구'],
+  'viz.heat.income': ['income', '소득'],
+  'viz.heat.venues': ['venues', '유흥주점'],
+  'viz.heat.lights': ['streetlights', '가로등'],
+  'viz.heat.foot': [
+    "Pearson's r · n = 25 districts · strongest pair {peak}, marked",
+    'Pearson r · 자치구 n = 25 · 가장 강한 쌍 {peak}, 표시',
+  ],
+
   /* ── the silent loss, Dartoo ───────────────────────────────────────── */
   'viz.silentloss.aria': [
     'Two lanes leaving the disclosure service. The persist lane delivers 959 rows; the publish lane stops at a disabled publisher after 805 events, losing 154 with no log line.',

@@ -4,6 +4,7 @@ import SilentLoss from './SilentLoss.astro';
 import RaceTimeline from './RaceTimeline.astro';
 import RouteStages from './RouteStages.astro';
 import PricingChart from './PricingChart.astro';
+import CrimeHeatmap from './CrimeHeatmap.astro';
 import CrimeModel from './CrimeModel.astro';
 import CrimeFit from './CrimeFit.astro';
 import { t, type Lang } from '../../i18n/ui';
@@ -58,6 +59,11 @@ const next = () => String(++n);
 {
   slug === 'crime-analysis' && (
     <>
+      {/* Before the fit, because that is when it was drawn and what it was
+          drawn for: nothing here is read until collinearity has been. */}
+      <Figure n={next()} title={t(lang, 'fig.crime.heatmap')} lang={lang}>
+        <CrimeHeatmap lang={lang} />
+      </Figure>
       <Figure n={next()} title={t(lang, 'fig.crime.model')} lang={lang}>
         <CrimeModel lang={lang} />
       </Figure>

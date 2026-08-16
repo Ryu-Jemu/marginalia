@@ -254,6 +254,38 @@ function fit(svg: SVGSVGElement): void {
   if (mark) animate(mark, { opacity: [0, 1], duration: 420, delay: 760, ease: 'out(3)' });
 }
 
+/* ── the correlation matrix, filled cell by cell ─────────────────────────── */
+function heat(svg: SVGSVGElement): void {
+  const cells = [...svg.querySelectorAll<SVGGElement>('[data-heat-cell]')];
+  const peak = [...svg.querySelectorAll<SVGRectElement>('.heat__peak')];
+  if (cells.length === 0) return;
+
+  if (motionOff()) {
+    utils.set(cells, { opacity: 1 });
+    utils.set(peak, { opacity: 1 });
+    return;
+  }
+
+  // Along the diagonal rather than in reading order: the matrix is symmetric,
+  // and a wash that spreads from the diagonal shows that it is.
+  const n = Math.round(Math.sqrt(cells.length));
+  utils.set(cells, { opacity: 0 });
+  cells.forEach((cell, i) => {
+    const r = Math.floor(i / n);
+    const c = i % n;
+    animate(cell, {
+      opacity: [0, 1],
+      duration: 320,
+      delay: 120 + Math.abs(r - c) * 90 + Math.min(r, c) * 30,
+      ease: 'out(2)',
+    });
+  });
+
+  // The marked pair last, once there is a matrix for it to be marked in.
+  utils.set(peak, { opacity: 0 });
+  animate(peak, { opacity: [0, 1], duration: 380, delay: 900, ease: 'out(2)' });
+}
+
 const RUNNERS: Record<string, (svg: SVGSVGElement) => void> = {
   flow,
   fit,
@@ -262,6 +294,7 @@ const RUNNERS: Record<string, (svg: SVGSVGElement) => void> = {
   race,
   crime,
   route,
+  heat,
 };
 
 /* ── data panels: the figure counts up to itself ─────────────────────────── */

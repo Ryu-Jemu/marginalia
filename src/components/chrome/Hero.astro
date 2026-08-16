@@ -24,6 +24,8 @@ const { lang } = Astro.props;
       <p class="meta hero__eyebrow">{t(lang, 'site.role')} · {t(lang, 'site.status')}</p>
       <h1 class="hero__name">{t(lang, 'site.name')}</h1>
       <p class="hero__lede">{t(lang, 'site.lede')}</p>
+      {/* What the reader is looking at, said once, before the evidence for it. */}
+      <p class="hero__what">{t(lang, 'site.what')}</p>
 
       <ul class="hero__points">
         <li>{t(lang, 'hero.point.1')}</li>
@@ -120,6 +122,15 @@ const { lang } = Astro.props;
     letter-spacing: -0.014em;
     color: var(--ink-muted);
     max-width: 34ch;
+    text-wrap: pretty;
+  }
+
+  .hero__what {
+    margin-top: 0.9rem;
+    max-width: 56ch;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--ink-faint);
     text-wrap: pretty;
   }
 

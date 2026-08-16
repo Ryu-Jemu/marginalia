@@ -1,0 +1,6 @@
+# Both language trees are the same document; each page names the other with a
+# hreflang link, so neither needs to be hidden from a crawler.
+User-agent: *
+Allow: /
+
+Sitemap: https://ryu-jemu-marginalia.onrender.com/sitemap-index.xml

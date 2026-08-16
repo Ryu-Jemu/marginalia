@@ -50,12 +50,18 @@ const strings = {
     '2027년 2월 졸업 예정 · 한양대학교 ERICA',
   ],
   'site.lede': [
-    'I build the path data takes — collected, decoded, cached, modelled, delivered — and I fix it where it breaks quietly.',
-    '데이터가 지나는 경로를 만듭니다. 수집, 디코딩, 캐싱, 모델링, 전달까지. 그리고 그 경로가 조용히 끊기는 지점을 고칩니다.',
+    'A developer who thinks flexibly and takes things on, in the age of AI transformation.',
+    'AX 시대에서 유연한 사고와 도전 정신을 가진 개발자입니다.',
   ],
+  /* The browser tab, and the line under the link when it is shared. */
+  'site.title': ['Ryu Jemu — Data · Backend portfolio', '류제무 — 데이터 · 백엔드 포트폴리오'],
   'site.description': [
-    'Data pipelines, wireless-optimisation research, and statistical analysis — with the measurement conditions in the margin beside every figure.',
-    '데이터 파이프라인, 무선 최적화 연구, 통계 분석. 모든 수치 옆 여백에 측정 조건을 함께 적었습니다.',
+    'Two data pipelines carrying a mobile product each, two papers, and two statistical studies — with the condition it was measured under beside every figure.',
+    '모바일 서비스를 하나씩 떠받치는 데이터 파이프라인 두 개, 논문 두 편, 통계 분석 두 건. 모든 수치 옆에 측정 조건을 함께 적었습니다.',
+  ],
+  'site.what': [
+    'What follows is the work itself: what each system does, what I built in it, the defects I found and fixed, and the figures each claim rests on.',
+    '아래는 작업 그 자체입니다. 각 시스템이 무엇을 하는지, 그 안에서 제가 무엇을 만들었는지, 어떤 결함을 발견하고 고쳤는지, 그리고 각 주장이 딛고 있는 수치입니다.',
   ],
 
   'hero.point.1': [

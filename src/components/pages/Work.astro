@@ -16,6 +16,7 @@ import Architecture from '../viz/Architecture.astro';
 import Figure from '../viz/Figure.astro';
 import SystemFlow from '../viz/SystemFlow.astro';
 import ProjectFigures from '../viz/ProjectFigures.astro';
+import Plates from '../viz/Plates.astro';
 import { t, localise, type Lang } from '../../i18n/ui';
 import { slugOf } from '../../lib/content';
 
@@ -27,6 +28,12 @@ const { entry, lang } = Astro.props;
 const p = entry.data;
 const slug = slugOf(entry);
 const { Content } = await render(entry);
+
+/* Only the two products have a device to stand beside their plates. On a study
+   there is nothing in the left column, so the figures were being squeezed into
+   two thirds of the page with a third of it blank. */
+const hasDevice = slug === 'dartoo' || slug === 'map';
+const hasPlates = slug === 'crime-analysis' || slug === 'cinema-dashboard';
 
 const backTo =
   p.domain === 'pipeline'
@@ -161,19 +168,37 @@ const nextFig = () => String(++fig);
         <div class="column prose">
           <Content />
         </div>
-        {/* The device and the plates share a row. Given its own full-width
-            band the phone leaves two thirds of the page empty beside it, and
-            the diagram that explains the same screens ends up a scroll
-            further down than the thing it explains. */}
-        <div class="column column--wide media">
-          <div class="media__device">
-            <ProductDeck slug={slug} lang={lang} />
-          </div>
+        {/* The device and the plates share a row on a product page: given its
+            own full-width band the phone leaves two thirds of the page empty
+            beside it, and the diagram that explains the same screens ends up a
+            scroll below the thing it explains. A study has no device, so its
+            figures take the whole width. */}
+        <div class:list={['column', 'column--wide', 'media', hasDevice && 'media--split']}>
+          {hasDevice && (
+            <div class="media__device">
+              <ProductDeck slug={slug} lang={lang} />
+            </div>
+          )}
           <div class="media__plates">
             <ProjectFigures slug={slug} startAt={fig} lang={lang} />
           </div>
         </div>
       </Section>
+
+      {
+        hasPlates && (
+          <Section
+            id="plates"
+            n={next()}
+            title={t(lang, 'work.plates')}
+            lede={t(lang, 'work.plates.lede')}
+          >
+            <div class="column column--wide">
+              <Plates slug={slug} lang={lang} />
+            </div>
+          </Section>
+        )
+      }
 
       {
         p.safety.length > 0 && (
@@ -296,7 +321,7 @@ const nextFig = () => String(++fig);
     gap: 1.5rem;
   }
   @media (min-width: 52rem) {
-    .media {
+    .media--split {
       grid-template-columns: 20.5rem minmax(0, 1fr);
       gap: 2rem;
       align-items: start;

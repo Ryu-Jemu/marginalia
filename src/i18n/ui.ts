@@ -223,6 +223,49 @@ const strings = {
   'screen.itinerary': ['Itinerary', '일정'],
   'screen.place': ['Place', '장소'],
 
+  /* ── the studies' own output ───────────────────────────────────────── */
+  'work.plates': ['What the analysis produced', '분석이 만든 자료'],
+  'work.plates.lede': [
+    'The plots as they came out of the scripts. Every other figure on this site is redrawn from the study’s own data; these are the originals, and each names the file that drew it.',
+    '스크립트에서 나온 그대로의 그림입니다. 이 사이트의 다른 그림은 모두 원본 데이터에서 다시 그린 것이고, 이 자료는 원본입니다. 각각 어떤 파일이 그렸는지 함께 적었습니다.',
+  ],
+  'plate.crime.residual': [
+    'Residuals by district on a folium choropleth, from −1,862 in Seongdong to +1,387 in Mapo. Red is where the model expects more crime than there is.',
+    'folium 단계구분도로 그린 자치구별 잔차입니다. 성동 −1,862에서 마포 +1,387까지이며, 붉은 쪽이 모델이 실제보다 많이 예측한 곳입니다.',
+  ],
+  'plate.crime.heatmap': [
+    'Correlation matrix across the six variables, drawn before the regression was read. Streetlights and average income sit at 0.71.',
+    '회귀 결과를 읽기 전에 그린 여섯 변수 간 상관행렬입니다. 가로등 수와 평균소득이 0.71로 가장 높습니다.',
+  ],
+  'plate.cinema.revenue': [
+    'Revenue by year, Korean against foreign releases, 2004 to 2021. The same series the study starts from.',
+    '연도별 매출액을 한국영화와 외국영화로 나눈 2004–2021년 추이입니다. 분석이 출발한 계열입니다.',
+  ],
+  'plate.cinema.screens': [
+    'CGV screen count against regional share, one panel per year from 2020 to 2024, with every region labelled.',
+    'CGV 상영관 수와 지역 점유율을 2020–2024년 연도별로 나눈 산점도입니다. 모든 권역에 이름을 달았습니다.',
+  ],
+  'plate.cinema.consumption': [
+    'Per-capita private consumption against regional share, 2020 to 2022. Pearson’s r is computed for each panel.',
+    '1인당 민간소비지출액과 지역 점유율을 2020–2022년으로 나눈 산점도입니다. 패널마다 Pearson 상관계수를 계산했습니다.',
+  ],
+  'plate.cinema.population': [
+    'Theatre count against district population across the country, with a fitted trend. Most districts hold one.',
+    '전국 시군구 인구수 대비 영화관 수와 추세선입니다. 대부분의 시군구는 한 곳을 가집니다.',
+  ],
+  'plate.cinema.3d': [
+    'Screens and seats against annual admissions, with a trend line fitted to each axis.',
+    '상영관 수와 좌석 수를 연간 관객 수에 대해 그리고, 축마다 추세선을 적합했습니다.',
+  ],
+  'plate.cinema.wordcloud': [
+    'What people write about one chain, after stopword filtering. One of three, one per operator.',
+    '불용어를 걸러낸 뒤 한 체인에 대해 사람들이 쓴 말입니다. 운영사별로 세 장 중 하나입니다.',
+  ],
+  'plate.cinema.map': [
+    'Every theatre in the country, geocoded from its address and clustered by proximity, coloured by operator.',
+    '전국 영화관을 주소로 지오코딩해 근접도로 묶고 운영사별로 색을 준 지도입니다.',
+  ],
+
   /* ── figure captions ───────────────────────────────────────────────── */
   'fig.pipeline': ['{title} — the pipeline end to end.', '{title} — 처음부터 끝까지의 파이프라인.'],
   'fig.pipeline.full': [

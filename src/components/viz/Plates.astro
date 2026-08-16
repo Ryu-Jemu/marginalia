@@ -1,0 +1,138 @@
+---
+import { Image } from 'astro:assets';
+import { t, type Lang } from '../../i18n/ui';
+
+import crimeResidual from '../../assets/analysis/crime/residual-map.png';
+import crimeHeatmap from '../../assets/analysis/crime/correlation-heatmap.png';
+
+import cinemaRevenue from '../../assets/analysis/cinema/revenue-by-year.png';
+import cinemaScreens from '../../assets/analysis/cinema/screens-vs-share.png';
+import cinemaConsumption from '../../assets/analysis/cinema/consumption-vs-share.png';
+import cinemaPopulation from '../../assets/analysis/cinema/population-vs-theatres.png';
+import cinema3d from '../../assets/analysis/cinema/seats-audience-3d.png';
+import cinemaWordcloud from '../../assets/analysis/cinema/wordcloud-cgv.png';
+import cinemaMap from '../../assets/analysis/cinema/theatre-map.png';
+
+/**
+ * The output the analysis actually produced.
+ *
+ * Everywhere else on this site a figure is redrawn in code from the study's own
+ * data, so the plate and the sentence beside it cannot drift apart. These are
+ * the opposite: the plots as they came out of the scripts, in matplotlib's and
+ * folium's own ink. They are here because a redrawn figure proves the numbers
+ * and this proves the work — and because the two studies produced material the
+ * site had no other way to show at all: a word cloud, a clustered map, a
+ * correlation matrix.
+ *
+ * Each caption names the script that produced it, so a reviewer can go from the
+ * plate to the file.
+ */
+interface Props {
+  slug: string;
+  lang?: Lang;
+}
+const { slug, lang = 'en' } = Astro.props;
+
+interface Plate {
+  src: ImageMetadata;
+  key: string;
+  /** The file in the study's own repository that drew it. */
+  script: string;
+  /** Landscape plates take the full width; square ones share a row. */
+  wide?: boolean;
+}
+
+const SETS: Record<string, Plate[]> = {
+  'crime-analysis': [
+    { src: crimeResidual, key: 'plate.crime.residual', script: 'visualization.py', wide: true },
+    { src: crimeHeatmap, key: 'plate.crime.heatmap', script: 'value_heatmap.py' },
+  ],
+  'cinema-dashboard': [
+    { src: cinemaRevenue, key: 'plate.cinema.revenue', script: 'Visualization.py', wide: true },
+    { src: cinemaScreens, key: 'plate.cinema.screens', script: 'Number_Share_Analysis.py', wide: true },
+    {
+      src: cinemaConsumption,
+      key: 'plate.cinema.consumption',
+      script: 'Consumtion_Share_Analysis.py',
+      wide: true,
+    },
+    { src: cinemaPopulation, key: 'plate.cinema.population', script: 'Domestic_theater.xlsx' },
+    { src: cinema3d, key: 'plate.cinema.3d', script: 'Spot_Graph3D.py' },
+    { src: cinemaWordcloud, key: 'plate.cinema.wordcloud', script: 'text_analysis.py' },
+    { src: cinemaMap, key: 'plate.cinema.map', script: 'Array_adress.py' },
+  ],
+};
+
+const plates = SETS[slug] ?? [];
+---
+
+{
+  plates.length > 0 && (
+    <div class="plates" data-notes-inline>
+      {plates.map((p) => (
+        <figure class:list={['plate', p.wide && 'plate--wide']}>
+          <Image
+            class="plate__img"
+            src={p.src}
+            alt={t(lang, p.key)}
+            widths={[640, 1280]}
+            sizes="(max-width: 46rem) 92vw, 40rem"
+            loading="lazy"
+            {/* A map screenshot is mostly texture, and lossless-ish encoding of
+                it costs half a megabyte for detail nobody reads. */}
+            quality={70}
+          />
+          <figcaption class="plate__caption">
+            {t(lang, p.key)}
+            <span class="plate__script">{p.script}</span>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .plates {
+    display: grid;
+    gap: 1.5rem;
+  }
+  @media (min-width: 52rem) {
+    .plates {
+      grid-template-columns: 1fr 1fr;
+      gap: 1.75rem;
+    }
+    /* A wide plate is one whose x axis carries years or regions: squeezed to
+       half the measure its tick labels collide. */
+    .plate--wide {
+      grid-column: 1 / -1;
+    }
+  }
+  .plate {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .plate__img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: #fff;
+  }
+  .plate__caption {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--ink-muted);
+    text-wrap: pretty;
+  }
+  .plate__script {
+    display: block;
+    margin-top: 0.2rem;
+    font-family: var(--family-mono);
+    font-size: 0.6875rem;
+    letter-spacing: var(--ls-meta);
+    color: var(--scope);
+  }
+</style>

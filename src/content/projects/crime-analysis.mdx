@@ -13,6 +13,7 @@ stack:
   - pandas
   - statsmodels
   - scikit-learn
+  - seaborn
   - folium
   - GeoJSON
 links:
@@ -21,14 +22,15 @@ links:
     label: Ryu-Jemu/crime-analysis
 ownership:
   owned:
-    - data collection, cleaning and the district-level join
-    - the regression, the collinearity checks and the regularised cross-checks
+    - five public sources joined on the district key — CCTV, reported crime, population, average income and licensed entertainment venues
+    - the cleaning that made the join possible — legacy encodings, address parsing for the district, and a business-status filter
+    - the correlation matrix, the variance inflation check, the OLS fit and the regularised cross-checks
     - the residual map
   notOwned:
     - the report and presentation, which were shared work
 summary:
   - Five variables across Seoul's twenty-five districts, fitted by OLS and cross-checked with cross-validated Lasso and Ridge.
-  - The highest variance inflation factor is 2.61, well inside the usual threshold of 5.
+  - A correlation matrix and a variance inflation check come before the fit is read; the highest inflation factor is 2.61, well inside the usual threshold of 5.
   - Population and the density of entertainment venues carry the model. CCTV count is not significant.
   - Residuals are mapped by district rather than predictions, which names the districts the model gets wrong.
 data:

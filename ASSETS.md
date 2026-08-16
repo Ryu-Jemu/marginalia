@@ -10,15 +10,29 @@ warning at build time. Nothing here breaks the build by being absent —
 |---|---|
 | `public/papers/ask-2026.pdf` | `KIPS_C2026A0229F.pdf`. Verified as the ASK 2026 paper: first of two authors, C2026A0229, and every figure in the site's text matches its abstract. Embedded on `/research/ask-2026/` |
 | `src/assets/projects/dartoo/screen-{start,home,disclosure,company,chat}.png` | five product captures |
+| `src/assets/analysis/crime/residual-map.png` | `[쿠킹]_분석 자료/result.png`, the browser window cropped away and the frame closed on Seoul. The folium output of `visualization.py` |
+| `src/assets/analysis/crime/correlation-heatmap.png` | produced by running the study's own `value_heatmap.py` against its own `merged.csv`. The script ends in `plt.show()`, so nothing was ever written to disk — this is that plate, saved rather than shown |
+| `src/assets/analysis/cinema/*.png` | seven outputs copied unchanged from `비즈니스애널리틱스개론/`: `Comparison of Revenue by Year`, `Number&Share_03` (CGV), `Consumtion&Share_Analysis`, `CGV 지역별 인구대비 영화관 수`, `Scatter&Trendline`, `RE_CGV` (the later of the two word-cloud runs), and a screenshot of `(map_with_clustered_markers).html` |
 | `src/assets/projects/map/screen-{signin,home,itinerary,place}.png` | four product captures. `screen-signin.png` is `iPhone 17 Pro.png` with the supplied device frame and cut-out cropped away — the deck draws its own, and two frames read as a screenshot of a screenshot. `screen-home.png` is `홈화면.png`, trimmed at the last row that carries anything |
 
-The crime residual map and the multiplex figures are **not** images. They are
+Those analysis plates are the studies' **own** output, shown as they came out
+of matplotlib and folium. They are separate from the site's redrawn figures
+below, which exist so the plate and the sentence beside it cannot drift apart.
+
+The crime residual map and the multiplex figures rendered in the running text
+are **not** images. They are
 generated from the studies' own data — `CrimeResiduals.astro` from
 `seoul.geojson` plus a refit of the original OLS, `CinemaTrend.astro` and
 `CinemaCorrelation.astro` from the box-office series and the regional tables —
 so the plate and the sentence beside it cannot drift apart.
 
 ## Withheld on purpose
+
+The two coursework folders carry **live API credentials in plaintext** — a Naver
+Search client id and secret in `(text_analysis).py`, and a Kakao REST key in
+`Array_adress.py` and `(spot).py`. None of it is in this repository and none of
+it may enter it. The keys should be rotated at the provider.
+
 
 `85631451-….pdf`, the IEEE TAI submission, is **not** in this repository and
 should not go into it. It is the review-portal build: it carries the response

@@ -1,0 +1,174 @@
+---
+import { t, type Lang } from '../../i18n/ui';
+
+/**
+ * What people write about one chain, packed in code.
+ *
+ * The words and their counts are the study's own `extracted_keywords.csv` — 602
+ * distinct terms after the stopword list, of which the top fifty are drawn, the
+ * same cut `WordCloud(max_words=50)` took. Nothing is invented and nothing is
+ * dropped from the top fifty.
+ *
+ * The placement is not the original's. A word cloud's layout carries no
+ * information — only size does — so the packing here is a plain Archimedean
+ * spiral with rectangle collision, and every word stays horizontal. Rotating a
+ * Hangul word ninety degrees makes it slower to read and says nothing.
+ *
+ * Colour is rank, not decoration: the six most frequent terms take the accent,
+ * the next fourteen the body ink, the rest the faint ink. Frequency is already
+ * in the size; the colour is there so the eye lands on the top of the list
+ * first rather than on whatever happened to land in the middle.
+ */
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+
+/** From extracted_keywords.csv, sorted by count then by word. */
+const WORDS: Array<[string, number]> = [
+  ['관람', 43], ['최신', 41], ['주차장', 40], ['주차', 39], ['대구', 33],
+  ['시네마', 33], ['위치', 23], ['할인', 23], ['제공', 21], ['코엑스', 21],
+  ['시설', 20], ['스타', 18], ['이번', 18], ['인기', 18], ['필드', 18],
+  ['롯데', 17], ['돌비', 16], ['관객', 13], ['부산', 12], ['시아', 11],
+  ['편의', 11], ['확인', 11], ['근처', 10], ['맛집', 10], ['신세계', 10],
+  ['이용', 10], ['광명', 9], ['방법', 9], ['생일', 9], ['고양', 8],
+  ['밸리', 8], ['성수', 8], ['소개', 8], ['수험생', 8], ['안내', 8],
+  ['오늘', 8], ['위키드', 8], ['제주', 8], ['지역', 8], ['천안', 8],
+  ['쿠폰', 8], ['팝콘', 8], ['공개', 7], ['금촌', 7], ['김포', 7],
+  ['분당', 7], ['사랑', 7], ['상암', 7], ['세븐', 7], ['수원', 7],
+];
+
+const W = 660;
+const H = 340;
+const MIN_SIZE = 11;
+const MAX_SIZE = 42;
+
+const counts = WORDS.map(([, n]) => n);
+const lo = Math.min(...counts);
+const hi = Math.max(...counts);
+
+/**
+ * Advance width, estimated rather than measured: this runs at build time with
+ * no layout engine. A Hangul syllable is close to one em in every face the
+ * stack falls through to; Latin and digits are about 0.58.
+ */
+const widthOf = (word: string, size: number) => {
+  let em = 0;
+  for (const ch of word) em += /[가-힣ㄱ-ㆎ]/.test(ch) ? 1 : 0.58;
+  return em * size;
+};
+
+interface Placed {
+  word: string;
+  n: number;
+  size: number;
+  x: number;
+  y: number;
+  rank: number;
+}
+
+const placed: Placed[] = [];
+const boxes: Array<[number, number, number, number]> = [];
+const hits = (a: [number, number, number, number]) =>
+  boxes.some((b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1]);
+
+const PAD = 3;
+WORDS.forEach(([word, n], rank) => {
+  // Area, not height, should track frequency, so the size scale is on the
+  // square root — a term twice as common should not read as four times.
+  const k = (Math.sqrt(n) - Math.sqrt(lo)) / (Math.sqrt(hi) - Math.sqrt(lo));
+  const size = MIN_SIZE + k * (MAX_SIZE - MIN_SIZE);
+  const w = widthOf(word, size);
+  const h = size * 1.06;
+
+  for (let step = 0; step < 4000; step++) {
+    const a = step * 0.32;
+    // Elliptical spiral: the plate is twice as wide as it is tall, and a
+    // circular one leaves the corners empty and overflows the top.
+    const cx = W / 2 + a * 2.1 * Math.cos(a);
+    const cy = H / 2 + a * 0.95 * Math.sin(a);
+    const box: [number, number, number, number] = [
+      cx - w / 2 - PAD,
+      cy - h / 2 - PAD,
+      cx + w / 2 + PAD,
+      cy + h / 2 + PAD,
+    ];
+    if (box[0] < 2 || box[1] < 2 || box[2] > W - 2 || box[3] > H - 2) continue;
+    if (hits(box)) continue;
+    boxes.push(box);
+    placed.push({ word, n, size, x: cx, y: cy, rank });
+    return;
+  }
+});
+
+/* The spiral does not reach the corners of the field it is given, so the plate
+   is cropped to what was actually placed. Left as authored it carried fifty
+   pixels of blank paper under the last word. */
+const bx0 = Math.min(...boxes.map((b) => b[0]));
+const by0 = Math.min(...boxes.map((b) => b[1]));
+const bx1 = Math.max(...boxes.map((b) => b[2]));
+const by1 = Math.max(...boxes.map((b) => b[3]));
+const VX = bx0 - 4;
+const VY = by0 - 4;
+const VW = bx1 - bx0 + 8;
+const VH = by1 - by0 + 8;
+
+/* The footer prints how many of the fifty fit, so a plate that silently drops
+   half of them cannot pass for a complete one. */
+const tone = (rank: number) => (rank < 6 ? 'top' : rank < 20 ? 'mid' : 'low');
+---
+
+<svg
+  class="viz words"
+  data-viz="words"
+  viewBox={`${VX.toFixed(1)} ${VY.toFixed(1)} ${VW.toFixed(1)} ${(VH + 24).toFixed(1)}`}
+  role="img"
+  aria-label={t(lang, 'viz.words.aria', {
+    top: placed
+      .slice(0, 6)
+      .map((p) => p.word)
+      .join(', '),
+  })}
+>
+  {
+    placed.map((p) => (
+      <text
+        class:list={['words__w', `words__w--${tone(p.rank)}`]}
+        data-word
+        x={p.x}
+        y={p.y + p.size * 0.35}
+        font-size={p.size.toFixed(1)}
+        text-anchor="middle"
+        style={`--k:${p.rank}`}
+      >
+        {p.word}
+      </text>
+    ))
+  }
+  <text class="viz-label words__foot" x={VX + 2} y={VY + VH + 16}>
+    {t(lang, 'viz.words.foot', { shown: placed.length, total: WORDS.length })}
+  </text>
+</svg>
+
+<style>
+  .words {
+    display: block;
+  }
+  .words :global(.words__w) {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .words :global(.words__w--top) {
+    fill: var(--rubric);
+  }
+  .words :global(.words__w--mid) {
+    fill: var(--ink);
+  }
+  .words :global(.words__w--low) {
+    fill: var(--ink-faint);
+    font-weight: 500;
+  }
+  .words :global(.words__foot) {
+    fill: var(--ink-faint);
+  }
+</style>

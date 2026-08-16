@@ -7,6 +7,9 @@ import PricingChart from './PricingChart.astro';
 import CrimeHeatmap from './CrimeHeatmap.astro';
 import CrimeModel from './CrimeModel.astro';
 import CrimeFit from './CrimeFit.astro';
+import CinemaTrend from './CinemaTrend.astro';
+import CinemaCorrelation from './CinemaCorrelation.astro';
+import CinemaWords from './CinemaWords.astro';
 import { t, type Lang } from '../../i18n/ui';
 
 /**
@@ -53,6 +56,22 @@ const next = () => String(++n);
     <Figure n={next()} title={t(lang, 'fig.pricing')} lang={lang}>
       <PricingChart lang={lang} />
     </Figure>
+  )
+}
+
+{
+  slug === 'cinema-dashboard' && (
+    <>
+      <Figure n={next()} title={t(lang, 'fig.cinema.trend')} lang={lang}>
+        <CinemaTrend lang={lang} />
+      </Figure>
+      <Figure n={next()} title={t(lang, 'fig.cinema.corr')} lang={lang}>
+        <CinemaCorrelation lang={lang} />
+      </Figure>
+      <Figure n={next()} title={t(lang, 'fig.cinema.words')} lang={lang}>
+        <CinemaWords lang={lang} />
+      </Figure>
+    </>
   )
 }
 

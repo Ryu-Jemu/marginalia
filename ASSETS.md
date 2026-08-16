@@ -10,7 +10,7 @@ warning at build time. Nothing here breaks the build by being absent —
 |---|---|
 | `public/papers/ask-2026.pdf` | `KIPS_C2026A0229F.pdf`. Verified as the ASK 2026 paper: first of two authors, C2026A0229, and every figure in the site's text matches its abstract. Embedded on `/research/ask-2026/` |
 | `src/assets/projects/dartoo/screen-{start,home,disclosure,company,chat}.png` | five product captures |
-| `src/assets/analysis/cinema/*.png` | seven outputs copied unchanged from `비즈니스애널리틱스개론/`: `Comparison of Revenue by Year`, `Number&Share_03` (CGV), `Consumtion&Share_Analysis`, `CGV 지역별 인구대비 영화관 수`, `Scatter&Trendline`, `RE_CGV` (the later of the two word-cloud runs), and a screenshot of `(map_with_clustered_markers).html` |
+| `src/assets/analysis/cinema/*.png` | five outputs copied unchanged from `비즈니스애널리틱스개론/`: `Number&Share_03` (CGV), `Consumtion&Share_Analysis`, `CGV 지역별 인구대비 영화관 수`, `Scatter&Trendline`, and a screenshot of `(map_with_clustered_markers).html`. The yearly series and the word cloud used to be here too; both are drawn in code now |
 | `src/assets/projects/map/screen-{signin,home,itinerary,place}.png` | four product captures. `screen-signin.png` is `iPhone 17 Pro.png` with the supplied device frame and cut-out cropped away — the deck draws its own, and two frames read as a screenshot of a screenshot. `screen-home.png` is `홈화면.png`, trimmed at the last row that carries anything |
 
 Those analysis plates are the multiplex study's **own** output, shown as they
@@ -58,6 +58,7 @@ the paper are the same numbers and the plate takes the site's own ink.
 | `BeamOverhead.astro` | TAI Table V — latency, memory, power, energy |
 | `CrimeResiduals.astro` | Residual choropleth, from `seoul.geojson` and a refit of the OLS |
 | `CrimeHeatmap.astro` | The correlation matrix `value_heatmap.py` draws, recomputed from the same `merged.csv` the model was fitted on |
+| `CinemaWords.astro` | The keyword cloud, packed from `extracted_keywords.csv` — 602 terms after the stopword list, the top fifty drawn, the same cut `WordCloud(max_words=50)` took. The file is the 메가박스 run: the script writes the CSV before it draws, and the CSV's timestamp falls between the 롯데시네마 and 메가박스 saves, which `RE_MEGA.png` confirms by its own title and word order |
 | `CinemaTrend.astro` · `CinemaCorrelation.astro` | Box-office series and the regional correlations |
 
 The paper's error bars are deliberately not reproduced: their extents are not

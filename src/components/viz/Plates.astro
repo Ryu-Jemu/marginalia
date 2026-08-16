@@ -2,12 +2,10 @@
 import { Image } from 'astro:assets';
 import { t, type Lang } from '../../i18n/ui';
 
-import cinemaRevenue from '../../assets/analysis/cinema/revenue-by-year.png';
 import cinemaScreens from '../../assets/analysis/cinema/screens-vs-share.png';
 import cinemaConsumption from '../../assets/analysis/cinema/consumption-vs-share.png';
 import cinemaPopulation from '../../assets/analysis/cinema/population-vs-theatres.png';
 import cinema3d from '../../assets/analysis/cinema/seats-audience-3d.png';
-import cinemaWordcloud from '../../assets/analysis/cinema/wordcloud-cgv.png';
 import cinemaMap from '../../assets/analysis/cinema/theatre-map.png';
 
 /**
@@ -48,7 +46,6 @@ interface Plate {
 
 const SETS: Record<string, Plate[]> = {
   'cinema-dashboard': [
-    { src: cinemaRevenue, key: 'plate.cinema.revenue', script: 'Visualization.py', wide: true },
     { src: cinemaScreens, key: 'plate.cinema.screens', script: 'Number_Share_Analysis.py', wide: true },
     {
       src: cinemaConsumption,
@@ -58,7 +55,6 @@ const SETS: Record<string, Plate[]> = {
     },
     { src: cinemaPopulation, key: 'plate.cinema.population', script: 'Domestic_theater.xlsx' },
     { src: cinema3d, key: 'plate.cinema.3d', script: 'Spot_Graph3D.py' },
-    { src: cinemaWordcloud, key: 'plate.cinema.wordcloud', script: 'text_analysis.py' },
     { src: cinemaMap, key: 'plate.cinema.map', script: 'Array_adress.py' },
   ],
 };

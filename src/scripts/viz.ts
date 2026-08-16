@@ -286,6 +286,28 @@ function heat(svg: SVGSVGElement): void {
   animate(peak, { opacity: [0, 1], duration: 380, delay: 900, ease: 'out(2)' });
 }
 
+/* ── the keyword cloud, drawn biggest first ──────────────────────────────── */
+function words(svg: SVGSVGElement): void {
+  const items = [...svg.querySelectorAll<SVGTextElement>('[data-word]')];
+  if (items.length === 0) return;
+
+  if (motionOff()) {
+    utils.set(items, { opacity: 1, scale: 1 });
+    return;
+  }
+
+  // In frequency order, which is the order the list is in — the plate then
+  // assembles the way it was ranked rather than the way it was packed.
+  utils.set(items, { opacity: 0 });
+  animate(items, {
+    opacity: [0, 1],
+    scale: [0.86, 1],
+    duration: 340,
+    delay: stagger(26, { start: 100 }),
+    ease: 'out(3)',
+  });
+}
+
 const RUNNERS: Record<string, (svg: SVGSVGElement) => void> = {
   flow,
   fit,
@@ -295,6 +317,7 @@ const RUNNERS: Record<string, (svg: SVGSVGElement) => void> = {
   crime,
   route,
   heat,
+  words,
 };
 
 /* ── data panels: the figure counts up to itself ─────────────────────────── */

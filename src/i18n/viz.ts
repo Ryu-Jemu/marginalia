@@ -23,6 +23,16 @@
  * a full sentence in both languages.
  */
 export const vizStrings = {
+  /* ── the keyword cloud, multiplex study ────────────────────────────── */
+  'viz.words.aria': [
+    'A word cloud of the fifty most frequent terms in blog posts about one multiplex chain, after stopword filtering. The six most frequent are {top}.',
+    '불용어를 거른 뒤, 한 멀티플렉스 체인에 대한 블로그 글에서 가장 자주 나온 50개 단어입니다. 상위 여섯 개는 {top}입니다.',
+  ],
+  'viz.words.foot': [
+    '{shown} of the top {total} terms placed · size is frequency · 602 distinct terms after stopwords',
+    '상위 {total}개 중 {shown}개 배치 · 크기는 빈도 · 불용어 제거 후 서로 다른 단어 602개',
+  ],
+
   /* ── the correlation matrix, crime study ───────────────────────────── */
   'viz.heat.aria': [
     'Correlation matrix over six variables across 25 Seoul districts. Every coefficient is positive; the strongest pair that is not a variable with itself is streetlights and average income at 0.71.',

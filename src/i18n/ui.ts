@@ -229,10 +229,6 @@ const strings = {
     'The plots as they came out of the scripts. Every other figure on this site is redrawn from the study’s own data; these are the originals, and each names the file that drew it.',
     '스크립트에서 나온 그대로의 그림입니다. 이 사이트의 다른 그림은 모두 원본 데이터에서 다시 그린 것이고, 이 자료는 원본입니다. 각각 어떤 파일이 그렸는지 함께 적었습니다.',
   ],
-  'plate.cinema.revenue': [
-    'Revenue by year, Korean against foreign releases, 2004 to 2021. The same series the study starts from.',
-    '연도별 매출액을 한국영화와 외국영화로 나눈 2004–2021년 추이입니다. 분석이 출발한 계열입니다.',
-  ],
   'plate.cinema.screens': [
     'CGV screen count against regional share, one panel per year from 2020 to 2024, with every region labelled.',
     'CGV 상영관 수와 지역 점유율을 2020–2024년 연도별로 나눈 산점도입니다. 모든 권역에 이름을 달았습니다.',
@@ -304,6 +300,10 @@ const strings = {
   'fig.cinema.trend': [
     'Eighteen years of the national box office. The study starts where the line falls.',
     '전국 박스오피스 18년입니다. 분석은 이 선이 꺾이는 지점에서 시작합니다.',
+  ],
+  'fig.cinema.words': [
+    'What people write about one chain, after stopword filtering. Parking and the newest release come up more than the films do.',
+    '불용어를 거른 뒤 한 체인에 대해 사람들이 쓴 말입니다. 영화 자체보다 주차와 최신작이 더 자주 나옵니다.',
   ],
   'fig.cinema.corr': [
     'Every coefficient positive, none of them significant. The premise did not survive the sample.',

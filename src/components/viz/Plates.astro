@@ -2,29 +2,20 @@
 import { Image } from 'astro:assets';
 import { t, type Lang } from '../../i18n/ui';
 
-import cinemaScreens from '../../assets/analysis/cinema/screens-vs-share.png';
-import cinemaConsumption from '../../assets/analysis/cinema/consumption-vs-share.png';
-import cinemaPopulation from '../../assets/analysis/cinema/population-vs-theatres.png';
-import cinema3d from '../../assets/analysis/cinema/seats-audience-3d.png';
 import cinemaMap from '../../assets/analysis/cinema/theatre-map.png';
 
 /**
- * The output the analysis actually produced.
+ * What the studies produced that the site cannot redraw.
  *
- * Everywhere else on this site a figure is redrawn in code from the study's own
- * data, so the plate and the sentence beside it cannot drift apart. These are
- * the opposite: the plots as they came out of the scripts, in matplotlib's and
- * folium's own ink. They are here because a redrawn figure proves the numbers
- * and this proves the work — and because the two studies produced material the
- * site had no other way to show at all: a word cloud, a clustered map, a
- * correlation matrix.
+ * Every other figure here is rebuilt in code from the study's own numbers, so
+ * the plate and the sentence beside it cannot drift apart. What is left in this
+ * file is the one output that has no numbers to rebuild from: the theatre map
+ * was geocoded through an address API at run time and the coordinates were
+ * never written down, so redrawing it would mean geocoding the country again
+ * and calling the result the same map.
  *
- * Each caption names the script that produced it, so a reviewer can go from the
+ * The caption names the script that produced it, so a reviewer can go from the
  * plate to the file.
- *
- * The crime study has no plates here: its residual choropleth is already drawn
- * in code on the document, and its correlation matrix now is too. An image of a
- * figure the site can draw is a second copy that can go out of date.
  */
 interface Props {
   slug: string;
@@ -46,16 +37,7 @@ interface Plate {
 
 const SETS: Record<string, Plate[]> = {
   'cinema-dashboard': [
-    { src: cinemaScreens, key: 'plate.cinema.screens', script: 'Number_Share_Analysis.py', wide: true },
-    {
-      src: cinemaConsumption,
-      key: 'plate.cinema.consumption',
-      script: 'Consumtion_Share_Analysis.py',
-      wide: true,
-    },
-    { src: cinemaPopulation, key: 'plate.cinema.population', script: 'Domestic_theater.xlsx' },
-    { src: cinema3d, key: 'plate.cinema.3d', script: 'Spot_Graph3D.py' },
-    { src: cinemaMap, key: 'plate.cinema.map', script: 'Array_adress.py' },
+    { src: cinemaMap, key: 'plate.cinema.map', script: 'Array_adress.py', wide: true },
   ],
 };
 

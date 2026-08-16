@@ -1,0 +1,228 @@
+---
+import { t, type Lang } from '../../i18n/ui';
+
+/**
+ * Small multiples of a scatter, with the fit the study computed drawn through
+ * each one.
+ *
+ * Four of the multiplex study's plots are the same shape — two columns of a
+ * table, one point per row, a least-squares line and a coefficient — so they
+ * are one component with four sets of numbers rather than four components.
+ * Every figure the study reported can then be checked against one axis
+ * implementation instead of four.
+ *
+ * The coefficient is printed on the panel rather than left to the caption. A
+ * scatter of eight points can be made to look like anything by choice of axis
+ * range; the number beside it is what the reader should be reading.
+ */
+export interface Point {
+  x: number;
+  y: number;
+  /** Drawn beside the point where there is room for it. */
+  label?: string;
+}
+export interface Panel {
+  title: string;
+  /** Printed at the top of the plot area: `r = 0.684 · p = 0.061`. */
+  stat: string;
+  points: Point[];
+  /** Least squares, as the study fitted it. */
+  fit?: { slope: number; intercept: number };
+  /** Marks a fit that clears the usual threshold. */
+  significant?: boolean;
+}
+interface Props {
+  panels: Panel[];
+  xLabel: string;
+  yLabel: string;
+  foot: string;
+  /** Small dots for a crowded panel, larger for eight points. */
+  dot?: number;
+  lang?: Lang;
+}
+const { panels, xLabel, yLabel, foot, dot = 3, lang = 'en' } = Astro.props;
+
+const W = 660;
+const GAP = 16;
+const TOP = 36;
+/** The y label is set on its side in this gutter, clear of the panel titles. */
+const GUTTER = 14;
+const PLOT_H = panels.length > 1 ? 132 : 250;
+const LEFT = 34;
+const BOTTOM = 30;
+const H = TOP + PLOT_H + BOTTOM + 18;
+
+const panelW = (W - GUTTER - GAP * (panels.length - 1)) / panels.length;
+const plotW = panelW - LEFT - 6;
+
+/** A rounded axis bound, so the ticks are readable numbers. */
+function bounds(values: number[]) {
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const pad = (hi - lo) * 0.12 || 1;
+  return { lo: Math.max(0, lo - pad), hi: hi + pad };
+}
+
+const laid = panels.map((p, i) => {
+  const ox = GUTTER + i * (panelW + GAP);
+  const bx = bounds(p.points.map((q) => q.x));
+  const by = bounds(p.points.map((q) => q.y));
+  const sx = (v: number) => ox + LEFT + ((v - bx.lo) / (bx.hi - bx.lo)) * plotW;
+  const sy = (v: number) => TOP + PLOT_H - ((v - by.lo) / (by.hi - by.lo)) * PLOT_H;
+  const fit = p.fit
+    ? {
+        x1: sx(bx.lo),
+        y1: sy(p.fit.slope * bx.lo + p.fit.intercept),
+        x2: sx(bx.hi),
+        y2: sy(p.fit.slope * bx.hi + p.fit.intercept),
+      }
+    : null;
+  return {
+    ...p,
+    ox,
+    bx,
+    by,
+    fit,
+    dots: p.points.map((q) => ({ ...q, cx: sx(q.x), cy: sy(q.y) })),
+    ticks: {
+      x: [bx.lo, bx.hi].map((v) => ({ v, at: sx(v) })),
+      y: [by.lo, by.hi].map((v) => ({ v, at: sy(v) })),
+    },
+  };
+});
+
+/** Whole numbers where the range allows it, one decimal where it does not. */
+const num = (v: number) => (Math.abs(v) >= 100 || Number.isInteger(v) ? Math.round(v).toLocaleString('en-US') : v.toFixed(1));
+---
+
+<svg
+  class="viz sc"
+  data-viz="scatter"
+  viewBox={`0 0 ${W} ${H}`}
+  role="img"
+  aria-label={t(lang, 'viz.sc.aria', {
+    n: panels.length,
+    points: panels[0].points.length,
+    x: xLabel,
+    y: yLabel,
+    stats: panels.map((p) => `${p.title} ${p.stat}`).join('; '),
+  })}
+>
+  {
+    laid.map((p) => (
+      <g data-sc-panel>
+        {/* Stacked rather than set on one line: at three panels to a plate the
+            title and the coefficient met in the middle of the row. */}
+        <text class="viz-label sc__title" x={p.ox + LEFT} y={12}>
+          {p.title}
+        </text>
+        <text class="sc__stat" x={p.ox + LEFT} y={24}>
+          {p.stat}
+        </text>
+
+        <path class="viz-rule sc__axis" d={`M${p.ox + LEFT} ${TOP} V${TOP + PLOT_H} H${p.ox + LEFT + plotW}`} />
+
+        {p.ticks.y.map((tk) => (
+          <text class="sc__tick" x={p.ox + LEFT - 5} y={tk.at + 3} text-anchor="end">
+            {num(tk.v)}
+          </text>
+        ))}
+        {p.ticks.x.map((tk, k) => (
+          <text
+            class="sc__tick"
+            x={tk.at}
+            y={TOP + PLOT_H + 12}
+            text-anchor={k === 0 ? 'start' : 'end'}
+          >
+            {num(tk.v)}
+          </text>
+        ))}
+
+        {p.fit && (
+          <line
+            class:list={['sc__fit', p.significant && 'sc__fit--sig']}
+            data-sc-fit
+            x1={p.fit.x1}
+            y1={p.fit.y1}
+            x2={p.fit.x2}
+            y2={p.fit.y2}
+          />
+        )}
+
+        {p.dots.map((d) => (
+          <circle class="sc__dot" data-sc-dot cx={d.cx} cy={d.cy} r={dot} />
+        ))}
+        {p.dots.map(
+          (d) =>
+            d.label && (
+              <text class="sc__pt" x={d.cx} y={d.cy - dot - 3} text-anchor="middle">
+                {d.label}
+              </text>
+            ),
+        )}
+      </g>
+    ))
+  }
+
+  <text class="viz-label sc__axis-x" x={W} y={TOP + PLOT_H + 26} text-anchor="end">{xLabel}</text>
+  {/* Rotated into the gutter: laid flat above the plot it landed on top of the
+      first panel's title, which is at the same baseline. */}
+  <text
+    class="viz-label sc__axis-y"
+    transform={`translate(9 ${TOP + PLOT_H / 2}) rotate(-90)`}
+    text-anchor="middle">{yLabel}</text>
+  <text class="viz-label sc__foot" x="0" y={H - 4}>{foot}</text>
+</svg>
+
+<style>
+  .sc {
+    display: block;
+  }
+  .sc :global(.sc__axis) {
+    fill: none;
+  }
+  .sc :global(.sc__title) {
+    fill: var(--ink);
+    text-transform: none;
+    letter-spacing: 0.02em;
+  }
+  .sc :global(.sc__stat) {
+    font-family: var(--family-mono);
+    font-size: 8.5px;
+    font-variant-numeric: tabular-nums;
+    fill: var(--ink-faint);
+  }
+  .sc :global(.sc__tick) {
+    font-family: var(--family-mono);
+    font-size: 8px;
+    font-variant-numeric: tabular-nums;
+    fill: var(--ink-faint);
+  }
+  .sc :global(.sc__pt) {
+    font-family: var(--family-mono);
+    font-size: 7.5px;
+    fill: var(--ink-faint);
+  }
+  .sc :global(.sc__dot) {
+    fill: var(--scope);
+  }
+  /* A fit that does not clear the threshold is drawn as a broken line, so a
+     reader who takes only the shape away still takes the right one. */
+  .sc :global(.sc__fit) {
+    stroke: var(--ink-faint);
+    stroke-width: 1.2;
+    stroke-dasharray: 4 3;
+    fill: none;
+  }
+  .sc :global(.sc__fit--sig) {
+    stroke: var(--rubric);
+    stroke-dasharray: none;
+  }
+  .sc :global(.sc__axis-y),
+  .sc :global(.sc__axis-x) {
+    fill: var(--ink-faint);
+  }
+  .sc :global(.sc__foot) {
+    fill: var(--ink-faint);
+  }
+</style>

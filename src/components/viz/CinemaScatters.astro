@@ -1,0 +1,160 @@
+---
+import ScatterPanels, { type Panel } from './ScatterPanels.astro';
+import { t, type Lang } from '../../i18n/ui';
+
+/**
+ * The multiplex study's four scatters, from the numbers the study itself held.
+ *
+ * Three of the four sets are written into the study's own scripts rather than
+ * read from a file — `Number_Share_Analysis.py`, `Consumtion_Share_Analysis.py`
+ * and `Spot_Graph3D.py` each open with the table they plot — so they are
+ * transcribed here exactly. The district set is read out of
+ * `Domestic_theater.xlsx`.
+ *
+ * Every coefficient and every fit below was recomputed with scipy from those
+ * numbers, not copied off the study's plots.
+ */
+interface Props {
+  which: 'share' | 'consumption' | 'top20' | 'districts';
+  lang?: Lang;
+}
+const { which, lang = 'en' } = Astro.props;
+
+/* ── regional share against screen count, 2020 ─────────────────────────────
+ * 2020 is the year the site quotes elsewhere: r = 0.684 / 0.569 / 0.550. The
+ * later years move the coefficients by less than 0.03 in either direction.
+ * -------------------------------------------------------------------------- */
+const REGION = ['SEO', 'GG', 'ICN', 'GW', 'CC', 'GS', 'HN', 'JJ'];
+const SHARE_2020 = [23.1, 27.1, 5.3, 2.3, 10.2, 22.6, 8.4, 1.2];
+const SCREENS: Record<string, number[]> = {
+  Megabox: [20, 31, 6, 17, 27, 9, 4, 3],
+  'Lotte Cinema': [23, 41, 4, 12, 42, 11, 6, 2],
+  CGV: [31, 59, 12, 23, 44, 23, 5, 1],
+};
+const SHARE_FIT: Record<string, { slope: number; intercept: number; stat: string }> = {
+  Megabox: { slope: 0.523013, intercept: 4.875938, stat: 'r = 0.550 · p = 0.158' },
+  'Lotte Cinema': { slope: 0.36189, intercept: 6.146695, stat: 'r = 0.569 · p = 0.141' },
+  CGV: { slope: 0.356071, intercept: 3.712244, stat: 'r = 0.684 · p = 0.061' },
+};
+
+/* ── per-capita private consumption against share ───────────────────────── */
+const CONSUMPTION: Record<string, { x: number[]; y: number[]; slope: number; intercept: number; stat: string }> = {
+  '2020': {
+    x: [2295, 1867, 1813, 1774, 1758, 1824, 1788, 1899],
+    y: SHARE_2020,
+    slope: 0.026295,
+    intercept: -36.836961,
+    stat: 'r = 0.450 · p = 0.263',
+  },
+  '2021': {
+    x: [2455, 1996, 1898, 1863, 1937, 1944, 1859, 1997],
+    y: [23.8, 28.0, 4.9, 2.2, 10.1, 21.7, 8.4, 1.1],
+    slope: 0.028588,
+    intercept: -44.469137,
+    stat: 'r = 0.529 · p = 0.178',
+  },
+  '2022': {
+    x: [2662, 2181, 2113, 2024, 2107, 2106, 2020, 2227],
+    y: [25.3, 25.6, 5.1, 2.5, 10.0, 21.8, 8.4, 1.2],
+    slope: 0.026213,
+    intercept: -44.65674,
+    stat: 'r = 0.532 · p = 0.175',
+  },
+};
+
+/* ── the twenty busiest cinemas ─────────────────────────────────────────── */
+const TOP20_SCREENS = [20, 21, 18, 12, 12, 10, 10, 11, 14, 8, 9, 10, 8, 8, 8, 10, 8, 7, 11, 10];
+const TOP20_SEATS = [3893, 4276, 3593, 2714, 2213, 2127, 1840, 2487, 3390, 1895, 1889, 1855, 1737, 1494, 1522, 1648, 1523, 1432, 2409, 2172];
+const TOP20_ADMISSIONS = [290, 257, 170, 125, 99, 96, 91, 86, 82, 78, 78, 78, 76, 72, 71, 70, 69, 67, 64, 64];
+
+/* ── every district in the country ──────────────────────────────────────── */
+const DISTRICTS: Array<[number, number]> = [
+  [9, 0], [16, 1], [20, 0], [21, 1], [21, 1], [23, 0], [23, 1], [23, 1], [24, 0], [24, 1], [24, 1], [25, 1],
+  [26, 1], [27, 1], [27, 1], [27, 1], [28, 0], [28, 1], [29, 1], [30, 0], [30, 1], [30, 1], [31, 0], [31, 1],
+  [32, 3], [33, 0], [34, 0], [34, 1], [34, 2], [35, 1], [37, 0], [37, 0], [37, 1], [37, 1], [38, 0], [38, 1],
+  [39, 0], [39, 3], [41, 0], [41, 1], [41, 1], [41, 1], [41, 1], [42, 0], [42, 1], [42, 1], [43, 0], [44, 1],
+  [45, 1], [46, 1], [47, 0], [47, 1], [47, 1], [49, 1], [49, 1], [49, 1], [49, 1], [50, 1], [50, 1], [52, 1],
+  [52, 1], [52, 1], [55, 1], [57, 0], [59, 1], [60, 1], [60, 1], [61, 1], [61, 1], [61, 1], [61, 2], [62, 2],
+  [63, 1], [65, 1], [67, 1], [69, 1], [69, 1], [77, 1], [78, 1], [81, 0], [81, 1], [82, 1], [86, 1], [88, 0],
+  [89, 1], [89, 3], [89, 6], [90, 0], [91, 2], [94, 1], [96, 1], [98, 0], [98, 2], [100, 1], [100, 1], [102, 1],
+  [102, 1], [104, 0], [104, 1], [107, 0], [107, 6], [109, 2], [110, 2], [111, 1], [114, 0], [117, 1], [121, 1], [121, 8],
+  [125, 1], [130, 1], [138, 2], [139, 0], [139, 6], [142, 2], [143, 2], [152, 2], [153, 2], [153, 3], [159, 0], [159, 3],
+  [164, 1], [164, 4], [170, 1], [170, 2], [175, 0], [176, 2], [179, 3], [184, 3], [187, 3], [189, 3], [203, 1], [206, 1],
+  [208, 3], [209, 2], [209, 2], [210, 0], [213, 2], [214, 3], [216, 2], [216, 2], [218, 3], [219, 1], [222, 1], [223, 3],
+  [227, 2], [230, 3], [234, 1], [247, 4], [254, 1], [260, 2], [261, 3], [262, 1], [266, 2], [268, 2], [270, 2], [271, 2],
+  [272, 2], [274, 2], [277, 2], [278, 3], [280, 1], [280, 5], [284, 3], [286, 4], [288, 3], [298, 2], [306, 5], [307, 2],
+  [307, 2], [330, 5], [336, 5], [341, 1], [341, 4], [343, 4], [346, 2], [355, 5], [360, 5], [362, 4], [364, 8], [367, 4],
+  [375, 3], [379, 3], [380, 5], [382, 3], [391, 2], [392, 3], [392, 4], [397, 6], [406, 5], [406, 6], [407, 2], [408, 3],
+  [420, 4], [422, 2], [426, 2], [436, 2], [459, 3], [465, 7], [467, 2], [482, 2], [486, 5], [492, 3], [492, 6], [493, 5],
+  [494, 5], [498, 5], [498, 8], [520, 6], [528, 4], [534, 5], [545, 6], [545, 8], [563, 5], [591, 5], [624, 6], [629, 6],
+  [643, 14], [654, 3], [656, 10], [732, 9], [780, 9], [852, 9], [920, 9], [944, 12], [1009, 12], [1075, 10], [1076, 10], [1197, 13],
+];
+
+const SET: Record<string, { panels: Panel[]; x: string; y: string; foot: string; dot: number }> = {
+  share: {
+    panels: Object.keys(SCREENS).map((k) => ({
+      title: k,
+      stat: SHARE_FIT[k].stat,
+      fit: { slope: SHARE_FIT[k].slope, intercept: SHARE_FIT[k].intercept },
+      points: SCREENS[k].map((x, i) => ({ x, y: SHARE_2020[i], label: REGION[i] })),
+    })),
+    x: t(lang, 'viz.sc.share.x'),
+    y: t(lang, 'viz.sc.share.y'),
+    foot: t(lang, 'viz.sc.share.foot'),
+    dot: 3,
+  },
+  consumption: {
+    panels: Object.entries(CONSUMPTION).map(([year, c]) => ({
+      title: year,
+      stat: c.stat,
+      fit: { slope: c.slope, intercept: c.intercept },
+      points: c.x.map((x, i) => ({ x, y: c.y[i], label: REGION[i] })),
+    })),
+    x: t(lang, 'viz.sc.cons.x'),
+    y: t(lang, 'viz.sc.cons.y'),
+    foot: t(lang, 'viz.sc.cons.foot'),
+    dot: 3,
+  },
+  top20: {
+    panels: [
+      {
+        title: t(lang, 'viz.sc.top20.screens'),
+        stat: 'r = 0.908 · p < 0.001',
+        significant: true,
+        fit: { slope: 14.1994, intercept: -55.59 },
+        points: TOP20_SCREENS.map((x, i) => ({ x, y: TOP20_ADMISSIONS[i] })),
+      },
+      {
+        title: t(lang, 'viz.sc.top20.seats'),
+        stat: 'r = 0.841 · p < 0.001',
+        significant: true,
+        fit: { slope: 0.0626, intercept: -40.1 },
+        points: TOP20_SEATS.map((x, i) => ({ x, y: TOP20_ADMISSIONS[i] })),
+      },
+    ],
+    x: t(lang, 'viz.sc.top20.x'),
+    y: t(lang, 'viz.sc.top20.y'),
+    foot: t(lang, 'viz.sc.top20.foot'),
+    dot: 3.2,
+  },
+  districts: {
+    panels: [
+      {
+        title: t(lang, 'viz.sc.dist.title'),
+        stat: 'r = 0.841 · p < 0.001',
+        significant: true,
+        fit: { slope: 0.009780, intercept: 0.327867 },
+        points: DISTRICTS.map(([x, y]) => ({ x, y })),
+      },
+    ],
+    x: t(lang, 'viz.sc.dist.x'),
+    y: t(lang, 'viz.sc.dist.y'),
+    foot: t(lang, 'viz.sc.dist.foot'),
+    dot: 2.4,
+  },
+};
+
+const s = SET[which];
+---
+
+<ScatterPanels panels={s.panels} xLabel={s.x} yLabel={s.y} foot={s.foot} dot={s.dot} lang={lang} />

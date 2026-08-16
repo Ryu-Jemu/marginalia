@@ -8,7 +8,7 @@ import CrimeHeatmap from './CrimeHeatmap.astro';
 import CrimeModel from './CrimeModel.astro';
 import CrimeFit from './CrimeFit.astro';
 import CinemaTrend from './CinemaTrend.astro';
-import CinemaCorrelation from './CinemaCorrelation.astro';
+import CinemaScatters from './CinemaScatters.astro';
 import CinemaWords from './CinemaWords.astro';
 import { t, type Lang } from '../../i18n/ui';
 
@@ -65,8 +65,17 @@ const next = () => String(++n);
       <Figure n={next()} title={t(lang, 'fig.cinema.trend')} lang={lang}>
         <CinemaTrend lang={lang} />
       </Figure>
-      <Figure n={next()} title={t(lang, 'fig.cinema.corr')} lang={lang}>
-        <CinemaCorrelation lang={lang} />
+      <Figure n={next()} title={t(lang, 'fig.cinema.share')} lang={lang}>
+        <CinemaScatters which="share" lang={lang} />
+      </Figure>
+      <Figure n={next()} title={t(lang, 'fig.cinema.cons')} lang={lang}>
+        <CinemaScatters which="consumption" lang={lang} />
+      </Figure>
+      <Figure n={next()} title={t(lang, 'fig.cinema.dist')} lang={lang}>
+        <CinemaScatters which="districts" lang={lang} />
+      </Figure>
+      <Figure n={next()} title={t(lang, 'fig.cinema.top20')} lang={lang}>
+        <CinemaScatters which="top20" lang={lang} />
       </Figure>
       <Figure n={next()} title={t(lang, 'fig.cinema.words')} lang={lang}>
         <CinemaWords lang={lang} />

@@ -10,7 +10,7 @@ warning at build time. Nothing here breaks the build by being absent —
 |---|---|
 | `public/papers/ask-2026.pdf` | `KIPS_C2026A0229F.pdf`. Verified as the ASK 2026 paper: first of two authors, C2026A0229, and every figure in the site's text matches its abstract. Embedded on `/research/ask-2026/` |
 | `src/assets/projects/dartoo/screen-{start,home,disclosure,company,chat}.png` | five product captures |
-| `src/assets/analysis/cinema/*.png` | five outputs copied unchanged from `비즈니스애널리틱스개론/`: `Number&Share_03` (CGV), `Consumtion&Share_Analysis`, `CGV 지역별 인구대비 영화관 수`, `Scatter&Trendline`, and a screenshot of `(map_with_clustered_markers).html`. The yearly series and the word cloud used to be here too; both are drawn in code now |
+| `src/assets/analysis/cinema/theatre-map.png` | a screenshot of `(map_with_clustered_markers).html`. The only plate on the site that is still an image: the coordinates were geocoded through an address API at run time and never written to a file, so there is nothing to redraw it from |
 | `src/assets/projects/map/screen-{signin,home,itinerary,place}.png` | four product captures. `screen-signin.png` is `iPhone 17 Pro.png` with the supplied device frame and cut-out cropped away — the deck draws its own, and two frames read as a screenshot of a screenshot. `screen-home.png` is `홈화면.png`, trimmed at the last row that carries anything |
 
 Those analysis plates are the multiplex study's **own** output, shown as they
@@ -58,12 +58,23 @@ the paper are the same numbers and the plate takes the site's own ink.
 | `BeamOverhead.astro` | TAI Table V — latency, memory, power, energy |
 | `CrimeResiduals.astro` | Residual choropleth, from `seoul.geojson` and a refit of the OLS |
 | `CrimeHeatmap.astro` | The correlation matrix `value_heatmap.py` draws, recomputed from the same `merged.csv` the model was fitted on |
+| `CinemaScatters.astro` | Four of the study's plots, from the numbers the study held. Three of the four sets are written into its own scripts (`Number_Share_Analysis.py`, `Consumtion_Share_Analysis.py`, `Spot_Graph3D.py`); the district set is read from `Domestic_theater.xlsx`. Every coefficient and fit recomputed with scipy from those numbers, then diffed against the scripts series by series |
 | `CinemaWords.astro` | The keyword cloud, packed from `extracted_keywords.csv` — 602 terms after the stopword list, the top fifty drawn, the same cut `WordCloud(max_words=50)` took. The file is the 메가박스 run: the script writes the CSV before it draws, and the CSV's timestamp falls between the 롯데시네마 and 메가박스 saves, which `RE_MEGA.png` confirms by its own title and word order |
 | `CinemaTrend.astro` · `CinemaCorrelation.astro` | Box-office series and the regional correlations |
 
 The paper's error bars are deliberately not reproduced: their extents are not
 printed, and reading them off a raster would be inventing precision. The one
 interval the paper states, p = 0.938 between PPO and SAC, is drawn.
+
+## Not a like-for-like reproduction
+
+`CinemaScatters which="districts"` answers the same question as the study's
+`CGV 지역별 인구대비 영화관 수` chart — cinemas against district population — but
+it is **not** that chart. The original was built in Tableau at a finer level
+(it labels `경기도 수원시 팔달구`, and tops out at five cinemas); the population
+table it joined against is not in the folder. This one is the `2023년
+행정구역(시군구)별 극장현황` sheet of `Domestic_theater.xlsx`: 228 districts,
+r = 0.841. Both the sheet and the count are printed on the plate.
 
 ## Still open
 

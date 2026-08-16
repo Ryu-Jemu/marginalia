@@ -23,6 +23,39 @@
  * a full sentence in both languages.
  */
 export const vizStrings = {
+  /* ── the multiplex scatters ────────────────────────────────────────── */
+  'viz.sc.aria': [
+    '{n} scatter panel(s) of {points} points each, {x} against {y}, with a least-squares fit on each. {stats}',
+    '{x}와 {y}의 산점도 {n}개 패널입니다. 패널당 점 {points}개이며 각각 최소자승 적합선을 그렸습니다. {stats}',
+  ],
+  'viz.sc.share.x': ['screens in the region', '권역 내 상영관 수'],
+  'viz.sc.share.y': ['regional share, %', '권역 점유율 %'],
+  'viz.sc.share.foot': [
+    '2020 · 8 regions · dashed where p > 0.05 · SEO GG ICN GW CC GS HN JJ',
+    '2020년 · 8개 권역 · p > 0.05는 파선 · SEO GG ICN GW CC GS HN JJ',
+  ],
+  'viz.sc.cons.x': ['per-capita consumption, 만 원', '1인당 민간소비지출 만 원'],
+  'viz.sc.cons.y': ['regional share, %', '권역 점유율 %'],
+  'viz.sc.cons.foot': [
+    '8 regions · every fit dashed: none reaches p < 0.05',
+    '8개 권역 · 모든 적합선이 파선: 어느 해도 p < 0.05에 이르지 못함',
+  ],
+  'viz.sc.top20.screens': ['screens', '상영관 수'],
+  'viz.sc.top20.seats': ['seats', '좌석 수'],
+  'viz.sc.top20.x': ['screens · seats', '상영관 수 · 좌석 수'],
+  'viz.sc.top20.y': ['admissions, 만 명', '연간 관객 만 명'],
+  'viz.sc.top20.foot': [
+    'the 20 busiest cinemas in 2023 · both fits significant, unlike every regional one',
+    '2023년 관객 수 상위 20개 영화관 · 권역 단위와 달리 두 적합 모두 유의',
+  ],
+  'viz.sc.dist.title': ['228 districts', '228개 시군구'],
+  'viz.sc.dist.x': ['district population, thousands', '시군구 인구 천 명'],
+  'viz.sc.dist.y': ['cinemas', '영화관 수'],
+  'viz.sc.dist.foot': [
+    'Domestic_theater.xlsx, 2023 district sheet · one cinema per 102,250 people on the fit',
+    'Domestic_theater.xlsx 2023년 시군구 시트 · 적합선 기준 인구 102,250명당 영화관 1곳',
+  ],
+
   /* ── the keyword cloud, multiplex study ────────────────────────────── */
   'viz.words.aria': [
     'A word cloud of the fifty most frequent terms in blog posts about one multiplex chain, after stopword filtering. The six most frequent are {top}.',

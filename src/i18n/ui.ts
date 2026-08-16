@@ -224,30 +224,10 @@ const strings = {
   'screen.place': ['Place', '장소'],
 
   /* ── the studies' own output ───────────────────────────────────────── */
-  'work.plates': ['What the analysis produced', '분석이 만든 자료'],
+  'work.plates': ['What the site cannot redraw', '다시 그릴 수 없는 자료'],
   'work.plates.lede': [
-    'The plots as they came out of the scripts. Every other figure on this site is redrawn from the study’s own data; these are the originals, and each names the file that drew it.',
-    '스크립트에서 나온 그대로의 그림입니다. 이 사이트의 다른 그림은 모두 원본 데이터에서 다시 그린 것이고, 이 자료는 원본입니다. 각각 어떤 파일이 그렸는지 함께 적었습니다.',
-  ],
-  'plate.cinema.screens': [
-    'CGV screen count against regional share, one panel per year from 2020 to 2024, with every region labelled.',
-    'CGV 상영관 수와 지역 점유율을 2020–2024년 연도별로 나눈 산점도입니다. 모든 권역에 이름을 달았습니다.',
-  ],
-  'plate.cinema.consumption': [
-    'Per-capita private consumption against regional share, 2020 to 2022. Pearson’s r is computed for each panel.',
-    '1인당 민간소비지출액과 지역 점유율을 2020–2022년으로 나눈 산점도입니다. 패널마다 Pearson 상관계수를 계산했습니다.',
-  ],
-  'plate.cinema.population': [
-    'Theatre count against district population across the country, with a fitted trend. Most districts hold one.',
-    '전국 시군구 인구수 대비 영화관 수와 추세선입니다. 대부분의 시군구는 한 곳을 가집니다.',
-  ],
-  'plate.cinema.3d': [
-    'Screens and seats against annual admissions, with a trend line fitted to each axis.',
-    '상영관 수와 좌석 수를 연간 관객 수에 대해 그리고, 축마다 추세선을 적합했습니다.',
-  ],
-  'plate.cinema.wordcloud': [
-    'What people write about one chain, after stopword filtering. One of three, one per operator.',
-    '불용어를 걸러낸 뒤 한 체인에 대해 사람들이 쓴 말입니다. 운영사별로 세 장 중 하나입니다.',
+    'Every figure above is rebuilt in code from the study’s own numbers. This one is not, because there are no numbers to rebuild it from: the coordinates were geocoded through an address API at run time and never written down.',
+    '위의 모든 그림은 이 분석의 원본 수치에서 코드로 다시 그렸습니다. 이것만은 다시 그릴 수치가 남아 있지 않습니다. 좌표를 실행 시점에 주소 API로 지오코딩했고 저장하지 않았기 때문입니다.',
   ],
   'plate.cinema.map': [
     'Every theatre in the country, geocoded from its address and clustered by proximity, coloured by operator.',
@@ -300,6 +280,22 @@ const strings = {
   'fig.cinema.trend': [
     'Eighteen years of the national box office. The study starts where the line falls.',
     '전국 박스오피스 18년입니다. 분석은 이 선이 꺾이는 지점에서 시작합니다.',
+  ],
+  'fig.cinema.share': [
+    'Screen count against regional share, one panel per chain. Positive for all three, and dashed on all three because none clears p < 0.05.',
+    '체인별로 상영관 수와 권역 점유율을 그렸습니다. 셋 다 양의 관계이지만, 어느 것도 p < 0.05를 넘지 못해 모두 파선입니다.',
+  ],
+  'fig.cinema.cons': [
+    'Per-capita private consumption against regional share, 2020 to 2022. The coefficient rises across the three years and stays indistinguishable from noise.',
+    '1인당 민간소비지출과 권역 점유율입니다. 2020–2022년에 걸쳐 계수는 올라가지만 끝까지 잡음과 구분되지 않습니다.',
+  ],
+  'fig.cinema.top20': [
+    'The same question one level down: at the twenty busiest cinemas, screens and seats both predict admissions, and both fits are significant.',
+    '같은 질문을 한 단계 아래에서 본 것입니다. 관객 수 상위 20개 영화관에서는 상영관 수와 좌석 수가 모두 관객 수를 예측하며, 두 적합 모두 유의합니다.',
+  ],
+  'fig.cinema.dist': [
+    'Cinemas against population across all 228 districts. The relationship the regional panels could not resolve at eight points is unmistakable at 228.',
+    '전국 228개 시군구의 인구와 영화관 수입니다. 8개 권역에서는 판정하지 못한 관계가 228개 지점에서는 분명하게 드러납니다.',
   ],
   'fig.cinema.words': [
     'What people write about one chain, after stopword filtering. Parking and the newest release come up more than the films do.',

@@ -1,0 +1,47 @@
+---
+title: KBO baseball-rule assistant
+tagline: Document ingestion, hybrid retrieval and citation checks for questions about baseball rules.
+period: "2026.09"
+team: Course project
+role: Document retrieval and answer validation
+domain: other
+status: in-progress
+tier: 2
+order: 8
+stack:
+  - Python
+  - FastAPI
+  - Streamlit
+  - PostgreSQL · pgvector
+  - MinIO
+  - LangChain
+  - Kiwi · BM25
+links:
+  - kind: repo
+    href: https://github.com/Ryu-Jemu/mini-project-glove
+    label: Ryu-Jemu/mini-project-glove
+ownership:
+  owned:
+    - rule-document ingestion, structural chunking and hybrid retrieval
+    - answer schemas, deterministic rendering and citation checks
+    - evaluation cases and checks for routing, retrieval and refusal behaviour
+  notOwned:
+    - the official rulebook and external baseball datasets
+---
+
+Rulebook PDFs are stored in MinIO, split along their document structure and
+indexed in PostgreSQL with pgvector. Rule-number matches, dense retrieval and
+Kiwi-based BM25 are combined with reciprocal rank fusion. Parent sections
+restore the context around a retrieved clause before it reaches the model.
+
+Retrieval distinguishes weak evidence from a failed embedding request. Context
+selection applies a token budget and a relative relevance threshold, while
+protecting the highest-ranked documents from that threshold. These checks
+address different failures: unrelated context and relevant clauses removed
+during fusion.
+
+FastAPI serves the Streamlit interface over SSE. A structured answer schema and
+a Python renderer separate the answer content from its presentation. Citation
+checks compare rule references with retrieved material. The evaluation code
+checks routing, expected clauses, refusal wording and schema fallbacks against
+curated cases.

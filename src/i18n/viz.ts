@@ -84,14 +84,14 @@ export const vizStrings = {
 
   /* ── the silent loss, Dartoo ───────────────────────────────────────── */
   'viz.silentloss.aria': [
-    'Two lanes leaving the disclosure service. The persist lane delivers 959 rows; the publish lane stops at a disabled publisher after 805 events, losing 154 with no log line.',
-    'disclosure 서비스에서 나가는 두 경로. 저장 경로는 959행을 모두 전달했고, 발행 경로는 비활성화된 발행기에서 805건 만에 멈춰 154건을 로그 한 줄 없이 잃었습니다.',
+    'Two output counts from the portfolio measurement record dated 2026-08-13: 959 persisted rows and 805 published events, a difference of 154.',
+    '2026-08-13 포트폴리오 측정 기록의 두 출력 건수입니다. 적재 959행과 이벤트 발행 805건의 차이는 154건입니다.',
   ],
   'viz.silentloss.svc.1': ['disclosure', 'disclosure'],
   'viz.silentloss.svc.2': ['service', '서비스'],
   'viz.silentloss.lane.persist': ['persisted → database', '저장 → 데이터베이스'],
   'viz.silentloss.lane.publish': ['published → broker', '발행 → 브로커'],
-  'viz.silentloss.nolog': ['no log line', '로그 없음'],
+  'viz.silentloss.nolog': ['startup failure', '시작 연결 실패'],
   'viz.silentloss.missing': ['missing', '누락'],
 
   /* ── the write race, MAP ───────────────────────────────────────────── */
@@ -104,23 +104,50 @@ export const vizStrings = {
   'viz.race.first': ['arrives first', '먼저 도착'],
   'viz.race.late': ['arrives late', '늦게 도착'],
   'viz.race.guard': ['insert only if absent', '없을 때만 삽입'],
-  'viz.race.stuck': ['client waits forever', '클라이언트 무한 대기'],
+  'viz.race.stuck': ['remains in progress', '진행 중 상태 잔류'],
   'viz.race.terminal': ['terminal state wins', '종료 상태 우선'],
+
+  /* ── shared result isolation, MAP ─────────────────────────────────── */
+  'viz.isolation.aria': [
+    "Before: shared lookup reads user A's mutable draft, so waiting user B receives A's private edit. After: an immutable worker snapshot is bound to its producer and execution generation using AAD; B receives the original while A's edits stay on a separate path.",
+    '수정 전에는 공유 조회가 A의 변경 가능한 초안을 읽어 대기 사용자 B에게 A의 개인 편집본을 전달합니다. 수정 후에는 불변 worker snapshot을 AAD로 생성자·실행 세대에 결합합니다. B는 원본을 받고 A의 편집 경로는 분리됩니다.',
+  ],
+  'viz.isolation.before': ['BEFORE', '수정 전'],
+  'viz.isolation.after': ['AFTER', '수정 후'],
+  'viz.isolation.before.title': ['Mutable result sharing', '변경 가능한 결과의 공유'],
+  'viz.isolation.after.title': ['Worker snapshot isolation', 'worker 원본과 편집본의 분리'],
+  'viz.isolation.worker': ['Worker result', 'worker 생성 결과'],
+  'viz.isolation.original': ['Worker original', 'worker 원본'],
+  'viz.isolation.edit': ['edit', '편집'],
+  'viz.isolation.user.a': ['User A · owner', '사용자 A · 소유자'],
+  'viz.isolation.user.b': ['User B · waiting', '사용자 B · 대기'],
+  'viz.isolation.private': ['Private edit', '개인 편집본'],
+  'viz.isolation.lookup': ['Shared lookup', '공유 완료 조회'],
+  'viz.isolation.mutable': ["Reads A's draft", 'A의 초안 읽기'],
+  'viz.isolation.wrong': ["A's private edit", 'A의 개인 편집본'],
+  'viz.isolation.snapshot': ['Immutable snapshot', '불변 snapshot'],
+  'viz.isolation.binding': ['Execution binding', '실행 세대 결합'],
+  'viz.isolation.aad': ['Producer + body · AAD', '생성자 + 본문 · AAD'],
+  'viz.isolation.copy': ["A's own copy", 'A의 편집 경로'],
+  'viz.isolation.before.outcome': ['Private edits reach another user', '개인 편집본의 타 사용자 전달'],
+  'viz.isolation.before.detail': ['Shared completion reads a mutable record', '공유 완료 경로가 변경 가능한 레코드를 조회'],
+  'viz.isolation.after.outcome': ['B receives the worker original', 'B에게 전달되는 worker 원본'],
+  'viz.isolation.after.detail': ['Personal edits are outside the shared read path', '개인 편집본은 공유 조회 경로에서 분리'],
 
   /* ── the three route stages, MAP ───────────────────────────────────── */
   'viz.route.aria': [
-    'Three stages: a haversine distance matrix under one millisecond, an exhaustive tour search under eight stops, then at most three model calls that only reorder what the first two produced.',
-    '세 단계입니다. 1ms 이하의 haversine 거리 행렬, 경유지 8개 이하에서의 완전탐색 경로 탐색, 그리고 앞의 두 단계가 만든 결과의 순서만 바꾸는 최대 3회의 모델 호출.',
+    'Routing for supplied places: Agent calculates distances and optionally optimizes visit order. User then requests road geometry through Hub and OSRM, preserving that order.',
+    '지정 장소의 경로 계산입니다. Agent가 장소 간 거리와 요청 시 방문 순서를 계산합니다. 이후 User가 Hub·OSRM으로 도로 구간을 조회하며 선택된 순서를 유지합니다.',
   ],
   'viz.route.stage': ['stage {n}', '{n}단계'],
-  'viz.route.s1.title': ['distance matrix', '거리 행렬'],
-  'viz.route.s1.sub': ['haversine N×N · under 1ms', 'haversine N×N · 1ms 이하'],
-  'viz.route.s2.title': ['tour search', '경로 탐색'],
-  'viz.route.s2.sub': ['exhaustive under 8 stops', '경유지 8개 이하 완전탐색'],
-  'viz.route.s3.title': ['model pass', '모델 호출'],
-  'viz.route.s3.sub': ['at most 3 calls', '최대 3회'],
-  'viz.route.deterministic': ['deterministic', '결정적 단계'],
-  'viz.route.modelscope': ['model — reorders only what it was given', '모델 — 받은 것의 순서만 변경'],
+  'viz.route.s1.title': ['place distances', '장소 간 거리'],
+  'viz.route.s1.sub': ['coordinates · haversine', '좌표 · haversine'],
+  'viz.route.s2.title': ['optional optimization', '선택적 순서 최적화'],
+  'viz.route.s2.sub': ['only when requested', '최적화 요청 시 적용'],
+  'viz.route.s3.title': ['road legs', '도로 구간'],
+  'viz.route.s3.sub': ['User → Hub → OSRM', 'User → Hub → OSRM'],
+  'viz.route.deterministic': ['supplied places · routing schematic', '지정 장소 · 경로 계산 모식도'],
+  'viz.route.modelscope': ['route-only path bypasses model calls', '경로 전용 요청은 모델 호출 생략'],
 
   /* ── revenue uplift, network pricing ───────────────────────────────── */
   'viz.pricing.aria': [
@@ -140,7 +167,7 @@ export const vizStrings = {
     '이탈 계수 1에서의 순 보상입니다. PPO 7,334, SAC 7,370, TD3 6,862, Myopic-PPO 7,169, Max-Price 7,183. PPO와 SAC은 p = 0.938로 통계적으로 구분되지 않습니다.',
   ],
   'viz.alg.axis': ['net reward', '순 보상'],
-  'viz.alg.noforesight': ['no foresight', '예측 없음'],
+  'viz.alg.noforesight': ['immediate reward', '즉시 보상만'],
   'viz.alg.foot': [
     'Churn multiplier m = 1 · three seeds per policy · same environment',
     '이탈 계수 m = 1 · 정책당 시드 3개 · 동일 환경',
@@ -148,8 +175,8 @@ export const vizStrings = {
 
   /* ── the crime regression ──────────────────────────────────────────── */
   'viz.crime.model.aria': [
-    'Five variables enter an OLS model with R squared 0.843. Entertainment venue density and population are significant; CCTV count is not.',
-    '다섯 변수가 R² 0.843의 OLS 모델에 들어갑니다. 유흥주점 밀도와 인구는 유의하고, CCTV 수는 유의하지 않습니다.',
+    'Five variables enter an OLS model with R squared 0.843. Entertainment venue count and population are significant; CCTV count is not.',
+    '다섯 변수가 R² 0.843의 OLS 모델에 들어갑니다. 유흥주점 수와 인구는 유의하고, CCTV 수는 유의하지 않습니다.',
   ],
   'viz.crime.model.inputs': ['inputs', '입력'],
   'viz.crime.model.model': ['model', '모델'],
@@ -163,7 +190,7 @@ export const vizStrings = {
   'viz.crime.model.estimated': ['partly estimated', '일부 추정'],
   'viz.crime.model.cctv.p': ['p = 0.297 — not significant', 'p = 0.297 — 유의하지 않음'],
   'viz.crime.model.adjusted': ['adjusted 0.801', '조정 0.801'],
-  'viz.crime.model.outcome': ['crime rate', '범죄율'],
+  'viz.crime.model.outcome': ['crime count', '범죄 건수'],
   'viz.crime.model.n': ['25 districts', '25개 자치구'],
   'viz.crime.model.foot': [
     'VIF 1.10–2.61 · cross-checked with LassoCV and RidgeCV · n = 25',
@@ -216,7 +243,7 @@ export const vizStrings = {
   'viz.cinema.corr.row.consumption': ['Consumption vs share', '소비 vs 점유율'],
   'viz.cinema.corr.foot': [
     'n = 8 regions · not one coefficient reaches p < 0.05',
-    'n = 8개 권역 · p < 0.05에 닿은 계수 없음',
+    'n = 8개 권역 · p < 0.05에서 유의한 계수 없음',
   ],
 
   /* ── the beam-prediction pipeline, BP-LLM ──────────────────────────── */
@@ -243,32 +270,6 @@ export const vizStrings = {
   ],
   'viz.beam.arch.key.train': ['trainable', '학습 대상'],
   'viz.beam.arch.key.frozen': ['frozen backbone', '고정 백본'],
-
-  /* ── beamforming gain by horizon ───────────────────────────────────── */
-  'viz.beam.gain.aria': [
-    'Normalised beamforming gain for BP-LLM, ODE and cascaded LSTM across prediction steps 1 to 10. BP-LLM is highest at every step, from 0.950 at step 1 to 0.820 at step 10.',
-    'BP-LLM, ODE, cascaded LSTM의 예측 스텝 1~10에 걸친 정규화 빔포밍 이득입니다. BP-LLM이 모든 스텝에서 가장 높으며, 1스텝 0.950에서 10스텝 0.820으로 내려갑니다.',
-  ],
-  'viz.beam.gain.title': ['Normalised beamforming gain · DeepMIMO', '정규화 빔포밍 이득 · DeepMIMO'],
-  'viz.beam.gain.foot': [
-    'Prediction time step · BP-LLM leads at every horizon; all three fall away as it lengthens',
-    '예측 스텝 · 모든 구간에서 BP-LLM 우위, 셋 다 길어질수록 하락',
-  ],
-
-  /* ── what the gain costs at inference ──────────────────────────────── */
-  'viz.beam.over.aria': [
-    'Inference overhead. BP-LLM against cascaded LSTM: latency 4.73 versus 1.74 milliseconds, peak memory 949.67 versus 24.73 megabytes, average power 22.55 versus 37.41 watts, energy per inference 0.137 versus 0.054 joules.',
-    '추론 부하입니다. BP-LLM 대 cascaded LSTM으로, 지연 4.73 대 1.74 ms, 최대 메모리 949.67 대 24.73 MB, 평균 전력 22.55 대 37.41 W, 추론당 에너지 0.137 대 0.054 J입니다.',
-  ],
-  'viz.beam.over.latency': ['Avg. latency', '평균 지연'],
-  'viz.beam.over.memory': ['Peak memory', '최대 메모리'],
-  'viz.beam.over.power': ['Avg. power', '평균 전력'],
-  'viz.beam.over.energy': ['Energy / inference', '추론당 에너지'],
-  'viz.beam.over.ratio': ['ratio', '비율'],
-  'viz.beam.over.foot': [
-    'The language model costs latency, memory and energy, and draws less power. The task allows 16 ms per prediction; both finish inside it.',
-    '언어 모델은 지연·메모리·에너지를 더 쓰고 전력은 덜 씁니다. 예측당 허용 시간은 16 ms이며, 둘 다 그 안에서 끝납니다.',
-  ],
 
   /* ── the training run ──────────────────────────────────────────────── */
   'viz.beam.train.aria': [

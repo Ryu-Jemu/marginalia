@@ -1,10 +1,7 @@
 ---
-/**
- * Where the model is allowed to act, and where it is not.
- *
- * Three stages. The first two are deterministic and produce a route; the model
- * only adjusts the ordering it is handed. Drawing it this way makes the budget
- * legible: the expensive, unbounded component is the last and smallest step.
+/** Coordinate-based routing for supplied places.
+ * The illustrated optimization changes the order only when requested.
+ * Road geometry follows that order; no model reorders the result.
  */
 import { t, type Lang } from '../../i18n/ui';
 
@@ -53,7 +50,7 @@ const path = (order: number[]) =>
         n: '3',
         title: t(lang, 'viz.route.s3.title'),
         sub: t(lang, 'viz.route.s3.sub'),
-        order: [0, 2, 3, 1],
+        order: [0, 2, 1, 3],
       },
     ].map((stage, si) => (
       <g transform={`translate(${stage.x} 0)`} data-stage={si}>
@@ -67,7 +64,7 @@ const path = (order: number[]) =>
           {stage.sub}
         </text>
 
-        {/* every pair, faint — the matrix stage shows all of them */}
+        {/* Pair distances illustrate coordinate-based calculations. */}
         {si === 0 &&
           STOPS.flatMap((a, i) =>
             STOPS.slice(i + 1).map((b) => (

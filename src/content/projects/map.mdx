@@ -1,12 +1,12 @@
 ---
 title: MAP
-tagline: A travel itinerary pipeline. Five external feeds are polled and cached behind one gateway, filtered by a deterministic rule engine, planned by a fourteen-node agent, and routed on self-hosted road data.
+tagline: From external travel data to saved itineraries, with checks for source quality and private results.
 period: "2026.03 – present"
 team: 5 people
-role: Backend and AI — gateway, agent, vision, infrastructure, admin, and the Java BFF
+role: Architecture · data engineering · service integration
+status: deployed
+hosting: none
 domain: pipeline
-status: in-progress
-hosting: offline
 tier: 1
 order: 2
 stack:
@@ -14,325 +14,220 @@ stack:
   - FastAPI
   - LangGraph
   - Gemini
+  - PostgreSQL
   - PostGIS
   - Redis Streams
   - Java 17
   - Spring Boot 3.4
-  - STOMP
+  - Flutter
   - OSRM
-  - YOLO
-  - Prometheus
-  - Grafana
   - Docker
 links:
-  - kind: deployed
-    href: https://map-project-cbd94.web.app
-    label: Web build
   - kind: org
     href: https://github.com/we-meet-trip
     label: we-meet-trip
 summary:
-  - Six services I own — gateway, agent, vision, infrastructure, admin console, and the Java BFF — plus a Flutter client I contribute features to.
-  - A request is accepted in 202 and answered on a stream, so a slow model call is never a client timeout.
-  - The model chooses among candidates a rule engine has already filtered; visit order and travel legs are computed from coordinates, not asked for.
-  - 981 automated tests across the services I own.
+  - "**Data** — Provider adapters, scheduled ingestion and spatial queries; source checks carried into recommendation results."
+  - "**My role** — Architecture, AI, backend, service integration, GCP/NCP and app submission; design and initial frontend setup were handled by teammates."
+  - "**Isolation** — Worker originals separated from private edits; 93 focused regressions passed on 2026-09-09 using H2, encryption and Redis memory doubles."
+  - "**Validation** — Recorded GCP test deployment on 2026-09-20 and separate NCP checks in September."
 pipeline:
-  from: Five external feeds
-  to: Itinerary on the phone
-  feeds:
-    - Weather and air quality
-    - Places and photos
-    - Blog reviews
-    - Subway and shared mobility
-    - Road network
+  from: New recommendation request
+  to: A saved itinerary
+  note: "Main generation path. Cache reuse, shared waiting and the explanation call are omitted; source prefetch runs separately."
   stages:
-    - name: Poll
-      service: hub · scheduler
-      store: PostGIS
-    - name: Cache
-      service: hub · gateway
-      store: Redis L1
     - name: Accept
-      service: user · Java BFF
-      store: PostgreSQL
-    - name: Filter
-      service: hub · rule engine
-      store: forbidden zones
-    - name: Choose
-      service: agent · LangGraph
+      service: user · BFF
+      store: job record
+    - name: Retrieve
+      service: agent ↔ hub
+      store: cache · source API
+    - name: Validate
+      service: hub · agent
+      store: source candidates
+    - name: Select
+      service: agent
       store: Gemini
       model: true
     - name: Route
-      service: agent · OSRM
-      store: 2-opt
-    - name: Publish
-      service: agent · Streams
-      store: job payload
+      service: agent
+      store: coordinates
+    - name: Complete
+      service: agent → Streams → user
+      store: encrypted result
 ownership:
   owned:
-    - hub — the external data gateway, its poller, its cache and its rule engine
-    - agent — the fourteen-node LangGraph recommendation pipeline and its contract checks
-    - user — the Java BFF, its stream consumer, chat and the reuse cache
-    - vision — the camera recognition service, detection through identification
-    - infra — compose topology, health gating, self-hosted routing, Prometheus and Grafana
-    - admin — the operations console and its internal APIs
+    - Architecture, data and AI services, backend integration, GCP/NCP and app submission
   notOwned:
-    - the Flutter client, where I contributed features rather than owning it
-    - product design and the itinerary interface
+    - Teammates’ initial authentication, reuse cache, vision identification and app screens
+contributions:
+  - area: Hub · source data
+    work: Implemented polling, course normalization and spatial queries; corrected grid mapping, incomplete pages and provider-failure handling.
+    context: Teammates also extended transit routing and weather-driven replanning.
+  - area: Agent · recommendation
+    work: Connected the graph, candidate selection, calculated routes and timetables; added source checks and classified failures.
+    context: Day-assignment changes include teammate work. The underlying models are external.
+  - area: User · Java BFF
+    work: Implemented completion consumption and chat features; improved terminal state, shared-result isolation, encryption, consent and export.
+    context: A teammate implemented the initial authentication domain and reuse-cache store.
+  - area: Vision · inference
+    work: Added search integration, shared clients, BFF permits, consent checks and limits on frames and concurrent inference.
+    context: A teammate implemented the initial YOLO and Gemini identification service.
+  - area: Admin · console
+    work: Implemented console APIs and UI, operator permissions, separate control/target database access and audit records.
+    context: Moderation actions are delegated to User, which owns and enforces their state.
+  - area: Infra · validation
+    work: Corrected backup handling and added restore, migration and release checks; documented specific GCP and NCP deployment results.
+    context: Scope is configuration, verification tools and dated execution records.
+  - area: Flutter · integration
+    work: Connected APIs, authentication and persisted consent; preserved recommendation errors and reduced repeated chat reads.
+    context: Teammates built the initial screens, Google-map screens, transit geometry, weather banner and camera switching.
 data:
-  - value: "6"
-    label: services owned
-    detail: gateway · agent · BFF · vision · infra · admin
-  - value: "981"
-    label: automated tests
-    detail: BFF 429 · gateway 301 · agent 220 · vision 17 · admin 14
+  - value: "93"
+    label: focused regressions
+    detail: "2026-09-09 · H2 + encryption · Redis doubles"
   - value: "14"
-    label: nodes in the agent graph
-    detail: two of them call a model
-  - value: "243"
-    label: district grid points polled
-    detail: forecast coverage for the whole country
+    label: graph nodes
+    detail: "2026-09-20 source count · recommendation graph"
+  - value: "2"
+    label: cache tiers
+    detail: "2026-09-20 source · Redis L1 + PostgreSQL prefetch"
+  - value: "PostGIS"
+    label: course data
+    detail: "2026-09-20 source · normalized upserts + radius queries"
 architecture:
-  externalLabel: Five external feeds, one integration point
+  externalLabel: Source adapters behind the data gateway
   external:
-    - name: KMA — forecast · observation
-    - name: Air quality index
-    - name: Kakao — places and photos
+    - name: KMA · AirKorea — weather and air
+    - name: Kakao Local · Durunubi — places
+    - name: Google Places — photos
     - name: Naver — blog reviews
-    - name: Subway and shared mobility
-    - name: OSRM — road network, self-hosted
+    - name: ODsay · Seoul Bike · PM — transport
+    - name: OSRM — self-hosted road routing
+      service: 0
   services:
-    - name: hub — gateway
-      detail: 6 upstream clients · cache · rules
+    - name: hub — data gateway
+      detail: polling · prefetch · Redis · rules
       mine: true
-    - name: agent
-      detail: 14-node graph · contract checks
+    - name: agent — recommendation
+      detail: 14-node graph · source validation
       mine: true
     - name: user — Java BFF
-      detail: accept · streams · chat · cache
+      detail: JWT · consent · jobs · Streams
       mine: true
     - name: vision
-      detail: camera recognition · WebSocket
+      detail: WebSocket · BFF inference permit
       mine: true
     - name: admin
-      detail: operations console · internal APIs
+      detail: internal APIs · read boundaries
       mine: true
     - name: infrastructure
-      detail: compose · health gating · metrics
+      detail: Compose · routing · release checks
       mine: true
   clients:
     - name: Flutter app
+      service: 2
     - name: Admin web
       mine: true
+      service: 4
   stores:
-    - PostGIS
-    - Redis L1
-    - PostgreSQL
+    - PostgreSQL / PostGIS
+    - Redis L1 / reuse cache
     - Redis Streams
+    - Encrypted job results
+collaboration:
+  - "**Failure contract** — Aligned job status, error codes and retryability across BFF, agent and client."
+  - "**App integration** — Connected server consent revisions and recommendation errors to teammates’ Flutter screens; documented the old authorization-code and new SDK-token release dependencies."
+verificationSummary: "One focused run on 2026-09-09: 93 tests across six suites, H2 persistence and encryption, Redis primitives replaced by memory doubles. These are not service-wide totals."
 verification:
-  - surface: user — Java BFF
-    count: 429
-    detail: controller, service, repository, STOMP and contract-freeze tests
-  - surface: hub — gateway
-    count: 301
-    detail: grid selection, polling, rules, guards and every upstream client
-  - surface: agent — LangGraph
-    count: 220
-    detail: graph routing, output validation, injection, timeline and rate limit
-  - surface: vision
-    count: 17
-  - surface: admin
-    count: 14
+  - surface: Follower isolation
+    count: 16
+    detail: "One focused run, 2026-09-09: actual service/consumer/store flow, H2 JPA and encryption; Redis primitives replaced by memory doubles."
+  - surface: Recommendation service
+    count: 51
+    detail: Same focused run; request, completion and expiry paths.
+  - surface: Streams consumer
+    count: 9
+    detail: Same focused run; event processing and terminal handling.
+  - surface: Job persistence
+    count: 7
+    detail: Same focused run; H2-backed persistence.
+  - surface: Account withdrawal
+    count: 7
+    detail: Same focused run; tested cancellation paths, not comprehensive account-lifecycle validation.
+  - surface: Admin DLQ
+    count: 3
+    detail: Same focused run; replay and result privacy.
 safety:
-  - title: A terminal state is never walked back
-    detail: >-
-      The acceptance write happens only when no row exists, and a primary-key
-      collision on that path is ignored rather than retried as an update. Three
-      regression tests pin reversed arrival, duplicate key and a failing retry.
-  - title: The model is bounded to three calls, and uses two
-    detail: >-
-      Selection and reasoning are one call each. Visit order and travel legs are
-      computed from coordinates. The third call is held in reserve so a format
-      violation upstream can be corrected once rather than failing the request.
-  - title: The output is checked as a contract before anyone sees it
-    detail: >-
-      Visit order must be a permutation of the selected places, legs must
-      connect end to end, and every coordinate must fall inside the country's
-      latitude and longitude range. The same range check exists on both the
-      gateway and the agent so the two cannot drift apart.
-  - title: Any node's error short-circuits to the payload
-    detail: >-
-      A node that sets an error skips the rest of the graph and goes straight to
-      building a payload. The publish node always runs, so a failed job emits a
-      failure event rather than leaving the client polling a row that never
-      changes.
-  - title: A missing feed degrades rather than fails
-    detail: >-
-      An upstream that does not answer produces a warning on the itinerary, not
-      a 5xx.
-  - title: Re-recommendation is capped at the day boundary
-    detail: >-
-      Three per itinerary per day, counted by a Redis Lua INCR and EXPIREAT that
-      expires at midnight Korean time rather than on a rolling window.
-  - title: The rate-limit key cannot be chosen by the caller
-    detail: >-
-      The forwarded-address header is read only when the immediate peer falls
-      inside a configured trusted-proxy range, and only the single-valued header
-      the edge always overwrites is trusted.
-  - title: Internal guards fail closed
-    detail: >-
-      The internal token is compared as bytes, so a non-ASCII header returns 403
-      rather than raising and returning 500.
-  - title: The reuse cache never stores a failure
-    detail: >-
-      Only a successful recommendation enters the cache, a hit rewrites the
-      current job id onto its copy, and background refresh runs on a bounded
-      queue.
-  - title: Coordinates stay out of the logs
-    detail: >-
-      Origin and destination were being written to the access log in plain text,
-      and rejection responses quoted place names. Both were removed.
+  - title: "Immutable shared completion"
+    detail: "Encryption authenticates the producer and execution ID with the shared body (AAD). Worker snapshots remain separate from personal edits."
+  - title: "Durable follower expiry"
+    detail: "The initial job stores a follower key and deadline. Later lookups resolve expiry from the database even after Redis metadata disappears."
+  - title: "Explicit provider failure"
+    detail: "Stub mode must be explicit and excludes enforced authentication. Missing verified candidates return classified failures; working sources keep their results."
+  - title: "Authentication and consent"
+    detail: "The BFF checks RS256 JWT, AI consent and ownership. September deployment records separately verify rejection of anonymous profile requests."
+  - title: "Separate export process"
+    detail: "The non-web export requires approval and read-only connections. It excludes Redis consumers, migrations and schedulers."
 fixes:
-  - title: A finished job walked backwards into "in progress"
-    area: user · Java BFF
-    symptom: >-
-      A recommendation would complete, and the client would keep polling
-      forever. The job row said in_progress for a job that had finished seconds
-      earlier. It did not reproduce on demand.
-    cause: >-
-      The record of acceptance and the record of completion were writes to the
-      same row from two different paths. When the completion event won the race
-      to the database, the late acceptance write overwrote the terminal state.
-    fix: >-
-      The acceptance write only happens when no row exists, and a primary key
-      collision on that path is ignored rather than retried as an update, so a
-      terminal state is never walked back. Three regression tests pin the
-      orderings that used to break it.
-  - title: Forecast lookups asked for grids nothing was ever stored for
-    area: hub · gateway
-    symptom: >-
-      Short-term forecasts came back empty for most districts. Asking for a
-      district that did not exist returned data, because the miss fell through
-      to a province-level path.
-    cause: >-
-      Forecasts accumulate only on the grid points the poller subscribes to, but
-      lookups used the requesting district's own grid point. Only 19 of the 243
-      district grid points coincide with a subscribed one.
-    fix: >-
-      Resolve to the nearest active grid inside the same province, never across
-      a province line. The rule is a pure function, pinned by tests, and both
-      the forecast and the observation paths now call it.
-  - title: The poller died silently and left the day empty
-    area: hub · scheduler
-    symptom: >-
-      Whole release cycles arrived with no forecast stored. Because the work ran
-      as a background task nobody awaited, the failure left no trace at all, and
-      it recurred at the same point every cycle.
-    cause: >-
-      A database exception inside the per-grid loop escaped the loop, so the
-      remaining grids for that release were never written. One value outside the
-      accepted category set rolled back that grid's entire transaction.
-    fix: >-
-      Per-grid exception isolation, an explicit log when the task dies, category
-      filtering before the write, one query to decide what is already stored
-      instead of one per grid, and a duplicate guard that the boot-time run and
-      a manual run can both see.
-  - title: Two regional forecast codes were swapped
-    area: hub · gateway
-    symptom: >-
-      Medium-range land forecasts for two southern regions were each returning
-      the other's outlook. Every response was well formed, and the only way to
-      see it was to know the weather.
-    cause: >-
-      The region-code table had the two identifiers transposed at the point they
-      were seeded.
-    fix: >-
-      Corrected the mapping and covered the region table with tests.
-  - title: The rate limiter let the caller choose its own counter
-    area: user · Java BFF · edge proxy
-    symptom: >-
-      A caller could send the same endpoint as many requests as it liked. The
-      limit was in place and simply never bound.
-    cause: >-
-      The filter read the forwarded-address header no matter who the immediate
-      sender was, so the value that keys the counter was attacker-controlled. A
-      comment said the edge made spoofing impossible; that assumption had been
-      withdrawn some time earlier.
-    fix: >-
-      Read the header only when the immediate peer falls inside a configured
-      trusted-proxy range, and read the single-valued header the edge always
-      overwrites rather than the appendable one. Requests arriving from outside
-      that range are keyed by their actual source address.
-  - title: Long itineraries silently lost their road geometry
-    area: user · Java BFF
-    symptom: >-
-      Itineraries above a certain size drew straight lines between every stop
-      instead of following roads. Nothing surfaced in the interface; there was
-      only a warning in the log.
-    cause: >-
-      The gateway accepts at most 20 legs per routing request and the BFF sent
-      the whole itinerary in one batch, so anything over 22 stops was rejected
-      in full and fell back to straight lines for every leg, not just the excess.
-    fix: >-
-      Chunk at 20 and recombine in the original leg order, so one rejected chunk
-      costs only its own legs. Day-boundary legs are not requested at all, and
-      the rejection response — which quoted place names and coordinates — was
-      taken out of the log.
-  - title: One database restart killed a run of recommendation jobs
-    area: agent
-    symptom: >-
-      After the database came back, recommendation jobs failed consecutively, as
-      many in a row as the pool held, then recovered on their own.
-    cause: >-
-      The checkpointer pool lent out connections severed by the restart. A dead
-      connection was only detected when its first query failed, which is to say
-      after the job had already claimed it.
-    fix: >-
-      Check the connection at the point it is borrowed, at the cost of one round
-      trip per checkout.
-  - title: An internal guard answered 500 where it should have answered 403
-    area: hub · gateway
-    symptom: >-
-      A request carrying a non-ASCII internal token raised inside the guard and
-      returned a server error instead of a refusal.
-    cause: >-
-      The token was compared as a string, and the comparison function raises on
-      a non-ASCII operand.
-    fix: >-
-      Encode both sides to bytes before comparing, and refuse with 403 when the
-      value is absent or different.
+  - title: "Shared-result privacy leak"
+    area: "user · Java BFF · Redis"
+    symptom: "In the regression scenario, a waiting user could receive the first user’s private itinerary edit."
+    cause: "Shared completion read the mutable itinerary instead of the original worker event."
+    fix: "Preserved the worker original and authenticated its producer and execution ID with the encrypted body (AAD). DB locking selects the first terminal event. The 2026-09-09 focused run passed 93 tests with H2, encryption and Redis memory doubles."
+  - title: "Unresolved follower state"
+    area: "user · job persistence"
+    symptom: "A waiting request could remain unresolved after Redis metadata expired."
+    cause: "The database lacked the follower identity and deadline needed to resolve expiry independently."
+    fix: "Stored the follower key and deadline in the initial record. Later lookups persist expiry failures; DB locking resolves completion-versus-expiry races."
+  - title: "Provider outage as empty success"
+    area: "hub · agent"
+    symptom: "Missing configuration or provider errors could appear as successful stub data or an empty search."
+    cause: "The recommendation path did not distinguish test data from provider failure."
+    fix: "Validated KMA page totals, separated test/live cache namespaces and classified failures. Hub keeps results from working sources; Agent ends without inventing places when verified candidates are missing."
+  - title: "Encrypted-label decoding gap"
+    area: "user · data export"
+    symptom: "Export could read an encrypted itinerary as an empty label even when the application could display it."
+    cause: "The exporter parsed ciphertext without the owner- and job-bound decryption readers."
+    fix: "Reused those readers and rejected invalid envelopes. On 2026-09-06, 32 focused tests with synthetic keys and H2 checked label equivalence and wrong-key/AAD rejection."
 ---
 
 import N from '../../components/note/N.astro';
 
-MAP is a gateway with an agent behind it. Five external feeds — weather and air
-quality, places and photos, blog reviews, subway and shared mobility, and the
-road network — are polled on a schedule, cached and normalised behind one
-service. A request for an itinerary is accepted immediately, planned on a
-stream, and answered when it is done.<N id="map-ownership" />
+## Source data and team contributions
 
-A model asked to pick places from an open field invents them; given a candidate
-list a deterministic engine has already filtered by travel radius, weather and
-exclusion zones, the worst it can do is choose a bad real
-place.<N id="map-llm-budget" /> Visit order and travel legs are not asked
-for at all — they are computed from coordinates, exhaustively while that is
-cheap.<N id="map-tsp" /> Of the agent's fourteen nodes, two call a
-model.<N id="map-graph" />
+MAP turns weather, places, reviews and transport data into a saved itinerary. I took responsibility for **architecture, AI, backend, service integration, GCP/NCP and app submission**. Teammates handled design and initial frontend setup and contributed the initial authentication, cache, vision and several app features. The contribution table details my implementation and later improvements.<N id="map-ownership" />
 
-The graph is written so that a failure anywhere in it still produces an answer.
-Any node that sets an error skips the rest and goes straight to building a
-payload, and the publish node always runs, so a failed job emits a failure event
-rather than leaving a client polling a row that will never change. There are 981
-automated tests behind that behaviour.<N id="map-test-count" />
+**App status: submitted for store review and awaiting a decision**, confirmed on 2026-09-20. My release work includes signed builds, artifact checks, distribution and submission.<N id="map-store-review" />
 
-Forecasts accumulate only on the grid points the poller subscribes to, and the
-lookup path was asking for a different set entirely, so most districts returned
-nothing while a malformed request returned a usable
-answer.<N id="map-grid-coverage" /> The road-routing batch had
-a ceiling the caller did not know about, and crossing it cost the whole
-itinerary rather than the excess.<N id="map-batch-cap" />
+## Input quality and stored data
 
-In front of all of it: a Redis tier over a scheduled prefetch, so the external
-feed is warm before anyone asks,<N id="map-cache-tiers" /> and a
-re-recommendation cap that expires at midnight local time instead of on a
-rolling window.<N id="map-rate-limit" />
+**Provider failures and empty results require different handling.** I separated an unavailable provider from a successful empty search, checked KMA page totals before storage, and kept valid PM2.5 when PM10 was missing. Test data uses an explicit mode and a separate cache namespace. Hub retains usable results from other sources; Agent returns a classified failure when verified candidates are unavailable.<N id="map-provider-quality" />
+
+**I normalized course sources, coordinates and route metadata.** The shared representation supports PostGIS upserts and radius queries. Forecast lookup maps a requested district to a subscribed grid in the same province. Redis L1 and scheduled PostgreSQL prefetch serve different source and freshness requirements.<N id="map-cache-tiers" />
+
+## Asynchronous state and private results
+
+The BFF accepts a job, Agent retrieves data through Hub, and a Redis Streams completion returns to the BFF for storage. I separated acceptance and terminal writes so a delayed acceptance could not reset a completed job.<N id="map-terminal-state" />
+
+**A shared result must retain its original meaning.** A regression reproduced a waiting user receiving the producer’s personal edit. I changed the shared read to an immutable worker snapshot. Encryption also authenticates the producer and execution ID with the body—additional authenticated data, or AAD. Each user’s editable result follows a separate path. A persisted follower deadline allows a later lookup to finish an expired wait after Redis metadata is lost.
+
+The **2026-09-09 focused run** passed 93 regressions with real service, consumer and store code, H2 and encryption. Redis primitives used memory doubles.<N id="map-test-count" />
+
+## Recommendation and app contracts
+
+- **Calculated routes** — The graph covers candidate preparation, selection, routing, timetables and completion.<N id="map-graph" /> Normal recommendation uses a model for selection and explanation. A supplied-place route verifies its source, skips both model calls and changes order only on an explicit optimization request.<N id="map-llm-budget" />
+- **Account limits** — Authenticated re-search uses an account counter with KST-midnight expiry. Redis counter errors remain fail-open.<N id="map-rate-limit" />
+- **App integration** — I connected persisted consent revisions and error codes to Flutter. Late consent responses are checked against the current account/revocation state; recommendation errors retain their retryability. Chat changes suppress repeated reads from the caller’s own read events.<N id="map-client-contract" />
+
+## Implementation progression
+
+- **May–July 2026** — Polling, recommendation completion and the graph grew into normalized place queries, chat and an admin console.
+- **August 2026** — I improved forecast-grid mapping, calculated timetables, terminal races, concurrent generation and encrypted storage.
+- **September 2026** — I tightened provider, consent and shared-result contracts, separated export execution, and connected revised app/server behavior.<N id="map-evolution" />
+
+## Export and deployment checks
+
+**Export uses the same decryption contract as serving.** I corrected reads that could turn encrypted itineraries into empty labels, then separated export into a non-web process with approval and read-only connection checks. The saved synthetic-key/H2 run covers label equivalence and damaged envelopes. Capture/export remain off by default; there is no model-training result to report.<N id="map-training-boundary" />
+
+**Deployment records carry their environment.** The GCP test deployment recorded on 2026-09-20 completed its release and smoke checks. NCP’s September User-image change has separate health and access-control evidence, including its interruption window.<N id="map-deployment" /> The source snapshot is dated 2026-09-20; the latest saved NCP runtime observation is 2026-09-19. The new SDK authentication contract and GCP test release do not establish an NCP rollout.<N id="map-current-scope" />

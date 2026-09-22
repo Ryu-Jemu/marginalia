@@ -1,6 +1,6 @@
 ---
 title: A kiosk that resets itself
-tagline: A portrait touch interface, and the state machine that stops autoplay fighting the person using it.
+tagline: A portrait touch interface with one state machine for user input and automatic return.
 period: "2025.06"
 team: Solo
 role: Frontend
@@ -23,6 +23,4 @@ ownership:
 A 1080 by 1920 portrait interface across six screens, with a shared header
 carrying the clock and the countdown to the next race.
 
-An unattended kiosk returns to its landing screen. Autoplay and manual control
-are the same state machine rather than two timers racing, so touching anything
-suspends the return and releases it fifty seconds after the last input.
+One state machine manages autoplay and manual input. Touch input suspends automatic return; after fifty seconds without input, the kiosk returns to its landing screen.

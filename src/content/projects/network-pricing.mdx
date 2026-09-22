@@ -1,6 +1,6 @@
 ---
 title: Dynamic pricing for 5G network slices
-tagline: A reinforcement learning policy for three-part tariffs, and the control experiment that shows where its advantage actually comes from.
+tagline: Three-part tariff optimisation with reinforcement learning, tested through algorithm and discount-factor comparisons.
 period: "2026.01 – 2026.05"
 team: First author, with a corresponding author at ICI Lab
 role: Problem formulation, environment, experiments, paper
@@ -37,31 +37,16 @@ data:
     label: seeds per algorithm
     detail: PPO, SAC and TD3 compared at m=1 on the same environment
   - value: "97%"
-    label: of the m=3 gap from one slice
-    detail: the decomposition is published with the result
+    label: of the m=3 revenue gap from eMBB
+    detail: slice-level decomposition in the simulation
 ---
 
 import N from '../../components/note/N.astro';
 
-Two slices, urgent and bulk, priced with a three-part tariff: a subscription
-fee, an included allowance, and an overage rate. Set them too high and customers
-leave; too low and the revenue is not there. The policy has to price against its
-own effect on the customer base, which is what makes it a sequential problem
-rather than an optimisation.
+I modelled pricing for two network slices using a subscription fee, an included allowance and an overage rate. The simulation links prices to customer churn, so each pricing decision affects both current revenue and future demand.
 
-The learned policy beats a max-price baseline by a margin that grows with how
-sensitive customers are to price.<N id="rl-uplift" /> In the control, the same
-algorithm trained with its discount factor set to zero — able to learn, unable
-to look ahead — is indistinguishable from the baseline at every
-setting,<N id="rl-myopic" /> which locates the advantage in anticipating churn
-rather than in the use of reinforcement learning.
+**Controlled comparisons** showed greater PPO revenue uplift as churn sensitivity increased. The difference at m=1 was not statistically significant.<N id="rl-uplift" /> Myopic-PPO, trained with a zero discount factor to consider only immediate rewards, did not differ significantly from the max-price baseline at any tested setting.<N id="rl-myopic" /> This supports the interpretation that accounting for future rewards contributes to the advantage.
 
-Decomposing the revenue gap by slice puts almost all of it in one of the two, so
-the aggregate figure describes one slice rather than
-both.<N id="rl-embb-attribution" /> At the lowest churn sensitivity the
-advantage is not significant.
+**Slice-level analysis** attributed 97% of the m=3 revenue gap to eMBB.<N id="rl-embb-attribution" /> The aggregate result therefore reflects a gain concentrated in this slice.
 
-In the algorithm comparison a deterministic method landed below and another
-on-policy method was statistically
-indistinguishable.<N id="rl-algorithms" /> The paper took first author and a
-silver award at the conference's paper competition.<N id="rl-award" />
+**Algorithm comparison at m=1** showed lower returns for TD3 than Max-Price, while the PPO–SAC difference was not significant.<N id="rl-algorithms" /> I wrote the paper as first author and received a silver award in the conference paper competition.<N id="rl-award" />

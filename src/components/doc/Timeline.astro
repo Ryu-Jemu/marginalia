@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import InlineEmphasis from './InlineEmphasis.astro';
 
 /**
  * Where the years went, drawn as one line.
@@ -47,7 +48,7 @@ const MARKS: Record<string, string> = {
           {r.bullets.length > 0 && (
             <ul class="tl__points">
               {r.bullets.map((b) => (
-                <li>{b}</li>
+                <li><InlineEmphasis text={b} /></li>
               ))}
             </ul>
           )}
@@ -147,6 +148,7 @@ const MARKS: Record<string, string> = {
     height: 1px;
     background: var(--rule-strong);
   }
+  .tl__points :global(strong) { font-weight: 600; color: var(--ink); }
 
   /* Printed, the spine is ink for no reason — the dates already order it. */
   @media print {

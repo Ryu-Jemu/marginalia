@@ -1,0 +1,6 @@
+---
+/** A deliberately small, escaped text renderer: only authored **emphasis**. */
+interface Props { text: string }
+const parts = Astro.props.text.split(/(\*\*[^*]+\*\*)/g);
+---
+{parts.map(part => part.startsWith('**') && part.endsWith('**') ? <strong>{part.slice(2, -2)}</strong> : part)}

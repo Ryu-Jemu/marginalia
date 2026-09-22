@@ -22,9 +22,10 @@ const { n, title, wide = false, lang = 'en' } = Astro.props;
 ---
 
 <figure class:list={['figure', wide && 'figure--wide']}>
-  <div class="figure__plate"><slot /></div>
+  <div class="figure__plate" tabindex="0" role="group" aria-label={title}><slot /></div>
+  <p class="figure__scroll-hint">{t(lang, 'figure.scroll')}</p>
   <figcaption class="figure__caption">
-    <span class="figure__n">{t(lang, 'label.figure')} {n}</span>
+    <span class="figure__n">{t(lang, 'label.figure')} {n}</span>{' '}
     {title}
   </figcaption>
 </figure>
@@ -51,6 +52,21 @@ const { n, title, wide = false, lang = 'en' } = Astro.props;
     border-bottom: 1px solid var(--rule);
     padding-block: 1.1rem;
   }
+  .figure__scroll-hint {
+    display: none;
+  }
+  @media (max-width: 40rem) {
+    .figure__plate {
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    .figure__scroll-hint {
+      display: block;
+      margin-top: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--ink-faint);
+    }
+  }
   .figure__caption {
     margin-top: 0.5rem;
     font-family: var(--family-mono);
@@ -73,6 +89,20 @@ const { n, title, wide = false, lang = 'en' } = Astro.props;
     width: 100%;
     height: auto;
     overflow: visible;
+  }
+  @media (max-width: 40rem) {
+    .figure__plate > .viz {
+      min-width: 36rem;
+    }
+    .figure__plate > .flow {
+      min-width: 62.5rem;
+    }
+    .figure__plate > .arc {
+      min-width: 48rem;
+    }
+    .figure__plate > .isolation {
+      min-width: 54rem;
+    }
   }
   .viz text {
     font-family: var(--family-mono);

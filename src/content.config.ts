@@ -91,6 +91,7 @@ const projectSchema = z.object({
       from: z.string(),
       to: z.string(),
       feeds: z.array(z.string()).default([]),
+      note: z.string().optional(),
       stages: z.array(
         z.object({
           name: z.string(),
@@ -110,7 +111,7 @@ const projectSchema = z.object({
   architecture: z
     .object({
       externalLabel: z.string().optional(),
-      external: z.array(z.object({ name: z.string() })),
+      external: z.array(z.object({ name: z.string(), service: z.number().int().min(0).default(0) })),
       services: z.array(
         z.object({
           name: z.string(),
@@ -119,13 +120,23 @@ const projectSchema = z.object({
         }),
       ),
       clients: z.array(
-        z.object({ name: z.string(), mine: z.boolean().default(false) }),
+        z.object({ name: z.string(), mine: z.boolean().default(false), service: z.number().int().min(0).default(0) }),
       ),
       stores: z.array(z.string()).default([]),
     })
     .optional(),
   /** Bullets — what the thing is, in four lines or fewer. */
   summary: z.array(z.string()).default([]),
+  /** Concrete handoffs and contracts agreed across the project. */
+  collaboration: z.array(z.string()).default([]),
+  /** Feature-level attribution for work shared across several services. */
+  contributions: z.array(z.object({
+    area: z.string(),
+    work: z.string(),
+    context: z.string(),
+  })).default([]),
+  /** The date, environment and meaning of the verification counts below. */
+  verificationSummary: z.string().optional(),
   /** What keeps the pipeline standing up: the mechanisms, not the intentions. */
   safety: z
     .array(z.object({ title: z.string(), detail: z.string() }))

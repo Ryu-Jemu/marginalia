@@ -1,4 +1,5 @@
 ---
+import InlineEmphasis from './InlineEmphasis.astro';
 /**
  * A short list, marked with a rule rather than a dot.
  *
@@ -20,7 +21,7 @@ const { items, key, tone = 'muted' } = Astro.props;
       {key && <p class="meta bullets__key">{key}</p>}
       <ul class:list={['bullets__list', `bullets__list--${tone}`]}>
         {items.map((item) => (
-          <li data-bullet>{item}</li>
+          <li data-bullet><InlineEmphasis text={item} /></li>
         ))}
       </ul>
     </div>
@@ -46,13 +47,15 @@ const { items, key, tone = 'muted' } = Astro.props;
   .bullets__list--muted li {
     color: var(--ink-muted);
   }
+  .bullets__list :global(strong) { color: var(--ink); font-weight: 600; }
   .bullets__list li::before {
     content: '';
     position: absolute;
     left: 0;
-    top: 0.62em;
-    width: 0.5rem;
-    height: 1px;
+    top: 0.58em;
+    width: 0.25rem;
+    height: 0.25rem;
+    border-radius: 50%;
     background: var(--rubric);
     transform-origin: 0 50%;
   }

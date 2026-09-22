@@ -6,11 +6,12 @@
 - id: map-team
   kind: career
   title: MAP — 여행 일정 서비스
-  issuer: 5인 팀 · 백엔드 · AI
+  issuer: 5인 팀 · 아키텍처·데이터·서비스 통합
   date: "2026.03 – 현재"
   bullets:
-    - 여섯 서비스 담당 — 외부 데이터 게이트웨이, 추천 에이전트, Java BFF, vision, 인프라, 관리자 콘솔.
-    - 외부 피드 다섯 개를 하나의 통합 지점 뒤에서 폴링하고 캐싱합니다.
+    - "**담당 범위** — 디자인·프론트 초기 세팅을 제외한 아키텍처, AI·백엔드, 서비스 통합과 GCP·NCP."
+    - 데이터 수집·공간 조회, 결과 격리·암호화를 구현·개선하고 Flutter와 서버의 계약을 연결했습니다.
+    - "**앱 출시 업무** — 서명 빌드·배포·심사 제출. 2026-09-20 기준 스토어 심사 대기 중."
 
 - id: dartoo-team
   kind: career
@@ -18,8 +19,8 @@
   issuer: 6인 팀 · 백엔드 · 데이터 엔지니어링
   date: "2025.07 – 2026.06"
   bullets:
-    - 백엔드 여섯 서비스 중 넷을 담당 — 수집, 저장과 검색, 요약, 그리고 전달 경로 전체.
-    - 공시를 폴링해 디코딩·요약하고, 해당 기업을 구독한 사용자에게 푸시합니다.
+    - 수집·공시·알림을 구현하고 공동 개발한 요약 서비스의 연동·검증을 개선했습니다.
+    - 원문 디코딩·공시 저장·구독자 알림을 연결하고 Java User 서비스의 내부 알림 API를 연동했습니다.
 
 - id: ici-lab
   kind: lab
@@ -28,15 +29,15 @@
   date: "2025.03 – 2026.06"
   bullets:
     - 5G 슬라이스 가격 결정 강화학습 연구를 주도하고 제1저자로 논문을 작성했습니다.
-    - IEEE TAI 서베이 III.E절과 그 뒤의 빔 예측 구현을 맡았습니다.
+    - IEEE TAI 서베이의 빔 예측 절(III.E)을 작성하고 관련 모델과 학습 코드를 구현했습니다.
 
 - id: hanyang
   kind: education
-  title: 컴퓨터학부 학사, 융합보안 복수전공
+  title: 컴퓨터학부 재학, 융합보안 복수전공
   issuer: 한양대학교 ERICA
   date: "2023.03 – 2027.02"
   bullets:
-    - 143학점 이수, 평점 4.18 / 4.5. 2027년 2월 졸업 예정.
+    - "143학점 이수, **평점 4.18 / 4.5**. 2027년 2월 졸업 예정."
 
 - id: air-force
   kind: service
@@ -44,7 +45,7 @@
   issuer: 대한민국 공군 제827기
   date: "2021.06 – 2023.03"
   bullets:
-    - 복무 기간 만기 전역.
+    - 의무 복무를 마치고 전역했습니다.
 
 - id: kau
   kind: education
@@ -101,6 +102,12 @@
 
 # ── 자격증 ────────────────────────────────────────────────────────────────
 
+- id: engineer-information-processing
+  kind: certification
+  title: 정보처리기사
+  issuer: 한국산업인력공단
+  date: "2026.09.11"
+
 - id: aws-clf
   kind: certification
   title: AWS Certified Cloud Practitioner
@@ -109,7 +116,7 @@
 
 - id: sqld
   kind: certification
-  title: SQL Developer
+  title: SQL개발자 (SQLD)
   issuer: 한국데이터산업진흥원
   date: "2025.04"
 
@@ -122,7 +129,7 @@
 
 - id: adsp
   kind: certification
-  title: Advanced Data Analytics Semi-Professional
+  title: 데이터분석 준전문가 (ADsP)
   issuer: 한국데이터산업진흥원
   date: "2025.09"
 
@@ -138,7 +145,7 @@
 
 - id: blog
   kind: activity
-  title: 기술 블로그 — 30편
+  title: 기술 블로그
   issuer: velog
   date: "2024 – 현재"
   detail: AWS 실습, Kubernetes, Spring, 백엔드 아키텍처.

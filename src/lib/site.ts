@@ -23,7 +23,7 @@ export const site = {
 export const standing = (lang: Lang) => [
   { value: '4.18', label: t(lang, 'standing.gpa.label'), detail: t(lang, 'standing.gpa.detail') },
   { value: '5', label: t(lang, 'standing.awards.label'), detail: t(lang, 'standing.awards.detail') },
-  { value: '4', label: t(lang, 'standing.certs.label'), detail: t(lang, 'standing.certs.detail') },
+  { value: '5', label: t(lang, 'standing.certs.label'), detail: t(lang, 'standing.certs.detail') },
   {
     value: t(lang, 'standing.service.value'),
     label: t(lang, 'standing.service.label'),

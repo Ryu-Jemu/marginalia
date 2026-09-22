@@ -9,8 +9,6 @@
 export type Plate =
   | 'pricing'
   | 'pricingAlgorithms'
-  | 'beamGain'
-  | 'beamOverhead'
   | 'beamArchitecture'
   | 'beamTraining';
 
@@ -20,7 +18,8 @@ export const RESEARCH_PLATES: Record<string, { findings: Plate[]; implementation
     implementation: [],
   },
   'ieee-tai-survey': {
-    findings: ['beamGain', 'beamOverhead'],
+    // Only reproducible implementation evidence is published for this work.
+    findings: [],
     implementation: ['beamArchitecture', 'beamTraining'],
   },
 };

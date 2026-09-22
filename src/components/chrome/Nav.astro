@@ -16,7 +16,7 @@ const home = lang === 'ko' ? '/ko/' : '/';
 <nav class="nav" aria-label={t(lang, 'nav.sections')}>
   <div class="shell nav__inner">
     <a class="nav__home" href={base || home}>
-      <span class="nav__name">{t(lang, 'site.name')}</span>
+      <span class="nav__name">{t(lang, 'site.name')}</span>{' '}
       <span class="nav__role">{t(lang, 'site.role')}</span>
     </a>
 
@@ -143,6 +143,11 @@ const home = lang === 'ko' ? '/ko/' : '/';
   .nav__lang:hover {
     color: var(--rubric);
     border-color: var(--rubric);
+  }
+
+  @media (min-width: 90rem) {
+    .nav:lang(en) .nav__inner { column-gap: 1rem; }
+    .nav:lang(en) .nav__home { flex-direction: column; gap: 0; }
   }
 
   @media (max-width: 60rem) {

@@ -15,6 +15,7 @@ interface Fix {
   fix: string;
 }
 import { t, type Lang } from '../../i18n/ui';
+import InlineEmphasis from '../doc/InlineEmphasis.astro';
 
 interface Props {
   fixes: Fix[];
@@ -36,15 +37,15 @@ const { fixes, lang = 'en' } = Astro.props;
         <dl class="fix__body">
           <div>
             <dt>{t(lang, 'label.symptom')}</dt>
-            <dd>{f.symptom}</dd>
+            <dd><InlineEmphasis text={f.symptom} /></dd>
           </div>
           <div>
             <dt>{t(lang, 'label.cause')}</dt>
-            <dd>{f.cause}</dd>
+            <dd><InlineEmphasis text={f.cause} /></dd>
           </div>
           <div class="fix__row--fix">
             <dt>{t(lang, 'label.fix')}</dt>
-            <dd>{f.fix}</dd>
+            <dd><InlineEmphasis text={f.fix} /></dd>
           </div>
         </dl>
       </li>
@@ -106,7 +107,7 @@ const { fixes, lang = 'en' } = Astro.props;
      track is capped at a readable line rather than at the container. */
   .fix__body > div {
     display: grid;
-    grid-template-columns: 4.75rem minmax(0, 56ch);
+    grid-template-columns: 4.75rem minmax(0, 1fr);
     gap: 0.85rem;
     align-items: baseline;
   }
@@ -122,6 +123,7 @@ const { fixes, lang = 'en' } = Astro.props;
     letter-spacing: var(--ls-meta);
     text-transform: uppercase;
     color: var(--scope);
+    font-weight: 600;
   }
   .fix__body dd {
     margin: 0;
@@ -130,6 +132,7 @@ const { fixes, lang = 'en' } = Astro.props;
     color: var(--ink-muted);
     text-wrap: pretty;
   }
+  .fix__body :global(strong) { color: var(--ink); font-weight: 600; }
   /* The resolution is the line that gets read in full, so it takes the ink. */
   .fix__row--fix dt {
     color: var(--rubric);

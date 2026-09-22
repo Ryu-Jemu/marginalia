@@ -8,10 +8,11 @@
  * without anyone noticing.
  */
 
+import { fileURLToPath } from 'node:url';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { extname, join, relative } from 'node:path';
+import { extname, join } from 'node:path';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 const notesFile = join(ROOT, 'src/content/notes.yaml');
 const raw = readFileSync(notesFile, 'utf8');
@@ -39,6 +40,7 @@ function walk(dir) {
     return out;
   }
   for (const name of entries) {
+    if (['node_modules', 'dist', '.astro', '.git'].includes(name)) continue;
     const full = join(dir, name);
     if (statSync(full).isDirectory()) out.push(...walk(full));
     else if (['.mdx', '.md', '.astro', '.yaml', '.ts'].includes(extname(name))) out.push(full);

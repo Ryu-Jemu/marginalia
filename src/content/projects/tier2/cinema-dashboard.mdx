@@ -1,6 +1,6 @@
 ---
-title: Why multiplex revenue fell
-tagline: Eighteen years of box-office data, four angles on the fall, and a premise about screen count that the correlations did not support.
+title: Multiplex revenue and market characteristics
+tagline: Box-office time series, regional correlations, review analysis and geospatial visualisation.
 period: "2024.09 – 2024.12"
 team: 6 people
 role: The Python analysis
@@ -28,9 +28,9 @@ ownership:
     - the report and the presentation
 summary:
   - Box-office revenue and admissions from 2004 to 2021, summed per year across domestic and foreign releases.
-  - The premise was that a chain's regional market share follows how many screens it has there. Across eight regions the correlation is positive for all three chains and significant for none.
+  - Compared screen count with market share across eight regions. All three chains had positive correlations, but none was statistically significant.
   - Per-capita private consumption against regional share behaves the same way — positive, and not significant at this sample size.
-  - "Text side: reviews and blog posts collected per chain, keywords extracted, and a word cloud per operator to compare what customers actually talk about."
+  - Collected reviews and blog posts, extracted keywords and compared word frequencies through per-chain word clouds.
 data:
   - value: "−87.6%"
     label: revenue against the 2019 peak
@@ -48,16 +48,8 @@ data:
 
 import N from '../../../components/note/N.astro';
 
-Eighteen years of the national box-office series show a peak in 2019 and a
-collapse to an eighth of it two years later.<N id="cinema-fall" />
+**Time-series analysis** aggregated revenue and admissions by year for 2004–2021. In the collected dataset, 2021 revenue was approximately one eighth of the 2019 peak.<N id="cinema-fall" />
 
-The team's premise was that a chain's share of a region follows how many screens
-it has there. It does correlate — 0.68 for the largest operator, 0.57 and 0.55
-for the other two — and at eight regions not one of those coefficients clears
-the usual threshold.<N id="cinema-correlation" /> Per capita consumption against
-share behaves identically. A positive coefficient that cannot be distinguished
-from noise is a finding about the sample.
+**Regional analysis** found screen-count versus market-share correlations of approximately 0.68, 0.57 and 0.55 across the three chains. None was significant at p < 0.05 in the eight-region sample.<N id="cinema-correlation" /> The positive correlation between per-capita consumption and market share was also non-significant in this sample.
 
-A Selenium crawler against a site that kept changing its markup produced a
-three-byte file. It was replaced by a collector against a documented search API,
-which makes the collection repeatable in one command.
+**Collection improvement** addressed a Selenium crawler that depended on changing page markup and produced only a three-byte file. I replaced it with a documented search API and configured a single collection command.

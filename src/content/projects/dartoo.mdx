@@ -1,9 +1,9 @@
 ---
 title: Dartoo
-tagline: A disclosure data pipeline — it polls the Korean regulatory filing system, decodes and normalises the source documents, summarises them, and pushes the ones a user is watching.
+tagline: A disclosure pipeline for source collection, text normalisation, summaries and subscriber notifications.
 period: "2025.07 – 2026.06"
 team: 6-person founding team
-role: Backend — owned four of the services
+role: Python data services · Java service integration
 domain: pipeline
 status: deployed
 hosting: offline
@@ -28,10 +28,10 @@ links:
     href: https://github.com/team-dartoo
     label: team-dartoo
 summary:
-  - Four of the six backend services are mine, end to end — collection, storage and search, summarisation, and the whole delivery path.
-  - Regulatory filings are polled, their archives decoded out of three legacy encodings, stored as objects, summarised, and pushed to whoever was watching that company.
-  - Delivery is idempotent by content hash, with staged backoff for transient upstream failures and a dead-letter queue for permanent ones.
-  - 319 automated tests across the three services I own.
+  - "**Role** — Ingestion, disclosure and notification implementation; summary integration and hardening."
+  - "**Data flow** — Source archives → UTF-8 text and metadata → stored filings → summaries and subscriber alerts."
+  - "**Service contracts** — Aligned queue declarations, event fields and the Java User service's internal APIs."
+  - "**Verification record** — 319 def test_ definitions in the 2026-08-13 local audit; execution results are separate."
 pipeline:
   from: Regulatory filing system
   to: Push notification
@@ -41,20 +41,20 @@ pipeline:
   stages:
     - name: Poll
       service: ingestion · producer
-      store: task queue
-    - name: Decode
-      service: ingestion · consumer
+      store: DART API
+    - name: Normalise
+      service: ingestion · producer
       store: MinIO
     - name: Store
-      service: disclosure
+      service: consumer → disclosure
       store: PostgreSQL 16
-    - name: Fan out
-      service: disclosure · publisher
-      store: RabbitMQ
     - name: Summarise
       service: summary
-      store: OpenAI
+      store: LLM provider
       model: true
+    - name: Publish
+      service: disclosure · publisher
+      store: RabbitMQ
     - name: Deliver
       service: notification
       store: Firebase FCM
@@ -63,8 +63,10 @@ architecture:
   external:
     - name: DART filing index API
     - name: DART document archives
-    - name: OpenAI
+    - name: OpenAI / Ollama
+      service: 2
     - name: Firebase Cloud Messaging
+      service: 3
   services:
     - name: ingestion
       detail: poll · decode · store · dispatch
@@ -73,13 +75,13 @@ architecture:
       detail: CRUD · search · fan-out · cache
       mine: true
     - name: summary
-      detail: model call · spend cap
+      detail: response validation · quota counter
       mine: true
     - name: notification
       detail: orchestration · idempotency · DLQ
       mine: true
     - name: user
-      detail: accounts · subscriptions
+      detail: accounts · internal notification API
     - name: gateway · discovery
       detail: routing · service registry
     - name: chat
@@ -88,189 +90,136 @@ architecture:
       detail: CI/CD · monitoring
   clients:
     - name: Mobile client
+      service: 5
     - name: Web client
+      service: 5
   stores:
     - PostgreSQL 16
     - MinIO
     - RabbitMQ
     - Redis
+verificationSummary: The 2026-08-13 local audit counted 319 def test_ function definitions; these are not runtime test-pass results.
+collaboration:
+  - "**Payload contract** — Connected disclosure summary_lines, notification payloads and Java User summaryLines."
+  - "**Internal APIs** — Added bulk notification and subscriber lookup contracts; the team integrated them into the User service."
+  - "**Queue declarations** — Aligned the ingestion sender and summary worker's exchange, routing key and dead-letter arguments."
+contributions:
+  - area: Ingestion
+    work: Source polling, archive decoding, UTF-8 normalisation, MinIO storage and delayed retries.
+    context: Receipt number, object path and metadata passed to the disclosure worker.
+  - area: Disclosure
+    work: Storage and search APIs, summary updates, event-publisher reconnect and shared storage integration.
+    context: PostgreSQL records and broker events have separate failure paths.
+  - area: Notification
+    work: Consumer, event identity, subscriber and token lookup, FCM delivery, retries and dependency-check CLI.
+    context: Recorded delivery states and explicit ACK/NACK; the dependency-check CLI is on develop.
+  - area: Summary
+    work: API integration, mock mode, JSON validation, safe fallback and Redis daily counter.
+    context: Shared service; LLM-provider extensions also include teammates' work.
+  - area: User integration
+    work: Structured notification fields, bulk creation and internal subscriber APIs in Java.
+    context: Team-integrated contract present in the current main branch; account and authentication features are separate work.
+  - area: Multi-target prototype
+    work: Per-target requests, partial-failure aggregation and summary-dispatch policy.
+    context: Separate feature branch; current main and develop retain the single-target worker.
 verification:
   - surface: notification
     count: 156
-    detail: orchestration, delivery, schedulers, mocks and the end-to-end skeleton
+    detail: 2026-08-13 def test_ count — orchestration, delivery, schedulers and mocks
   - surface: ingestion
     count: 110
-    detail: polling, decoding, storage, dispatch and the retry policy
+    detail: 2026-08-13 def test_ count — polling, decoding, storage and retry policy
   - surface: disclosure
     count: 53
-    detail: CRUD, search, caching, rate limiting and event fan-out
+    detail: 2026-08-13 def test_ count — CRUD, search, caching and event fan-out
 safety:
-  - title: Delivery is idempotent by content hash
-    detail: >-
-      A sha256 key derived from the notification's own content makes a repeated
-      event a no-op rather than a second push, so a redelivery after a consumer
-      restart cannot reach a phone twice.
-  - title: A failed message reaches the dead-letter queue
-    detail: >-
-      The consumer acknowledges on outcome, not on delivery, so a message that
-      raises is negatively acknowledged and routed to the dead-letter exchange
-      with a seven-day time to live.
-  - title: Transient and permanent upstream failures are separated
-    detail: >-
-      A staged backoff waits out documents the upstream has not published yet;
-      anything still failing after that is isolated in the dead-letter path
-      instead of being retried into the daily API quota.
-  - title: The publisher reconnects rather than switching itself off
-    detail: >-
-      A broker unavailable at startup no longer disables publishing for the
-      lifetime of the process. Publishing reconnects lazily on first use with
-      exponential backoff and a guard against concurrent connection attempts.
-  - title: Two counts are reconciled on a schedule
-    detail: >-
-      A scheduled job compares rows persisted against events published, so a
-      divergence between the two counts surfaces without anyone watching a
-      status code.
-  - title: The daily model spend cap is atomic
-    detail: >-
-      One Lua script performs the increment and the expiry together, so the
-      counter cannot be left without an expiry and stop resetting. The day
-      boundary is Asia/Seoul, not the container clock.
-  - title: One identifier follows a filing across four services
-    detail: >-
-      A correlation id is carried from the event into every log line, so a
-      single delivery can be traced from collection through summarisation to the
-      push without joining timestamps by hand.
-  - title: The summariser distrusts its own input and its own output
-    detail: >-
-      Filing text is defended against prompt injection before it reaches the
-      model, the response is validated rather than assumed, and XML is parsed
-      with an external-entity-safe parser.
+  - title: "Event identity and acknowledgement"
+    detail: "Notification hashes event type, receipt number and timestamp. Handler success sends ACK; failures send NACK to the seven-day-TTL DLQ."
+  - title: "Delayed document retries"
+    detail: "Redis stores retry times and document metadata. Ingestion respects its daily call limit; the memory fallback uses the next polling cycle."
+  - title: "Publisher reconnection"
+    detail: "Startup retries and reconnect on a later publish address transient connection failures. Publishing remains best-effort."
+  - title: "Recent-event reconciliation"
+    detail: "The notification scheduler checks the latest 50 filings by receipt number and event type before adding missing events."
+  - title: "Daily summary counter"
+    detail: "Redis Lua combines increment and expiry using the Asia/Seoul day boundary. Redis failure permits processing."
+  - title: "Input and output checks"
+    detail: "Known injection patterns are filtered; summary JSON and item structure are checked. The ingestion XML parser uses defusedxml."
+  - title: "Dependency-check CLI"
+    detail: "The develop CLI checks six external dependency types and returns OK, SKIP, FAIL or ERROR. Firebase initialisation is checked without a push."
 ownership:
   owned:
     - ingestion — polling, decoding, object storage, task dispatch
     - disclosure — CRUD and search, event fan-out, caching and rate limiting
     - notification — the whole delivery path, rebuilt from scratch
-    - summary — implementation, and the wiring between it and the others
+    - summary — integration, response validation and retry/counter improvements
+    - user — internal notification APIs and structured fields
   notOwned:
     - frontend and design
     - the CI/CD pipeline
     - the monitoring stack
     - infrastructure provisioning
 data:
-  - value: "5"
-    label: stages end to end
-    detail: poll → decode → store → summarise → deliver
+  - value: "4"
+    label: core service areas
+    detail: ingestion · disclosure · summary · notification, plus User API integration
   - value: "3,948"
-    label: rows = events published
-    detail: verification run after the publisher fix
+    label: rows = published events
+    detail: 2026-08-13 measurement record · single fixture E2E run after the fix
   - value: "319"
-    label: automated tests
-    detail: ingestion 110 · notification 156 · disclosure 53
+    label: test function definitions
+    detail: 2026-08-13 def test_ count · ingestion 110 · notification 156 · disclosure 53
   - value: "154"
-    label: events lost, found by reconciling
-    detail: 959 persisted against 805 published
+    label: stored–published difference
+    detail: 2026-08-13 measurement record · 959 stored, 805 published
 fixes:
-  - title: The pipeline reported success while delivering nothing
-    area: disclosure · ingestion
-    symptom: >-
-      Every request returned 200, every worker reported success, and the
-      disclosure table filled up on schedule. 959 rows were persisted and only
-      805 events reached the queue. No log line marked the other 154.
-    cause: >-
-      When the broker came up after the disclosure service, the publisher set
-      its enabled flag to false and never reset it. Once the broker recovered
-      the publisher stayed switched off and discarded every event silently.
-    fix: >-
-      A lazy reconnect on first publish, exponential backoff, a guard against
-      concurrent connection attempts, and a warning carrying the receipt number
-      so a discarded event can never be invisible again. The next end-to-end run
-      produced 3,948 rows and 3,948 events.
-  - title: A retry counter had decided the wrong thing was permanent
+  - title: "Publisher disablement after startup failure"
+    area: disclosure
+    symptom: "The 2026-08-13 measurement record reports 959 stored rows and 805 events: a difference of 154."
+    cause: "A broker connection failure left the publisher disabled instead of retrying later."
+    fix: "Added startup backoff, lazy reconnect and receipt-number warnings. The recorded post-fix fixture E2E run produced 3,948 rows and 3,948 events."
+  - title: "Document-readiness misclassification"
     area: ingestion
-    symptom: >-
-      Filings whose source document was not ready came back with the same
-      status code whether they would be ready in a minute or never. A fixed
-      retry ceiling wrote them all off, and the failure log grew.
-    cause: >-
-      The status code was mixed rather than terminal, so a counter could not
-      separate the two cases. Four filings marked permanently failed a week
-      earlier returned normal responses when re-fetched.
-    fix: >-
-      A staged backoff with a delay tuned to how long the upstream actually
-      takes to publish, dead-letter isolation for the genuinely permanent case,
-      and a per-day call ceiling so retries cannot exhaust the API quota.
-  - title: Source documents failed to parse on encoding alone
+    symptom: "The retry ceiling treated not-ready documents as permanent failures."
+    cause: "The 2026-04-08 re-fetch record shows four filings marked failed on 1 April returning normal responses a week later."
+    fix: "Stored retry times and document metadata in Redis, added staged backoff and kept retries within the ingestion call limit."
+  - title: "Legacy encoding and archive handling"
     area: ingestion
-    symptom: >-
-      Filing archives contained documents in cp949, euc-kr and utf-8, some with
-      no charset declared at all. Parsing failed on those.
-    cause: >-
-      The normaliser trusted the declared charset, and legacy declarations such
-      as ks_c_5601-1987 do not match any codec name Python knows.
-    fix: >-
-      Charset auto-detection for undeclared documents, a Korean codec priority
-      list, alias normalisation, and stricter HTML charset extraction. The
-      normaliser went from 105 lines to 566, and the parse failures stopped.
-  - title: Failed messages were dropped instead of dead-lettered
+    symptom: "Mixed cp949, euc-kr and UTF-8 sources required different decoding paths."
+    cause: "Missing declarations and legacy encoding aliases complicated ZIP, HTML and XML parsing."
+    fix: "Added charset detection, codec candidates, alias normalisation and UTF-8 declaration rewriting before storage."
+  - title: "Summary queue declaration mismatch"
+    area: ingestion · summary
+    symptom: "The sender and worker declared different arguments for the same queue."
+    cause: "The ingestion-side summary declaration omitted the worker's dead-letter arguments."
+    fix: "Aligned exchange, routing key and dead-letter configuration across both declarations."
+  - title: "Explicit failure acknowledgement"
     area: notification
-    symptom: >-
-      A message that raised during processing disappeared. The dead-letter queue
-      stayed empty, so there was nothing to inspect and nothing to replay.
-    cause: >-
-      The consumer acknowledged on delivery rather than on outcome, so the
-      broker considered a failed message handled.
-    fix: >-
-      Explicit acknowledge on success and negative-acknowledge on failure, which
-      is what routes a message to the dead-letter exchange, plus a
-      correlation id carried from the event into every log line so one delivery
-      can be followed across four services.
-  - title: The daily model-spend cap could stop applying
+    symptom: "Acknowledgement and rejection depended on the consumer's processing context."
+    cause: "The ACK/NACK decisions were implicit in exception handling."
+    fix: "Made ACK follow handler success and NACK follow parse or processing failure; updated the corresponding message assertions."
+  - title: "Summary-counter expiry gap"
     area: summary
-    symptom: >-
-      The counter that limits how many documents get summarised per day would
-      occasionally stop resetting, and then never allow another summary.
-    cause: >-
-      An increment followed by a separate expiry call can be interrupted between
-      the two, leaving a counter with no expiry set.
-    fix: >-
-      One Lua script so both happen or neither, with the day boundary pinned to
-      Asia/Seoul rather than the container's clock.
-  - title: Model output arrived wrapped in a code fence
+    symptom: "Separate increment and expiry calls could leave a counter without a TTL."
+    cause: "A client interruption between INCR and EXPIRE could skip the expiry call."
+    fix: "Combined both commands in Redis Lua and calculated the expiry using Asia/Seoul time."
+  - title: "Raw summary output and list markers"
     area: summary
-    symptom: >-
-      Summary requests succeeded upstream and then failed to parse, so filings
-      were stored without the summary the notification depended on.
-    cause: >-
-      The model returned valid JSON inside a fenced code block, and the parser
-      was handed the fence along with it.
-    fix: >-
-      Unwrap before parsing, map the importance labels to the values the rest of
-      the system uses, and add a mock mode so the whole path can be integration
-      tested without paying per run.
+    symptom: "Malformed JSON could fall back to raw model text; numbered points also reached the display."
+    cause: "The fallback copied the entire response and the prompt requested numbered output."
+    fix: "Added safe fallback text, JSON structure checks and three-item normalisation; removed list markers in the prompt and post-processing."
 ---
 
 import N from '../../components/note/N.astro';
 
-Dartoo is a data pipeline with a phone on the end of it. Regulatory filings are
-polled from the national disclosure system, their source archives decoded and
-normalised, the text summarised, and the result pushed to whoever was watching
-that company. I owned four of the services on that path.<N id="dartoo-ownership" />
+Dartoo turns regulatory filings into searchable records, summaries and subscriber alerts. I implemented **ingestion, disclosure and notification**, improved summary integration, and connected the Java User service's internal notification APIs.<N id="dartoo-ownership" />
 
-Two of the defects were silent. Neither appeared in a status code, and both were
-visible only by counting the same thing in two places and finding the numbers
-different.<N id="dartoo-publisher-gap" /> The publisher had been switched off for
-an entire run while every request in front of it returned 200; after the
-lazy-reconnect fix, the end-to-end run persisted and published equal
-counts.<N id="dartoo-e2e-parity" />
+**Source data and contracts.** The producer detects ZIP, HTML and XML, resolves encoding candidates and rewrites text as UTF-8. It stores the document in MinIO and passes the receipt number, object path and file metadata to the disclosure worker.<N id="dartoo-normaliser" /> Summary tasks read that object; the updated disclosure emits events for notification processing.
 
-The second was a classification error rather than a crash. A retry counter had
-written off a batch of not-ready responses as permanent; four of them, re-fetched
-a week later, came back normally.<N id="dartoo-not-ready-experiment" /> The fix
-is a staged backoff for the transient case and dead-letter isolation for the
-permanent one.
+**Readiness and retry policy.** The 2026-04-08 record describes four filings returning normally a week after permanent-failure classification.<N id="dartoo-not-ready-experiment" /> I replaced the fixed counter with Redis-backed retry times and document metadata, then processed due items between polling cycles.
 
-The delivery path was rebuilt rather than adapted — an asynchronous consumer,
-sha256 idempotency keys, a ten-step orchestration and a seven-day dead-letter
-queue.<N id="dartoo-notification-scope" /> The spend cap on the summary service
-is one Lua script.<N id="dartoo-lua-scope" /> Across the three services I owned
-there are 319 automated tests.<N id="dartoo-test-count" />
+**Stored rows and published events.** The 2026-08-13 measurement record reports 959 stored rows and 805 events, a difference of 154.<N id="dartoo-publisher-gap" /> After publisher reconnect changes, the recorded single fixture E2E run produced 3,948 rows and 3,948 events.<N id="dartoo-e2e-parity" />
+
+**Delivery and output quality.** Notification combines event identity, ten-step orchestration and a seven-day-TTL DLQ.<N id="dartoo-notification-scope" /> I aligned its structured payload with Java User APIs, and added summary JSON validation, safe fallback text and a Redis Lua counter.<N id="dartoo-lua-scope" /> A CLI on develop checks six external dependency types without sending a push.
+
+**Verification record.** The 2026-08-13 local audit counted 319 def test_ function definitions across ingestion, notification and disclosure. This is a definition count, not a test-pass result.<N id="dartoo-test-count" />

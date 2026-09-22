@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import Actions from '../work/Actions.astro';
+import InlineEmphasis from '../doc/InlineEmphasis.astro';
 import { site, standing } from '../../lib/site';
 import { t, type Lang } from '../../i18n/ui';
 import photo from '../../assets/profile/photo.jpg';
@@ -9,8 +10,7 @@ import photo from '../../assets/profile/photo.jpg';
  * The hero.
  *
  * One line about the work, the figures that back it, and a way in. The rule
- * beneath it draws itself when the page loads and the figures count up, which
- * is the only decoration on the page that is not also information.
+ * beneath it draws itself when the page loads; measured values stay fixed.
  */
 interface Props {
   lang: Lang;
@@ -28,17 +28,19 @@ const { lang } = Astro.props;
       <p class="hero__what">{t(lang, 'site.what')}</p>
 
       <ul class="hero__points">
-        <li>{t(lang, 'hero.point.1')}</li>
-        <li>{t(lang, 'hero.point.2')}</li>
-        <li>{t(lang, 'hero.point.3')}</li>
+        <li><InlineEmphasis text={t(lang, 'hero.point.1')} /></li>
+        <li><InlineEmphasis text={t(lang, 'hero.point.2')} /></li>
+        <li><InlineEmphasis text={t(lang, 'hero.point.3')} /></li>
       </ul>
 
       <Actions
         actions={[
+          { href: '#pipelines', label: t(lang, 'hero.projects'), kind: 'detail' },
           { href: `mailto:${site.email}`, label: site.email, kind: 'doc' },
           { href: site.links.github, label: 'GitHub', kind: 'repo' },
         ]}
       />
+      <p class="meta hero__updated">{t(lang, 'hero.updated')}</p>
     </div>
 
     <Image
@@ -56,7 +58,7 @@ const { lang } = Astro.props;
       {
         standing(lang).map((s) => (
           <div class="hero__figure">
-            <dt class="hero__value" data-countup>
+            <dt class="hero__value">
               {s.value}
             </dt>
             <dd class="hero__label">{s.label}</dd>
@@ -69,6 +71,7 @@ const { lang } = Astro.props;
 </header>
 
 <style>
+  .hero__points :global(strong) { color: var(--ink); font-weight: 600; }
   .hero {
     padding-block: 2.5rem 1.25rem;
   }
@@ -132,6 +135,10 @@ const { lang } = Astro.props;
     line-height: 1.55;
     color: var(--ink-faint);
     text-wrap: pretty;
+  }
+
+  .hero__updated {
+    margin-top: 0.8rem;
   }
 
   .hero__points {

@@ -1,0 +1,45 @@
+---
+title: KBO 야구 규칙 질의응답
+tagline: 야구 규칙 질문을 위한 문서 수집, 하이브리드 검색과 인용 검증.
+period: "2026.09"
+team: 수업 프로젝트
+role: 문서 검색과 답변 검증 구현
+domain: other
+status: in-progress
+tier: 2
+order: 8
+stack:
+  - Python
+  - FastAPI
+  - Streamlit
+  - PostgreSQL · pgvector
+  - MinIO
+  - LangChain
+  - Kiwi · BM25
+links:
+  - kind: repo
+    href: https://github.com/Ryu-Jemu/mini-project-glove
+    label: Ryu-Jemu/mini-project-glove
+ownership:
+  owned:
+    - 규칙 문서 수집, 구조 단위 분할과 하이브리드 검색
+    - 답변 스키마, Python 렌더링과 인용 검증
+    - 라우팅·검색·거부 응답의 평가 사례와 검증 코드
+  notOwned:
+    - 공식 규칙집과 외부 야구 데이터
+---
+
+규칙집 PDF를 MinIO에 보관하고 문서 구조에 따라 분할한 뒤 PostgreSQL의
+pgvector로 색인합니다. 규칙번호 일치 검색, dense 검색, Kiwi 기반 BM25의
+순위를 RRF로 결합합니다. 검색한 조항의 상위 절을 함께 가져와 모델에 전달할
+문맥을 보완합니다.
+
+검색 근거가 약한 경우와 임베딩 요청 자체가 실패한 경우를 구별합니다. 문맥은
+토큰 예산과 상대 관련성 기준으로 선별하되, 최상위 문서는 관련성 기준의 예외로
+남깁니다. 무관한 자료가 섞이는 문제와 순위 결합 과정에서 필요한 조항까지
+제외되는 문제를 각각 처리합니다.
+
+FastAPI와 Streamlit 사이의 응답은 SSE로 전달합니다. 구조화된 답변 스키마와
+Python 렌더러로 답변 내용과 표시 형식을 분리하고, 인용한 규칙을 검색 자료와
+대조합니다. 평가 코드에는 준비한 사례를 기준으로 라우팅, 기대 조항, 거부 문구,
+스키마 처리 실패를 점검하는 항목을 구성했습니다.

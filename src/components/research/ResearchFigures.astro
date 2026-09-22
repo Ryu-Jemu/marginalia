@@ -3,8 +3,6 @@ import Figure from '../viz/Figure.astro';
 import PricingChart from '../viz/PricingChart.astro';
 import PricingAlgorithms from '../viz/PricingAlgorithms.astro';
 import BeamArchitecture from '../viz/BeamArchitecture.astro';
-import BeamGain from '../viz/BeamGain.astro';
-import BeamOverhead from '../viz/BeamOverhead.astro';
 import BeamTraining from '../viz/BeamTraining.astro';
 import { platesFor, type Plate } from '../../lib/figures';
 import { t, type Lang } from '../../i18n/ui';
@@ -32,8 +30,6 @@ const { id, part = 'findings', startAt = 0, lang = 'en' } = Astro.props;
 const CAPTION: Record<Plate, string> = {
   pricing: 'fig.pricing',
   pricingAlgorithms: 'fig.pricing.alg',
-  beamGain: 'fig.beam.gain',
-  beamOverhead: 'fig.beam.overhead',
   beamArchitecture: 'fig.beam.arch',
   beamTraining: 'fig.beam.train',
 };
@@ -46,8 +42,6 @@ const plates = platesFor(id, part);
     <Figure n={String(startAt + i + 1)} title={t(lang, CAPTION[plate])} lang={lang}>
       {plate === 'pricing' && <PricingChart lang={lang} />}
       {plate === 'pricingAlgorithms' && <PricingAlgorithms lang={lang} />}
-      {plate === 'beamGain' && <BeamGain lang={lang} />}
-      {plate === 'beamOverhead' && <BeamOverhead lang={lang} />}
       {plate === 'beamArchitecture' && <BeamArchitecture lang={lang} />}
       {plate === 'beamTraining' && <BeamTraining lang={lang} />}
     </Figure>

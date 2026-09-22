@@ -10,10 +10,11 @@
  * Each rule carries its reason, so a failure teaches rather than just blocks.
  */
 
+import { fileURLToPath } from 'node:url';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, relative } from 'node:path';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIRS = ['src/content', 'src/pages', 'src/components', 'src/layouts', 'src/i18n'];
 const EXTS = new Set(['.md', '.mdx', '.yaml', '.yml', '.astro', '.ts', '.js', '.json']);
 
@@ -152,6 +153,7 @@ function walk(dir) {
     return out;
   }
   for (const name of entries) {
+    if (['node_modules', 'dist', '.astro', '.git'].includes(name)) continue;
     const full = join(dir, name);
     if (statSync(full).isDirectory()) out.push(...walk(full));
     else if (EXTS.has(extname(name))) out.push(full);

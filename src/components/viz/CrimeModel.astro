@@ -3,8 +3,7 @@
  * The regression, and the variable the project expected to matter.
  *
  * Five inputs, one model, R² 0.843. The two significant ones are drawn in the
- * accent; CCTV — the premise the project started from — is struck through. The
- * point of the figure is that the expected answer is the one that failed.
+ * accent. CCTV remains in the fitted model with its nonsignificant p-value.
  */
 import { t, type Lang } from '../../i18n/ui';
 
@@ -18,7 +17,7 @@ const VARS = [
   { name: t(lang, 'viz.crime.model.var.population'), p: 'p = 0.0006', sig: true },
   { name: t(lang, 'viz.crime.model.var.income'), p: '', sig: false },
   { name: t(lang, 'viz.crime.model.var.lights'), p: t(lang, 'viz.crime.model.estimated'), sig: false },
-  { name: t(lang, 'viz.crime.model.var.cctv'), p: t(lang, 'viz.crime.model.cctv.p'), sig: false, struck: true },
+  { name: t(lang, 'viz.crime.model.var.cctv'), p: t(lang, 'viz.crime.model.cctv.p'), sig: false },
 ];
 
 const W = 700;
@@ -52,17 +51,6 @@ const MX = 380;
           >
             {v.name}
           </text>
-          {v.struck && (
-            <line
-              class="viz-limit"
-              data-strike
-              x1={LX - 2}
-              y1={cy}
-              x2={LX + 78}
-              y2={cy}
-              stroke-width="1"
-            />
-          )}
           {v.p && (
             <text
               class="viz-label"

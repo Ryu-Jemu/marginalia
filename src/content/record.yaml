@@ -11,11 +11,12 @@
 - id: map-team
   kind: career
   title: MAP — travel itinerary service
-  issuer: 5-person team · backend and AI
+  issuer: 5-person team · architecture, data and service integration
   date: "2026.03 – present"
   bullets:
-    - Six services owned — the external-data gateway, the recommendation agent, the Java BFF, vision, infrastructure and the admin console.
-    - Five external feeds polled and cached behind one integration point.
+    - "**Scope** — Architecture, AI, backend, service integration and GCP/NCP; teammates handled design and initial frontend setup."
+    - Implemented collection and spatial queries, improved result isolation and encryption, and connected Flutter to server contracts.
+    - "**App release** — Signed builds, distribution and submission. Awaiting store review as of 2026-09-20."
 
 - id: dartoo-team
   kind: career
@@ -23,8 +24,8 @@
   issuer: 6-person team · backend and data engineering
   date: "2025.07 – 2026.06"
   bullets:
-    - Four of the six backend services owned — collection, storage and search, summarisation, and the delivery path.
-    - Regulatory filings polled, decoded, summarised and pushed to whoever was watching that company.
+    - Implemented ingestion, disclosure and notification; improved integration and validation in the shared summary service.
+    - Connected source decoding, stored filings and subscriber alerts, including the Java User service's internal notification APIs.
 
 - id: ici-lab
   kind: lab
@@ -33,15 +34,15 @@
   date: "2025.03 – 2026.06"
   bullets:
     - Led the reinforcement-learning study on 5G slice pricing and wrote the paper as first author.
-    - Section III.E of the IEEE TAI survey, and the beam-prediction implementation behind it.
+    - Wrote Section III.E on beam prediction for the IEEE TAI survey and implemented the related model and training code.
 
 - id: hanyang
   kind: education
-  title: BSc Computer Science, with a second major in Convergence Security
+  title: Computer Science undergraduate, second major in Convergence Security
   issuer: Hanyang University ERICA
   date: "2023.03 – 2027.02"
   bullets:
-    - GPA 4.18 / 4.5 across 143 credits. Graduating February 2027.
+    - "**GPA 4.18 / 4.5** across 143 completed credits. Expected graduation in February 2027."
 
 - id: air-force
   kind: service
@@ -106,6 +107,12 @@
 
 # ── certifications ────────────────────────────────────────────────────────
 
+- id: engineer-information-processing
+  kind: certification
+  title: Engineer Information Processing
+  issuer: Human Resources Development Service of Korea
+  date: "2026.09.11"
+
 - id: aws-clf
   kind: certification
   title: AWS Certified Cloud Practitioner
@@ -143,7 +150,7 @@
 
 - id: blog
   kind: activity
-  title: Technical blog — 30 posts
+  title: Technical blog
   issuer: velog
   date: "2024 – present"
   detail: AWS labs, Kubernetes, Spring and backend architecture.

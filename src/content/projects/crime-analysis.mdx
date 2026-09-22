@@ -1,6 +1,6 @@
 ---
-title: What actually predicts crime across Seoul
-tagline: Five variables, twenty-five districts, and a result that contradicts the policy everyone assumes works.
+title: District-level crime associations in Seoul
+tagline: Public-data joins, regression diagnostics and residual maps across twenty-five districts.
 period: "2025.05 – 2025.06"
 team: 4 people
 role: The analysis
@@ -30,9 +30,9 @@ ownership:
     - the report and presentation, which were shared work
 summary:
   - Five variables across Seoul's twenty-five districts, fitted by OLS and cross-checked with cross-validated Lasso and Ridge.
-  - A correlation matrix and a variance inflation check come before the fit is read; the highest inflation factor is 2.61, well inside the usual threshold of 5.
-  - Population and the density of entertainment venues carry the model. CCTV count is not significant.
-  - Residuals are mapped by district rather than predictions, which names the districts the model gets wrong.
+  - A correlation matrix and variance inflation factors check collinearity; the highest VIF is 2.61 in this model.
+  - Population and entertainment-venue counts are significant in this fit; CCTV count is not. These are associations in district-level data.
+  - A district-level residual map identifies where the fitted values differ most from observed crime counts.
 data:
   - value: "0.843"
     label: R², adjusted 0.801
@@ -42,7 +42,7 @@ data:
     detail: entertainment venues lowest at 1.10
   - value: "2 of 5"
     label: variables significant
-    detail: population p=0.0006 · entertainment venues p=0.0004
+    detail: population p=0.001 · entertainment venues p<0.001, n=25
   - value: "3,249"
     label: residual spread, crimes
     detail: Seongdong −1,862 to Mapo +1,387
@@ -50,25 +50,21 @@ data:
 
 import N from '../../components/note/N.astro';
 
-The premise going in was that surveillance density explains crime. The data does
-not support it.
+Public datasets were cleaned and joined on Seoul's district key before fitting
+an OLS model. Across twenty-five districts, the five-variable model explains
+about 84% of the observed variation in crime counts.<N id="crime-model" />
+Population and entertainment-venue counts are significant in this fit; CCTV
+count is not.<N id="crime-significant" /> This cross-sectional association does
+not establish the effect of installing CCTV or the causes of crime.
 
-Five variables across Seoul's twenty-five districts explain about 84% of the
-variation between them.<N id="crime-model" /> The two that carry it are
-population and the density of entertainment venues. CCTV count is not
-significant.<N id="crime-significant" /> Crime concentrates where people and
-nightlife concentrate.
+Correlation and variance inflation were checked before interpreting the
+coefficients. Low VIF values indicate limited collinearity among the included
+variables; they do not rule out omitted variables or establish unbiased causal
+estimates. Streetlight counts use an estimate rather than a directly observed
+district dataset.<N id="crime-streetlight" /> Cross-validated Lasso and Ridge
+provided additional comparisons of coefficients and model fit.
 
-Population, income and streetlight counts move together across districts, so
-variance inflation was checked for every variable, and one of the five rests on
-weaker data than the others.<N id="crime-streetlight" /> The fit was
-cross-checked against cross-validated Lasso and Ridge; the same variables
-survived with the same explanatory power.
-
-Residuals are mapped by district rather than predictions, which names the
-districts the model gets wrong. They cluster in a way that points at a
-floating-population variable that was not available at district level.
-
-The map over-predicts Seongdong by 1,862 crimes and under-predicts Mapo by
-1,387,<N id="crime-residuals" /> and the districts it misses are the ones with a
-daytime population the model never sees.
+The residual map compares observed and fitted counts by district. The model
+over-predicts Seongdong by 1,862 crimes and under-predicts Mapo by
+1,387.<N id="crime-residuals" /> Daytime and floating population are candidates
+for a follow-up analysis; their contribution to these residuals was not measured.

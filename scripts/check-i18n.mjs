@@ -13,10 +13,11 @@
  * like the other two gates.
  */
 
+import { fileURLToPath } from 'node:url';
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const problems = [];
 
 /* ── 1. every UI string carries both languages ─────────────────────────── */
@@ -112,6 +113,7 @@ function walk(dir, base = dir) {
     return out;
   }
   for (const name of entries) {
+    if (['node_modules', 'dist', '.astro', '.git'].includes(name)) continue;
     const full = join(dir, name);
     if (statSync(full).isDirectory()) out.push(...walk(full, base));
     else if (name.endsWith('.mdx')) out.push(relative(base, full));

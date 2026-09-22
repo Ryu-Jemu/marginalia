@@ -3,27 +3,30 @@ import type { CollectionEntry } from 'astro:content';
 import StatusLabel from './StatusLabel.astro';
 import Actions from './Actions.astro';
 import Bullets from '../doc/Bullets.astro';
+import InlineEmphasis from '../doc/InlineEmphasis.astro';
 import DataPanel from '../doc/DataPanel.astro';
 import ProductDeck from '../viz/ProductDeck.astro';
 import Figure from '../viz/Figure.astro';
 import SystemFlow from '../viz/SystemFlow.astro';
+import PublisherComparison from '../viz/PublisherComparison.astro';
+import ResultIsolation from '../viz/ResultIsolation.astro';
 import { t, localise, type Lang } from '../../i18n/ui';
 import { slugOf } from '../../lib/content';
 
 /**
  * A product on the overview page.
  *
- * The whole pipeline first, then what it is in four bullets, then the figures
- * and the phone. Nothing here explains how a defect was fixed — that is a
- * click away, which is what keeps this page scannable.
+ * Pipeline context, product and role, then one concrete defect and its result.
  */
 interface Props {
   entry: CollectionEntry<'projects'>;
   n: string;
+  caseN: string;
   lang: Lang;
 }
-const { entry, n, lang } = Astro.props;
+const { entry, n, caseN, lang } = Astro.props;
 const p = entry.data;
+const slug = slugOf(entry);
 const href = localise(lang, `/work/${slugOf(entry)}/`);
 
 /* The one filled button points at the write-up, not at an address whose
@@ -53,7 +56,7 @@ const actions = [
   {
     p.pipeline && (
       <div class="column column--wide project__flow">
-        <Figure n={n} title={t(lang, 'fig.pipeline', { title: p.title })} lang={lang}>
+        <Figure n={n} title={[t(lang, 'fig.pipeline', { title: p.title }), p.pipeline.note].filter(Boolean).join(' ')} lang={lang}>
           <SystemFlow
             from={p.pipeline.from}
             to={p.pipeline.to}
@@ -79,6 +82,15 @@ const actions = [
       </div>
     </div>
   </div>
+  {(slug === 'dartoo' || slug === 'map') && (
+    <div class="column column--wide project__case">
+      <h4>{t(lang, slug === 'dartoo' ? 'case.dartoo' : 'case.map')}</h4>
+      <p><InlineEmphasis text={t(lang, slug === 'dartoo' ? 'case.dartoo.lede' : 'case.map.lede')} /></p>
+      <Figure n={caseN} title={t(lang, slug === 'dartoo' ? 'fig.reconciliation' : 'fig.isolation')} lang={lang}>
+        {slug === 'dartoo' ? <PublisherComparison lang={lang} /> : <ResultIsolation lang={lang} />}
+      </Figure>
+    </div>
+  )}
 </div>
 
 <style>
@@ -141,4 +153,8 @@ const actions = [
   .project__panel {
     margin-top: 1.1rem;
   }
+  .project__case { margin-top: 2rem; }
+  .project__case h4 { font-size: 1.125rem; font-weight: 600; }
+  .project__case > p { max-width: 80ch; margin-top: .5rem; font-size: .9375rem; color: var(--ink-muted); line-height: 1.7; }
+  .project__case > p :global(strong) { color: var(--ink); font-weight: 600; }
 </style>

@@ -19,23 +19,22 @@
   grant: NRF RS-2024-00336983
   award: Silver award, paper competition
   summary: >-
-    Prices two network slices under a three-part tariff against their own effect
-    on churn, and separates the contribution of foresight from the contribution
-    of the learning algorithm.
+    Optimised three-part tariffs for two network slices while modelling price-driven customer churn.
+    Algorithm comparisons and a discount-factor control test the effect of considering long-term rewards.
   role:
     - "Formulated the problem: two slices priced under a subscription fee, an included allowance and an overage rate, with churn responding to price."
     - Built the simulation environment, its demand and churn dynamics, and its calibration.
     - Ran every experiment — the churn-sensitivity sweep, the algorithm comparison at m=1, and the myopic control.
     - Wrote the paper and prepared the submission.
   method:
-    - A churn-sensitivity multiplier m is swept rather than fixed, so the result is a curve instead of a single number.
-    - PPO, SAC and TD3 are compared on the same environment and the same three seeds, at m=1.
-    - The control is the same algorithm with the discount factor set to zero — able to learn, unable to look ahead.
-    - Revenue is decomposed by slice, so an aggregate figure cannot hide a one-slice result.
+    - Compared revenue with a max-price baseline at churn sensitivities m=1, 3, 5 and 10.
+    - Compared PPO, SAC and TD3 at m=1 using the same environment and three seeds.
+    - Used Myopic-PPO with a discount factor of zero to isolate the effect of considering future rewards.
+    - Calculated each slice's contribution to the total revenue difference.
   findings:
-    - Against a max-price baseline the policy gains 2.1% at m=1, 105.8% at m=3, 195.8% at m=5 and 363.2% at m=10. Only m≥3 is significant at p<0.001.
+    - Against a max-price baseline the policy gains 2.1% at m=1, 105.8% at m=3, 195.8% at m=5 and 363.2% at m=10. Each of m=3, 5 and 10 is significant at p<0.001.
     - 97% of the m=3 revenue gap comes from the eMBB slice alone, and eMBB retention holds at 88.8% against the baseline's 3.3%.
-    - The myopic control is indistinguishable from the baseline at every m, which places the advantage in the foresight rather than in the algorithm.
+    - Myopic-PPO did not differ significantly from the baseline at any tested m. This supports the interpretation that considering long-term rewards contributes to the revenue advantage.
     - At m=1 the net rewards are PPO 7,334, SAC 7,370 and TD3 6,862, against Max-Price 7,183 — the deterministic method is 6.4% below PPO, and SAC is indistinguishable from it at p=0.938.
   implementation:
     project: network-pricing
@@ -44,9 +43,9 @@
       one repository.
     points:
       - Two slices priced under a three-part tariff — subscription fee, included allowance, overage rate — inside a Gymnasium environment whose churn responds to the price the policy sets.
-      - PPO, SAC and TD3 run on the same environment and the same three seeds, so the comparison is between algorithms rather than between setups.
-      - The myopic control is the same algorithm with its discount factor set to zero, which isolates foresight from learning.
-      - Revenue is decomposed by slice in the code that produces the figures, so an aggregate number cannot hide a one-slice result.
+      - Configured PPO, SAC and TD3 to use the same environment and three seeds.
+      - Implemented Myopic-PPO with a zero discount factor as a control that learns from immediate rewards only.
+      - Aggregated revenue by slice and visualised each slice's contribution to the total difference.
   materials:
     - kind: pdf
       src: /papers/ask-2026.pdf
@@ -56,9 +55,9 @@
       src: https://github.com/Ryu-Jemu/network-pricing
       label: Environment and experiment code
   highlights:
-    - The advantage grows with churn sensitivity and disappears where customers are insensitive to price.
-    - A myopic control trained without foresight is indistinguishable from the fixed baseline.
-    - The revenue gap is decomposed by slice, and the decomposition is in the paper.
+    - Revenue uplift over the max-price baseline grew with churn sensitivity; the difference at m=1 was not significant.
+    - Myopic-PPO, trained on immediate rewards only, did not differ significantly from the max-price baseline.
+    - The slice-level decomposition attributed 97% of the m=3 revenue gap to eMBB.
   notes:
     - rl-uplift
     - rl-embb-attribution
@@ -72,41 +71,36 @@
   manuscriptId: TAI-2026-Aug-R-01847
   contribution: Section III.E — Beam Prediction
   summary: >-
-    A survey of language-model approaches to wireless resource problems, covering
-    power control, bandwidth allocation, edge computing and beam prediction.
+    A survey of language-model approaches to wireless resource problems, with
+    my contribution focused on the beam-prediction section and its model implementation.
   role:
-    - Wrote Section III.E, Beam Prediction, in full — the section's argument, its taxonomy of approaches and its discussion.
-    - Argued the reformulation the section rests on — a beam sequence is a time series, so beam selection is a forecasting problem a language model can be pointed at, where recurrent baselines stop generalising for non-stationary devices.
-    - Implemented the case study behind Figure 7 — both the BP-LLM model and the cascaded LSTM baseline — and ran the DeepMIMO simulations that produced the normalised beamforming gains.
-    - "Produced Table V, the inference-overhead measurements: latency, peak GPU memory, average power and energy per inference for both models."
+    - Wrote Section III.E, Beam Prediction — the section's argument, taxonomy of approaches and discussion.
+    - Described beam sequences as time-series inputs and reviewed language-model approaches to forecasting them.
+    - Implemented the DeepMIMO preprocessing pipeline, BP-LLM model, training loop and cascaded LSTM baseline.
     - Reviewed and corrected the manuscript, including three references whose identifiers pointed at unrelated papers.
   method:
-    - Beam indices and departure angles are patched and embedded, then reprogrammed into prototype tokens drawn from the model's existing vocabulary.
-    - Conditioning is three separate prefixes — domain knowledge, the statistical trend such as signal drift, and the lag structure — concatenated ahead of the data tokens.
-    - The backbone stays frozen. Only the embedding, the reprogramming layer and a linear projection carry weights, and training minimises mean squared error over the H-step horizon.
-    - The comparison is run on DeepMIMO against a cascaded LSTM and an ODE baseline, over prediction horizons of one to ten steps.
-  findings:
-    - BP-LLM holds the highest normalised beamforming gain at every horizon — 0.950 at one step against the cascaded LSTM's 0.878, and 0.820 against 0.783 at ten.
-    - All three models degrade as the horizon lengthens, and the margin over the LSTM baseline narrows from 0.072 to 0.037 across it.
-    - The language model costs 4.73 ms per inference against 1.74, and 949.67 MB of peak memory against 24.73 — 38 times the footprint.
-    - It draws less power, 22.55 W against 37.41, and both models finish inside the 16 ms prediction interval the task allows.
+    - Beam indices and departure angles are patched and embedded, then reprogrammed into prototype tokens drawn from the model's vocabulary.
+    - A prompt prefix carries domain knowledge, the task description and statistics of the input sequence.
+    - GPT-2 stays frozen while the embedding, reprogramming layers and output projection are trained with mean squared error.
+    - The local implementation contains a training loop and LSTM baseline; it does not implement a held-out evaluation split.
   highlights:
-    - Wrote Section III.E, Beam Prediction — why a beam sequence is a forecasting problem, and what a language model brings to it that an LSTM does not.
-    - Covered patch embedding of beam indices and departure angles, reprogramming them into tokens the model already holds, and prompt-as-prefix conditioning on domain knowledge, task and series statistics.
-    - Reviewed and corrected the manuscript, including three references whose identifiers pointed at unrelated papers.
+    - Section III.E authorship and a taxonomy of beam-prediction approaches.
+    - DeepMIMO preprocessing, patch embedding, token reprogramming and prompt-prefix conditioning.
+    - Manuscript and reference-identifier review.
   implementation:
     project: bp-llm
     summary: >-
-      A frozen GPT-2 reprogrammed for a millimetre-wave beam sequence, built
-      from the DeepMIMO ray-tracing data up.
+      A frozen GPT-2 reprogrammed for millimetre-wave beam sequences, with
+      preprocessing and training implemented from the DeepMIMO data onward.
     points:
-      - "378 ray-traced sets from the DeepMIMO o1_28 scenario at 28 GHz become channel vectors through a Saleh-Valenzuela model, are beamed against a 32-point DFT codebook, and the arg-max beam per position becomes the label — 84,019 sliding windows of forty past steps against ten future ones."
-      - Reversible normalisation, patch embedding, cross-variable attention over beam index and departure angle, and reprogramming onto 256 text prototypes, with a prompt prefix carrying domain knowledge, the instruction and the series statistics.
-      - 339,338 parameters are trainable over a frozen GPT-2; training loss fell from 2.0826 to 0.0084 in the first epoch and reached 0.0009 by the eighth, over 34 minutes on Apple silicon.
-      - The cascaded LSTM baseline runs on the same harness, so the two models are compared through one pipeline rather than two.
-      - "No held-out split was implemented: the normalisation statistics and the loss come from the same indices, so this is a training curve and not a measurement of prediction quality. The evaluation behind Figure 7 was a separate run."
+      - "The preprocessing run converted 378 ray-traced sets from DeepMIMO o1_28 at 28 GHz into 84,019 sliding windows, each with forty past steps and ten future steps. A Saleh-Valenzuela channel model and 32-point DFT codebook provide the beam labels."
+      - Reversible normalisation, patch embedding and cross-variable attention connect beam index and departure angle to 256 text prototypes around a frozen GPT-2.
+      - "The logged training run used 20,000 of the generated samples and 339,338 trainable parameters. Epoch-mean training loss fell from 2.0826 to 0.0009 over ten epochs, taking 34 minutes on Apple silicon."
+      - The cascaded LSTM baseline shares the preprocessing and training harness.
+      - Normalisation statistics and training loss use the same indices. No held-out split or evaluation metrics are implemented, so the training loss does not measure prediction quality.
   notes:
     - ieee-position
     - ieee-beam-section
     - beam-reprogramming
     - bp-llm-training
+    - bp-llm-data

@@ -1,4 +1,5 @@
-import { animate, createDrawable, createTimeline, stagger, utils } from 'animejs';
+import { animate, createDrawable, createScope, createTimeline, stagger, utils } from 'animejs';
+import type { DrawableSVGGeometry } from 'animejs';
 import { motionOff, whenInView } from './observe';
 
 /**
@@ -6,16 +7,25 @@ import { motionOff, whenInView } from './observe';
  *
  * Every animation here is explanatory: packets travel because the diagram is
  * about packets not arriving; a bar grows from its baseline because the value
- * is measured against that baseline; a strike-through is drawn because the
- * variable was ruled out. None of it is decoration, so with motion off each
+ * is measured against that baseline. With motion off each
  * figure is simply shown in its finished state.
  */
 
 type Teardown = () => void;
 
 /** Drawables must be made once per element — see the note in note-lines.ts. */
+const drawableCache = new WeakMap<SVGGeometryElement, DrawableSVGGeometry>();
 const drawablesFor = (root: Element, selector: string) =>
-  [...root.querySelectorAll<SVGGeometryElement>(selector)].map((el) => createDrawable(el, 0, 0)[0]);
+  [...root.querySelectorAll<SVGGeometryElement>(selector)].map((el) => {
+    let drawable = drawableCache.get(el);
+    if (!drawable) {
+      drawable = createDrawable(el, 0, 0)[0];
+      drawableCache.set(el, drawable);
+    }
+    // A replay must reset the cached proxy, including after a static frame.
+    drawable.setAttribute('draw', '0 0');
+    return drawable;
+  });
 
 const finishDraw = (ds: ReturnType<typeof drawablesFor>) => {
   for (const d of ds) d?.setAttribute('draw', '0 1');
@@ -206,22 +216,49 @@ function race(svg: SVGSVGElement): void {
   animate(blocked, { draw: '0 1', duration: 420, delay: stagger(120, { start: 900 }), ease: 'out(2)' });
 }
 
-/* ── the regression, with the expected variable ruled out ────────────────── */
+/* ── MAP: shared worker snapshot versus the owner's editable draft ─────── */
+function resultIsolation(svg: SVGSVGElement): void {
+  const packets = [...svg.querySelectorAll<SVGCircleElement>('[data-iso-packet]')];
+  const lits = [...svg.querySelectorAll<SVGRectElement>('[data-iso-lit]')];
+  utils.set(packets, { opacity: 0, translateX: 0, translateY: 0 });
+  utils.set(lits, { opacity: 0 });
+  // All labels, boxes and arrows are authored in their complete static state.
+  if (motionOff()) return;
+
+  const tl = createTimeline();
+  const emphasize = (name: string, at: number) => {
+    const el = svg.querySelector(`[data-iso-lit="${name}"]`);
+    if (el) tl.add(el, { opacity: [0, 0.13, 0], duration: 850, ease: 'inOut(2)' }, at);
+  };
+  const packet = (name: string, axis: 'translateX' | 'translateY', distance: number, at: number) => {
+    const el = svg.querySelector(`[data-iso-packet="${name}"]`);
+    if (!el) return;
+    tl.add(el, { [axis]: [0, distance], opacity: [0, 1, 1, 0], duration: 650, ease: 'inOut(2)' }, at);
+  };
+  emphasize('before-edit', 0);
+  emphasize('before-read', 550);
+  packet('before', 'translateX', 68, 900);
+  emphasize('before-result', 1350);
+  emphasize('after-snapshot', 2050);
+  packet('after-bind', 'translateX', 56, 2400);
+  emphasize('after-binding', 2850);
+  packet('after-result', 'translateY', 53, 3200);
+  emphasize('after-result', 3650);
+}
+
+/* ── the regression, with all fitted variables retained ──────────────────── */
 function crime(svg: SVGSVGElement): void {
   const groups = [...svg.querySelectorAll('[data-var]')];
   const edges = drawablesFor(svg, '[data-edge]');
-  const strike = drawablesFor(svg, '[data-strike]');
 
   if (motionOff()) {
     utils.set(groups, { opacity: 1 });
     finishDraw(edges);
-    finishDraw(strike);
     return;
   }
 
   animate(groups, { opacity: [0, 1], duration: 340, delay: stagger(90), ease: 'out(3)' });
   animate(edges, { draw: '0 1', duration: 620, delay: stagger(90), ease: 'inOut(2)' });
-  animate(strike, { draw: '0 1', duration: 460, delay: 900, ease: 'out(2)' });
 }
 
 /* ── three stages, each handing its result to the next ───────────────────── */
@@ -312,6 +349,7 @@ const RUNNERS: Record<string, (svg: SVGSVGElement) => void> = {
   flow,
   fit,
   'silent-loss': silentLoss,
+  'result-isolation': resultIsolation,
   pricing,
   race,
   crime,
@@ -441,11 +479,15 @@ function revealVerification(block: Element): void {
 }
 
 export function initViz(): Teardown {
+  // Observers fire after motion.ts's initial scope callback has returned.
+  // Capture their animations explicitly so loops and count updates are stopped
+  // before a control change or page swap restores the authored state.
+  const scope = createScope({ root: document.body });
   const figures = [...document.querySelectorAll<SVGSVGElement>('svg[data-viz]')];
   const stops = figures.map((svg) => {
     const run = RUNNERS[svg.dataset.viz ?? ''];
     if (!run) return () => {};
-    return whenInView(svg, () => run(svg), { rootMargin: '0px 0px -8% 0px' });
+    return whenInView(svg, () => scope.execute(() => run(svg)), { rootMargin: '0px 0px -8% 0px' });
   });
 
   // Everything below hides nothing until its own reveal runs, so a missed
@@ -459,27 +501,38 @@ export function initViz(): Teardown {
   ];
   for (const [selector, reveal] of groups) {
     for (const el of document.querySelectorAll(selector)) {
-      stops.push(whenInView(el, () => reveal(el), { rootMargin: '0px 0px -6% 0px' }));
+      stops.push(whenInView(el, () => scope.execute(() => reveal(el)), { rootMargin: '0px 0px -6% 0px' }));
     }
   }
 
   // Switching motion off mid-figure must leave a readable diagram, not a
   // half-grown bar.
+  const setPresent = (selector: string, properties: Parameters<typeof utils.set>[1]) => {
+    const targets = [...document.querySelectorAll(selector)];
+    if (targets.length) utils.set(targets, properties);
+  };
   const onControls = (e: Event) => {
-    if ((e as CustomEvent).detail?.control !== 'motion' || !motionOff()) return;
-    for (const svg of figures) RUNNERS[svg.dataset.viz ?? '']?.(svg);
-    utils.set('[data-fix]', { opacity: 1, translateY: 0 });
-    utils.set('.fix__rail', { scaleY: 1 });
-    utils.set('[data-bullet]', { opacity: 1, translateX: 0 });
-    utils.set('[data-safety-item]', { opacity: 1, translateY: 0 });
-    utils.set('[data-verify-bar]', { scaleX: 1 });
+    if ((e as CustomEvent).detail?.control !== 'motion') return;
+    // Pending reveals must not start another timeline after the toggle.
+    for (const stop of stops) stop();
+    scope.revert();
     restoreFigures();
+    scope.execute(() => {
+      // Runners choose a complete static frame when off and replay when on.
+      for (const svg of figures) RUNNERS[svg.dataset.viz ?? '']?.(svg);
+      setPresent('[data-fix]', { opacity: 1, translateY: 0 });
+      setPresent('.fix__rail', { scaleY: 1 });
+      setPresent('[data-bullet]', { opacity: 1, translateX: 0 });
+      setPresent('[data-safety-item]', { opacity: 1, translateY: 0 });
+      setPresent('[data-verify-bar]', { scaleX: 1 });
+    });
   };
   window.addEventListener('marginalia:controls', onControls);
 
   return () => {
     for (const stop of stops) stop();
     window.removeEventListener('marginalia:controls', onControls);
+    scope.revert();
     restoreFigures();
   };
 }

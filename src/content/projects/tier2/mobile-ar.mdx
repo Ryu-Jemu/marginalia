@@ -3,7 +3,7 @@ title: Drawing in the air
 tagline: Fingertip tracking to a 3D stroke in AR, with the device build still outstanding.
 period: "2026.06"
 team: Solo
-role: All of it
+role: Input, projection and drawing implementation
 domain: other
 status: on-hold
 tier: 2
@@ -20,10 +20,6 @@ ownership:
   notOwned: []
 ---
 
-A hand landmark model gives the index fingertip, projection puts it in world
-space, and a pinch between finger and thumb toggles drawing. The input source
-sits behind an interface so the simulator, the webcam and a real device are all
-the same thing to the code above it.
+A hand landmark model tracks the index fingertip, which is projected into 3D world space. A thumb–index pinch toggles drawing. A shared input interface lets simulated, webcam and device input connect to the same drawing code.
 
-It has never run on a phone. I do not own an ARCore device, so it is verified
-against synthetic input and a laptop camera only.
+Validation used synthetic input and a laptop camera. Execution on an ARCore device remains unverified.

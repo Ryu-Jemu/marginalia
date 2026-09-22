@@ -24,7 +24,7 @@ const { items, compact = false } = Astro.props;
   {
     items.map((it) => (
       <div class="panel__cell">
-        <dt class="panel__value" data-countup>
+        <dt class="panel__value">
           {it.value}
         </dt>
         <dd class="panel__label">{it.label}</dd>

@@ -19,6 +19,7 @@ interface Node {
   name: string;
   detail?: string;
   mine?: boolean;
+  service?: number;
 }
 interface Props {
   lang?: Lang;
@@ -68,13 +69,12 @@ const clBoxes = clients.map((n, i) => ({ ...n, y: TOP + i * (CL_H + CL_GAP) }));
 
 /** The feeds land on the first service — the gateway. */
 const gate = svBoxes[0];
-const gateX = gate.x;
-const gateY = gate.y + SV_H / 2;
 
 const STORE_Y = Math.max(svBottom, exBottom) + 34;
 const H = STORE_Y + 54;
 
 const mineCount = services.filter((s) => s.mine).length;
+const storeStride = (W - SV_X) / Math.max(stores.length, 1);
 ---
 
 <svg class="viz arc" data-viz="arc" viewBox={`0 0 ${W} ${H}`} role="img"
@@ -92,13 +92,16 @@ const mineCount = services.filter((s) => s.mine).length;
   <!-- feeds converging on the integration point -->
   <g data-arc-feeds>
     {
-      exBoxes.map((b) => (
+      exBoxes.map((b) => {
+        const target = svBoxes[b.service ?? 0] ?? gate;
+        const targetY = target.y + SV_H / 2;
+        return (
         <path
           class="arc__feed"
           data-arc-feed
-          d={`M${EX_X + EX_W} ${b.y + EX_H / 2} C${EX_X + EX_W + 54} ${b.y + EX_H / 2} ${gateX - 54} ${gateY} ${gateX} ${gateY}`}
+          d={`M${EX_X + EX_W} ${b.y + EX_H / 2} C${EX_X + EX_W + 28} ${b.y + EX_H / 2} ${target.x - 28} ${targetY} ${target.x} ${targetY}`}
         />
-      ))
+      );})
     }
   </g>
 
@@ -138,11 +141,14 @@ const mineCount = services.filter((s) => s.mine).length;
 
   <!-- services out to the clients -->
   {
-    clBoxes.map((b) => (
+    clBoxes.map((b) => {
+      const source = svBoxes[b.service ?? 0] ?? gate;
+      const sourceY = source.y + SV_H / 2;
+      return (
       <g data-arc-node>
         <path
           class="arc__feed"
-          d={`M${SV_X + SV_W * 2 + SV_GAP_X} ${gateY} C${CL_X - 48} ${gateY} ${CL_X - 48} ${b.y + CL_H / 2} ${CL_X} ${b.y + CL_H / 2}`}
+          d={`M${source.x + SV_W} ${sourceY} C${CL_X - 32} ${sourceY} ${CL_X - 32} ${b.y + CL_H / 2} ${CL_X} ${b.y + CL_H / 2}`}
         />
         <rect
           class:list={['arc__box', b.mine ? 'arc__box--mine' : 'arc__box--theirs']}
@@ -156,7 +162,7 @@ const mineCount = services.filter((s) => s.mine).length;
           {b.name}
         </text>
       </g>
-    ))
+    );})
   }
 
   <!-- stores, under the services they belong to -->
@@ -167,13 +173,13 @@ const mineCount = services.filter((s) => s.mine).length;
         <>
           <rect
             class="arc__store"
-            x={SV_X + i * 116}
+            x={SV_X + i * storeStride}
             y={STORE_Y}
-            width={106}
+            width={storeStride - 10}
             height={24}
             rx="12"
           />
-          <text class="arc__store-t" x={SV_X + i * 116 + 53} y={STORE_Y + 16} text-anchor="middle">
+          <text class="arc__store-t" x={SV_X + i * storeStride + (storeStride - 10) / 2} y={STORE_Y + 16} text-anchor="middle">
             {s}
           </text>
         </>

@@ -1,4 +1,5 @@
 ---
+import InlineEmphasis from '../doc/InlineEmphasis.astro';
 /**
  * What holds the pipeline up.
  *
@@ -23,7 +24,7 @@ const { items } = Astro.props;
       <li class="safety__item" data-safety-item>
         <p class="meta safety__n">{String(i + 1).padStart(2, '0')}</p>
         <h4 class="safety__title">{s.title}</h4>
-        <p class="safety__detail">{s.detail}</p>
+        <p class="safety__detail"><InlineEmphasis text={s.detail} /></p>
       </li>
     ))
   }
@@ -62,4 +63,5 @@ const { items } = Astro.props;
     color: var(--ink-muted);
     text-wrap: pretty;
   }
+  .safety__detail :global(strong) { color: var(--ink); font-weight: 600; }
 </style>

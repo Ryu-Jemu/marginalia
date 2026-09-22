@@ -7,10 +7,11 @@
  * This reads the built HTML rather than the source, because the built HTML is
  * the only place the bug exists.
  */
+import { fileURLToPath } from 'node:url';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIST = join(ROOT, 'dist');
 
 function walk(dir) {

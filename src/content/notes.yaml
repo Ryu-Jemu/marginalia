@@ -9,29 +9,29 @@
 - id: dartoo-publisher-gap
   kind: measurement
   body: >-
-    959 rows had been persisted to the disclosure table while the publisher had
-    emitted only 805 events. Nothing in the logs marked the 154 missing ones.
+    The portfolio measurement record reports 959 persisted rows and 805
+    published events: a difference of 154.
   condition: >-
-    One day of ingestion, counted by reconciling persisted rows against
-    published events.
+    2026-08-13 measurement record, comparing stored rows with published events
+    in the original defect run. This is the recorded result, not a new execution.
 
 - id: dartoo-e2e-parity
   kind: measurement
   body: >-
-    After the lazy-reconnect fix the same end-to-end run produced 3,948
+    After the lazy-reconnect fix, the recorded end-to-end run produced 3,948
     persisted rows and 3,948 published events.
   condition: >-
-    One end-to-end verification run over that fixture set, counted the same way
-    as the gap above.
+    2026-08-13 measurement record for one post-fix E2E run over that fixture set.
+    Stored and published counts were compared; this is not a throughput measure.
 
 - id: dartoo-test-count
   kind: measurement
   body: >-
-    319 automated tests across the three services I owned: 110 ingestion,
+    319 test function definitions across the three services: 110 ingestion,
     156 notification, 53 disclosure.
   condition: >-
     Count of def test_ functions under tests/ in those three repositories,
-    virtualenvs excluded, measured 2026-08-13.
+    virtualenvs excluded, recorded 2026-08-13. Function definitions, not runtime passes.
 
 - id: dartoo-not-ready-experiment
   kind: measurement
@@ -39,35 +39,36 @@
     Four disclosures the retry counter had written off as permanent failures
     returned normal responses when re-fetched a week later.
   condition: >-
-    Re-fetch of four receipt numbers marked permanently failed on 1 April,
-    repeated on 8 April against the same upstream endpoint.
+    The 2026-04-08 experiment record describes re-fetching four receipt numbers
+    marked failed on 2026-04-01 against the same upstream endpoint.
 
 - id: dartoo-normaliser
-  kind: measurement
+  kind: scope
   body: >-
-    The document normaliser went from 105 lines to 566 — charset auto-detection,
-    a Korean codec priority list, and alias normalisation for legacy encodings.
-  condition: >-
-    Line count of content_normalizer.py before and after the parsing branch was
-    merged.
+    The ingestion producer detects ZIP, HTML and XML, selects encoding candidates,
+    normalises legacy aliases and rewrites text and declarations as UTF-8.
+    The object path and file metadata accompany downstream tasks.
 
 - id: dartoo-ownership
   kind: scope
   body: >-
-    I owned ingestion, disclosure and notification end to end, and implemented
-    summary and its wiring to the others. Four services of the system.
+    Implementation across ingestion, disclosure and notification; integration
+    and hardening in the shared summary service. Additional Java User work
+    covers internal notification APIs and structured payload fields.
 
 - id: dartoo-notification-scope
   kind: scope
   body: >-
-    The sha256 idempotency key, the ten-step orchestration and the seven-day TTL
-    dead-letter queue are the notification service specifically.
+    Notification specifically contains the SHA-256 event key, ten-step
+    orchestration and seven-day-TTL DLQ. The key includes event type,
+    receipt number and timestamp; it is not an exactly-once push guarantee.
 
 - id: dartoo-lua-scope
   kind: scope
   body: >-
-    The Redis Lua atomic counter is the summary service specifically. It
-    replaced an INCR and a separate EXPIRE that could leave a key with no expiry.
+    Summary specifically combines INCR and EXPIRE in Redis Lua to remove the
+    gap between client calls. The counter uses Asia/Seoul time and allows
+    processing when Redis fails.
 
 - id: dartoo-award
   kind: source
@@ -80,59 +81,27 @@
 
 - id: map-terminal-state
   kind: scope
-  body: >-
-    A completion event arriving before its own job record let the late
-    in_progress write overwrite the terminal state. Three regression tests pin
-    the orderings that used to break it.
-
-- id: map-grid-coverage
-  kind: measurement
-  body: >-
-    Only 19 of the 243 district grid points matched a subscribed forecast grid,
-    so 92.5% of short-term forecast lookups came back empty.
-  condition: >-
-    District representative grid points joined against the set of grids the
-    poller actually subscribes to, counted across the whole seed table.
-
-- id: map-batch-cap
-  kind: measurement
-  body: >-
-    The gateway accepts at most 20 legs per routing request, so any itinerary
-    over 22 stops was rejected whole and drew straight lines instead.
-  condition: >-
-    Upper bound read from the gateway's own request validator, checked against
-    the batch the BFF was sending.
+  body: "Acceptance inserts a missing job; completion updates its terminal result. The two writes use separate rules so a late acceptance does not overwrite a completed job."
 
 - id: map-rate-limit
   kind: scope
-  body: >-
-    Re-recommendation is capped at three per itinerary per day by a Redis Lua
-    INCR and EXPIREAT, expiring at KST midnight rather than on a rolling window.
+  body: "Authenticated re-search uses an account key, with a default limit of three per day and KST-midnight expiry. Redis counter errors deliberately fail open; the key change is in the 2026-09-19 source."
 
 - id: map-cache-tiers
   kind: scope
-  body: >-
-    The gateway cache is two tiers: a Redis L1 in front of a scheduled prefetch
-    that warms the external data before anyone asks for it.
+  body: "2026-09-20 source: Redis L1 plus scheduled PostgreSQL/PostGIS prefetch. Course normalization uses source IDs, coordinate geometry, upserts and geography radius queries. Forecast lookup selects a subscribed grid within the same province."
 
 - id: map-llm-budget
   kind: scope
-  body: >-
-    The agent calls the model at most three times per request. Candidates are
-    filtered by a deterministic rule engine first, and the model only chooses
-    among what survives.
-
-- id: map-tsp
-  kind: scope
-  body: >-
-    Under eight stops the visit order is solved exhaustively — at most 5,040
-    permutations. Above that it falls back to nearest-neighbour with 2-opt.
+  body: "Normal recommendation uses one selection and one explanation call within a three-call budget. The supplied-place route bypasses both; order changes require explicit optimize. Current source, 2026-09-20."
 
 - id: map-ownership
   kind: scope
-  body: >-
-    Six services are mine — gateway, agent, Java BFF, vision, infrastructure and
-    the admin console. On the Flutter client I contributed features.
+  body: "Role confirmed 2026-09-20: architecture through app submission, excluding design and initial frontend setup. Selected diffs distinguish my work from teammates’ initial authentication, cache, vision and app features."
+
+- id: map-store-review
+  kind: scope
+  body: "Store submission and pending review confirmed by the project owner on 2026-09-20. Saved release records separately verify signed artifacts and an earlier Transporter delivery. Public availability has not been claimed."
 
 # ── Reinforcement learning for 5G pricing ─────────────────────────────────
 
@@ -142,7 +111,7 @@
     Against a max-price baseline the learned policy gains 2.1% at m=1, 105.8% at
     m=3, 195.8% at m=5 and 363.2% at m=10.
   condition: >-
-    Simulated environment, churn-sensitivity multiplier m. Only m≥3 is
+    Simulated environment, churn-sensitivity multiplier m. Each of m=3, 5 and 10 is
     significant at p<0.001; the m=1 result is p=0.472.
 
 - id: rl-embb-attribution
@@ -156,8 +125,8 @@
 - id: rl-myopic
   kind: measurement
   body: >-
-    A myopic version of the same policy, trained with the discount factor set to
-    zero, is indistinguishable from the max-price baseline at every m.
+    Myopic-PPO, trained with a zero discount factor on immediate rewards only,
+    did not differ significantly from the max-price baseline at any tested m.
   condition: >-
     Same environment and seeds as the main comparison. This is the control that
     isolates foresight from the learning algorithm.
@@ -191,18 +160,18 @@
 - id: crime-significant
   kind: measurement
   body: >-
-    Population (p=0.0006) and the density of entertainment venues (p=0.0004) are
+    Population (p=0.0006) and the count of entertainment venues (p=0.0004) are
     significant. CCTV count is not, at p=0.297.
   condition: >-
     Same OLS fit, refit from the study's own data. Variance inflation runs from
-    1.10 to 2.61 across the five variables, so collinearity is not distorting
-    the coefficients.
+    1.10 to 2.61 across the five variables, which does not indicate strong
+    multicollinearity in this fit; it does not establish causation.
 
 - id: crime-residuals
   kind: measurement
   body: >-
     The model over-predicts Seongdong by 1,862 crimes and under-predicts Mapo by
-    1,387 — a spread of 3,249 across a fit that explains 84% of the variation.
+    1,387. The difference between these residuals is 3,249 crimes.
   condition: >-
     Actual minus predicted, per district, from the same OLS fit.
 
@@ -217,7 +186,7 @@
 - id: cinema-fall
   kind: measurement
   body: >-
-    Box-office revenue fell 87.6% against its 2019 peak by 2021, and admissions
+    In the collected dataset, revenue fell 87.6% from the 2019 peak to 2021, and admissions
     88.9% — from 227 million to 25 million.
   condition: >-
     National box-office series 2004–2021, summed per year across domestic and
@@ -282,35 +251,25 @@
 # ── Additional work ───────────────────────────────────────────────────────
 
 - id: repo-spread
-  kind: measurement
+  kind: scope
   body: >-
-    Twelve repositories of my own across Python, Java, C# and JavaScript, plus
-    the four Dartoo services and six MAP services owned inside team
-    organisations.
-  condition: >-
-    Non-fork repositories under github.com/Ryu-Jemu, counted 2026-08-13. Team
-    work is not included in the twelve.
+    Personal projects across Python, Java, C# and JavaScript, with team service contributions under team-dartoo and we-meet-trip. Public repositories reviewed on 2026-09-20.
 
 - id: invader-collaboration
   kind: scope
   body: >-
-    A six-person Java project run on GitHub Actions and Jira. I held assigned
-    features; the architecture and the lead's decisions were not mine.
+    In a six-person Java project, I tracked assigned features in Jira and
+    integrated them through GitHub Actions checks and code review. Teammates led the architecture and project.
 
 - id: map-test-count
   kind: measurement
-  body: >-
-    981 automated tests across the six MAP services I own — 429 on the Java BFF,
-    301 on the gateway, 220 on the agent, 17 on vision and 14 on admin.
-  condition: >-
-    JUnit @Test annotations under src/test for the Java service, and def test_
-    functions under tests/ for the Python services, measured 2026-08-16.
+  body: "93 focused regressions passed: isolation 16, service 51, consumer 9, JobStore 7, withdrawal 7, AdminDLQ 3. This is one execution, not the current all-service test count."
+  condition: "2026-09-09, feature-launch-readiness: actual service/consumer/store flow, H2 JPA and real encryption; Redis primitives replaced by memory doubles. Six-suite result JSON records zero failures, errors or skips."
 
 - id: map-graph
-  kind: scope
-  body: >-
-    The recommendation agent is a fourteen-node LangGraph. Two nodes call a
-    model; visit order and travel legs are computed from coordinates.
+  kind: measurement
+  body: "The recommendation StateGraph registers 14 nodes. Source inspection includes the supplied-place branch and terminal publication path."
+  condition: "2026-09-20 source audit; map-service-agent develop 38659ca, app/graph/agent_graph.py; direct count of graph.add_node registrations."
 
 - id: examiner-determinism
   kind: scope
@@ -318,3 +277,30 @@
     The final confidence figure is computed in Python rather than produced by
     the model, and citations are verified against the retrieved documents in
     code.
+
+- id: map-provider-quality
+  kind: measurement
+  body: "88 focused Hub tests passed for provider failure classification and related contracts. Current source checks KMA page totals, separates test/live cache namespaces and retains valid PM2.5 when PM10 is missing."
+  condition: "2026-09-09 launch-readiness focused run, five suites, provider/test doubles; recommendation-plan/hub-tests.log. Not a full Hub test count or external provider availability measurement."
+
+- id: map-training-boundary
+  kind: measurement
+  body: "32 focused tests checked encrypted-label reading: encryption 8, export 17 and JobStore 7. Learning capture/export remain off by default; a separate non-web export entrypoint now exists."
+  condition: "2026-09-06 synthetic keys and H2; plaintext/encrypted equivalence, invalid key/AAD and damaged-envelope rejection. Current entrypoint/default flags separately inspected on 2026-09-20; no model-training claim."
+
+- id: map-deployment
+  kind: measurement
+  body: "The 2026-09-20 GCP test-deployment record reports release and smoke completion. NCP’s 2026-09-17 User-image change used a separate 23.3-minute interruption window, followed by external health and access checks."
+  condition: "GCP: g1-gcp-verification.json recorded at 03:27 KST on 2026-09-20; GitHub run 35460603636 completed/success also checked through its API. NCP: p4-ncp-production.json, 2026-09-17 01:40:42–02:03:59 UTC. Stored execution evidence; no new deployment or service-wide availability test in this audit."
+
+- id: map-current-scope
+  kind: scope
+  body: "Source inventory is frozen at 03:24 KST on 2026-09-20. The latest saved NCP runtime observation is 2026-09-19; the GCP test record is from 2026-09-20. The new accessToken authentication contract and GCP success do not establish an NCP rollout or store approval."
+
+- id: map-client-contract
+  kind: scope
+  body: "Flutter source/diff review, 2026-09-20: persisted AI consent revision and revocation state, recommendation code/retryable propagation, and suppression of repeated self-read events. Related tests use API/widget doubles; this audit did not run the app or verify store login."
+
+- id: map-evolution
+  kind: scope
+  body: "Authored changes in 2026: May–July, polling, graph, completion and admin; August, grid mapping, timetables, state and encryption; September, source quality, consent, isolation, export and app contracts. Dates refer to code changes, not deployment."

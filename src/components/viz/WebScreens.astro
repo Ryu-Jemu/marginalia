@@ -1,0 +1,79 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Icon from '../Icon.astro';
+interface Props {
+  shots: readonly { image: ImageMetadata; label: string; alt: string }[];
+  name: string;
+}
+const { shots, name } = Astro.props;
+const multiple = shots.length > 1;
+const portrait = shots.length > 0 && shots.every(shot => shot.image.height > shot.image.width);
+const imageSizes = portrait
+  ? '(max-width: 520px) calc(100vw - 50px), (max-width: 600px) 470px, 462px'
+  : '(max-width: 600px) calc(100vw - 56px), (max-width: 1200px) calc(100vw - 96px), 1120px';
+---
+<div class:list={['web-screens', { 'is-portrait': portrait }]} data-phone-deck={multiple ? '' : undefined} aria-label={`${name} 웹 화면`} role="group">
+  <div class="web-screen-viewport" data-deck-viewport>
+    {shots.map(shot => (
+      <figure class="web-shot" data-deck-shot data-label={shot.label}>
+        <a class="web-frame" href={shot.image.src} target="_blank" rel="noopener" aria-label={`${name} · ${shot.label} 크게 보기 (새 탭)`}>
+          <div class="web-bar" aria-hidden="true">
+            <span class="web-window-dots"><i></i><i></i><i></i></span>
+            <span class="web-window-name">{name}</span>
+            <span class="web-expand">크게 보기<Icon name="arrow-up-right" size={16}/></span>
+          </div>
+          <Image src={shot.image} width={Math.min(shot.image.width, 1440)} height={Math.round(Math.min(shot.image.width, 1440) * shot.image.height / shot.image.width)} widths={[640, 960, 1440]} sizes={imageSizes} alt={shot.alt} format="webp" quality={90} loading="lazy" draggable="false"/>
+        </a>
+        <figcaption>{shot.label}</figcaption>
+      </figure>
+    ))}
+  </div>
+  {multiple && <div class="web-controls" data-deck-controls hidden>
+    <div class="web-navigation">
+      <button type="button" data-deck-step="-1" aria-label="이전 웹 화면"><span aria-hidden="true">←</span></button>
+      <p class="web-position" data-deck-status aria-live="polite" aria-atomic="true">1 / {shots.length} · {shots[0].label}</p>
+      <button type="button" data-deck-step="1" aria-label="다음 웹 화면"><span aria-hidden="true">→</span></button>
+    </div>
+    <div class="web-tabs" role="group" aria-label="웹 화면 선택">{shots.map((shot, index) => <button type="button" data-deck-index={index} aria-pressed={index === 0}>{shot.label}</button>)}</div>
+  </div>}
+</div>
+<script>
+  // Keep keyboard focus outside a slide before the shared deck hides that slide.
+  document.addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    const target = event.target;
+    if (!(target instanceof Element) || !target.closest('.web-frame')) return;
+    const deck = target.closest<HTMLElement>('.web-screens[data-deck-ready]');
+    deck?.querySelector<HTMLElement>('[data-deck-viewport]')?.focus({ preventScroll: true });
+  }, { capture: true });
+</script>
+<style>
+  .web-screens{width:100%;max-width:1120px;min-width:0;margin-inline:auto;background:transparent}
+  .web-screens.is-portrait{max-width:480px}
+  .web-screen-viewport{display:grid;gap:28px;min-width:0;max-width:100%;padding:8px 8px 20px;overflow:hidden;touch-action:pan-y}
+  .web-screen-viewport:focus-visible{outline:3px solid var(--blue);outline-offset:-3px;border-radius:20px}
+  .web-shot{width:100%;max-width:100%;min-width:0;margin:0}
+  .web-frame{display:block;max-width:100%;min-width:0;overflow:hidden;border:1px solid var(--line-strong,#929eaf);border-radius:18px;background:var(--paper,#fff);box-shadow:0 6px 15px rgba(24,34,56,.09);color:var(--ink);text-decoration:none;transition:border-color .2s,box-shadow .2s}
+  .web-frame:hover{color:var(--ink);border-color:var(--blue);box-shadow:0 8px 18px rgba(24,34,56,.12)}
+  .web-frame:focus-visible{outline:3px solid var(--blue);outline-offset:-3px}
+  .web-bar{display:flex;align-items:center;gap:12px;min-width:0;min-height:40px;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--paper,#fff);font-size:14px;line-height:1.5}
+  .web-window-dots{display:flex;align-items:center;gap:4px;flex:none}
+  .web-window-dots i{width:6px;height:6px;border:1px solid #9ca6b4;border-radius:50%}
+  .web-window-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+  .web-expand{display:inline-flex;align-items:center;gap:5px;flex:none;font-size:14px;color:var(--blue);font-weight:550;white-space:nowrap}
+  .web-frame img{display:block;width:100%;height:auto;max-width:100%;margin:0;padding:0}
+  .web-shot figcaption{margin-top:14px;font-size:14px;line-height:1.5;color:var(--muted)}
+  .web-screens[data-deck-ready] .web-shot figcaption{display:none}
+  .web-controls{padding:0 8px;background:transparent}
+  .web-navigation{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:18px;max-width:440px;margin-inline:auto}
+  .web-navigation button{display:grid;place-items:center;min-height:44px;width:44px;height:44px;padding:0;border:1px solid var(--line-strong);border-radius:8px;font-size:21px;line-height:1;color:var(--ink);background:var(--paper)}
+  .web-navigation button:hover:not(:disabled){color:var(--blue);border-color:var(--blue);background:var(--blue-light)}
+  .web-navigation button:disabled{opacity:.35;cursor:default;background:var(--paper);border-color:var(--line-strong)}
+  .web-position{min-width:0;font-size:14px;font-weight:550;text-align:center;line-height:1.6;color:var(--ink)}
+  .web-tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px}
+  .web-tabs button{min-height:44px;max-width:100%;padding:8px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;line-height:1.5;font-weight:500;color:var(--muted);background:transparent}
+  .web-tabs button[aria-pressed=true]{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+  @media(max-width:600px){.web-screen-viewport{padding:6px 4px 16px;gap:24px}.web-frame{border-radius:12px}.web-screen-viewport:focus-visible{border-radius:14px}.web-bar{gap:9px;min-height:38px;padding:8px 11px}.web-window-dots{gap:3px}.web-window-dots i{width:5px;height:5px}.web-controls{padding-inline:4px}.web-navigation{gap:12px}.web-tabs{gap:7px;margin-top:12px}.web-tabs button{padding-inline:11px}}
+  @media print{.web-screens{max-width:none}.web-screen-viewport{display:block;padding:0;overflow:visible}.web-shot,.web-shot[hidden]{display:block!important;break-inside:avoid;margin-bottom:24px}.web-frame{box-shadow:none;border-color:var(--line-strong);border-radius:10px}.web-expand,.web-controls{display:none!important}.web-screens[data-deck-ready] .web-shot figcaption{display:block}.web-frame img{width:100%;height:auto}}
+</style>

@@ -1,15 +1,10 @@
 ---
 import Work from '../../components/pages/Work.astro';
-import { projectsOf, slugOf } from '../../lib/content';
-
-export const prerender = true;
-
-export async function getStaticPaths() {
-  const projects = await projectsOf('en');
-  return projects.map((entry) => ({ params: { slug: slugOf(entry) }, props: { entry } }));
+import {projectsOf} from '../../lib/content';
+export const prerender=true;
+export async function getStaticPaths(){
+  return (await projectsOf()).map(project=>({params:{slug:project.id},props:{project}}));
 }
-
-const { entry } = Astro.props;
+const {project}=Astro.props;
 ---
-
-<Work entry={entry} lang="en" />
+<Work project={project}/>

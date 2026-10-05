@@ -1,0 +1,45 @@
+---
+import DisclosureIndicator from './DisclosureIndicator.astro';
+const quadrants=[
+ {key:'S',title:'강점',subtitle:'작업을 구조화하고 서비스로 연결',items:[
+  {title:'AI 작업 맥락·역할·완료 기준 설계',detail:'요구사항과 관련 코드를 선별하고 작업 단위 분리',href:'/#ai-workflow',label:'AI 활용 방식'},
+  {title:'AI·백엔드·앱 연결과 오류 처리',detail:'추천 결과부터 개인 일정·동의 상태까지 연결',href:'/work/map/',label:'MAP'}]},
+ {key:'W',title:'보완',subtitle:'다음 단계에서 보강할 부분',items:[
+  {title:'AI 활용 효과의 비교·측정',detail:'다음 행동 · 동일 과제의 시간·재작업량 비교 기준 마련',href:'/#ai-workflow',label:'AI 활용 방식'},
+  {title:'모델 평가 범위와 일반화 확인',detail:'다음 행동 · 학습·평가 데이터 분리와 외부 사례 평가 확대',href:'/work/bp-llm/',label:'빔 예측 구현'}]},
+ {key:'O',title:'기회',subtitle:'경험을 넓혀갈 방향',items:[
+  {title:'출시 앱의 피드백 기반 기능 개선',detail:'사용 흐름별 피드백 수집과 오류·불편 우선순위화',href:'/work/map/',label:'MAP'},
+  {title:'검색·에이전트 경험의 다른 서비스 적용',detail:'규칙 문서 검색과 인용 검사 구조의 재사용',href:'/work/mini-project-glove/',label:'GLove'}]},
+ {key:'T',title:'위험',subtitle:'변화에 대비하는 방법',items:[
+  {title:'외부 모델·API의 변경과 장애',detail:'대응 · 응답 형식 검사, 실패 분류와 재처리 경로',href:'/work/dartoo/',label:'Dartoo'},
+  {title:'AI 응답 오류와 데이터 취급 위험',detail:'대응 · 출처 대조, 판단 유보와 사용자 동의 재확인',href:'/work/examiner/',label:'examiner'}]}
+];
+---
+<details class="personal-swot" id="swot">
+ <summary data-disclosure-summary><span><strong>SWOT</strong></span><DisclosureIndicator tone="violet"/></summary>
+ <div class="personal-swot-content"><div class="personal-swot-grid">{quadrants.map(q=><section class={`personal-quadrant personal-quadrant-${q.key.toLowerCase()}`}><header><span class="personal-quadrant-key" aria-hidden="true">{q.key}</span><div><h3>{q.title}</h3><p>{q.subtitle}</p></div></header><ul>{q.items.map(x=><li><h4>{x.title}</h4><p>{x.detail}</p><a href={x.href}>{x.label} <span aria-hidden="true">↗</span></a></li>)}</ul></section>)}</div></div>
+</details>
+<style>
+ .personal-swot{margin-top:32px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);scroll-margin-top:100px}
+ .personal-swot>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:68px;padding-block:14px}
+ .personal-swot>summary::-webkit-details-marker{display:none}
+ .personal-swot>summary>span:first-child{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px}
+ .personal-swot strong{font-size:18px;line-height:1.5;font-weight:600;letter-spacing:-.025em}
+ .swot-label{font-size:14px;color:var(--muted)}
+ .personal-swot-content{padding:8px 0 28px}
+ .personal-swot-grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--line);gap:1px}
+ .personal-quadrant{padding:26px 28px;background:var(--paper);min-width:0}
+ .personal-quadrant-s{background:#f5f8ff}.personal-quadrant-o{background:#f9fafc}
+ .personal-quadrant header{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+ .personal-quadrant-key{font-size:28px;line-height:1;font-weight:600;color:var(--blue);width:26px;flex-shrink:0}
+ .personal-quadrant h3{font-size:18px;font-weight:650;line-height:1.4}
+ .personal-quadrant header p{font-size:14px;color:var(--muted);margin-top:4px}
+ .personal-quadrant ul{list-style:none;padding:0}.personal-quadrant li+li{margin-top:22px}
+ .personal-quadrant h4{font-size:15px;line-height:1.6;font-weight:600;letter-spacing:-.02em}
+ .personal-quadrant li p{font-size:14px;line-height:1.65;color:var(--muted);margin-top:6px}
+ .personal-quadrant a{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:14px;font-weight:550;color:var(--blue)}
+ .personal-quadrant a span{font-size:17px}
+ @media(max-width:700px){.personal-quadrant{padding:22px}.personal-quadrant header{align-items:flex-start}.personal-quadrant-key{font-size:26px}}
+ @media(max-width:600px){.personal-swot-grid{grid-template-columns:1fr}.personal-swot strong{font-size:17px}.personal-swot>summary>span:first-child{gap:5px 12px}.personal-quadrant{padding:22px}.personal-quadrant header{margin-bottom:18px}}
+ @media print{.personal-swot{break-inside:avoid}.personal-swot::details-content{content-visibility:visible!important;display:block!important}.personal-swot-content{display:block!important}.personal-quadrant{padding:16px}}
+</style>

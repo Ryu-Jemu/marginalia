@@ -1,0 +1,69 @@
+---
+import StudyFigure from './StudyFigure.astro';
+import PreparationFlow from './PreparationFlow.astro';
+import DisclosureIndicator from '../DisclosureIndicator.astro';
+import DistrictMap from './DistrictMap.astro';
+import { districtVariables, districtCorrelations } from '../../data/analysis-results';
+const stages = [
+  { title: '원천 자료', detail: '인구·소득·범죄·시설 자료', output: '기관별 CSV', icon: 'database' as const },
+  { title: '형식 정리', detail: '인코딩·주소·영업 상태 정리', output: '분석 대상 시설', icon: 'tool' as const },
+  { title: '지역 결합', detail: '주소의 자치구 추출·집계', output: '자치구 단위 테이블', icon: 'layers' as const },
+  { title: '변수 탐색', detail: '상관·다중공선성·모형 비교', output: '히트맵 · 회귀 · 지도', icon: 'chart' as const },
+];
+const shade = (r:number) => `rgb(${[35,87,217].map(c => Math.round(255 + (c - 255) * r)).join(' ')})`;
+---
+<div class="crime-study">
+  <PreparationFlow label="공공자료 전처리와 분석 흐름" stages={stages}/>
+  <div class="crime-figures">
+  <DistrictMap/>
+  <StudyFigure id="district-relations" eyebrow="변수 탐색" title="함께 움직이는 지역 특성"
+    description="입력 변수 간 관계를 먼저 확인하는 상관행렬"
+    caption="서울 25개 자치구 · Pearson 상관계수 r · 가로등 자료 일부 추정값 포함. 변수 간 상관이며 인과효과를 뜻하지 않음.">
+    <div slot="chart" class="relations-layout">
+      <div class="matrix-panel">
+        <table class="correlation-matrix">
+          <caption class="sr-only">자치구별 입력 변수의 Pearson 상관계수</caption>
+          <thead><tr><td></td>{districtVariables.map(v => <th scope="col">{v}</th>)}</tr></thead>
+          <tbody>{districtVariables.map((v,i) => <tr><th scope="row">{v}</th>{districtCorrelations[i].map((value,j) => <td class:list={{diagonal:i===j, peak:i!==j && value===.71}} style={i === j ? undefined : `background:${shade(value)};color:var(--ink)`}><span>{value.toFixed(2)}</span></td>)}</tr>)}</tbody>
+        </table>
+        <div class="matrix-legend"><span>양의 상관</span><span>0</span><i aria-hidden="true"></i><span>1</span></div>
+      </div>
+    </div>
+    <div slot="table">
+      <p>대각선은 자기 자신과의 상관 1.00. 나머지 칸은 값이 클수록 진한 파란색으로 표시.</p>
+      <p>입력 변수 중 소득·가로등의 상관 0.71. 다중공선성 확인과 회귀모형 비교로 이어지는 탐색 단계.</p>
+    </div>
+  </StudyFigure>
+  </div>
+  <details class="model-methods">
+    <summary data-disclosure-summary><span>모형을 비교한 방법</span><DisclosureIndicator tone="teal"/></summary>
+    <table>
+      <caption>회귀모형별 분석 목적</caption>
+      <thead><tr><th scope="col">방법</th><th scope="col">살펴본 내용</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">OLS · VIF</th><td>회귀계수와 설명 변수 간 다중공선성</td></tr>
+        <tr><th scope="row">Lasso</th><td>변수 선택을 포함한 규제 회귀</td></tr>
+        <tr><th scope="row">Ridge</th><td>회귀계수 축소를 통한 모형 비교</td></tr>
+      </tbody>
+    </table>
+  </details>
+</div>
+<style>
+  .crime-study{display:grid;gap:32px;min-width:0}
+  .crime-figures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px;align-items:start}
+  .relations-layout{min-width:0}
+  .correlation-matrix{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:4px;font-size:14px;font-variant-numeric:tabular-nums}
+  .correlation-matrix th{font-size:14px;font-weight:600;text-align:center;padding:9px 0;line-height:1.4}
+  .correlation-matrix th:first-child{width:64px;text-align:left}
+  .correlation-matrix td:not(:first-child){height:58px;text-align:center;border-radius:4px;border:1px solid transparent}
+  .correlation-matrix .diagonal{background:var(--surface);color:var(--muted)}
+  .correlation-matrix .peak{outline:2px solid var(--blue);outline-offset:1px;font-weight:750}
+  .matrix-legend{display:flex;align-items:center;justify-content:flex-end;gap:10px;font-size:14px;color:var(--muted);margin:16px 4px 0}
+  .matrix-legend i{width:110px;height:9px;background:linear-gradient(to right,#fff,#2357d9);border:1px solid var(--line);border-radius:2px}
+  .model-methods{border-block:1px solid var(--line);font-size:15px}
+  .model-methods summary{cursor:pointer;min-height:64px;display:flex;align-items:center;justify-content:space-between;font-weight:600}
+  .model-methods table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:15px;line-height:1.6}.model-methods caption{text-align:left;font-size:14px;color:var(--muted);padding:8px 0 16px}.model-methods th,.model-methods td{padding:12px;text-align:left;border-bottom:1px solid var(--line)}.model-methods th{font-weight:600}.model-methods th:first-child{width:120px}
+  @media(max-width:960px){.crime-figures{grid-template-columns:1fr;gap:32px}.correlation-matrix{max-width:600px}.relations-layout{max-width:600px}}
+  @media(max-width:480px){.correlation-matrix{border-spacing:3px}.correlation-matrix th:first-child{width:53px}.correlation-matrix td:not(:first-child){height:44px}.correlation-matrix th{font-size:14px}.model-methods th,.model-methods td{padding:10px 6px}.model-methods th:first-child{width:90px}}
+  @media print{.correlation-matrix{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>

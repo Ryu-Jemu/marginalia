@@ -1,179 +1,63 @@
 # marginalia
 
-**Ryu Jemu's portfolio — an annotated document.** Live at
-[ryu-jemu-marginalia.onrender.com](https://ryu-jemu-marginalia.onrender.com),
-in [English](https://ryu-jemu-marginalia.onrender.com/) and
-[Korean](https://ryu-jemu-marginalia.onrender.com/ko/).
+류제무의 한국어 개발 포트폴리오. 소개 → 대표 서비스 → 분야별 작업 목록 순서로 탐색합니다.
+전체 이력·AI 활용 방식·SWOT은 첫 소개 영역에서 펼쳐볼 수 있습니다.
+프로젝트 상세는 목차와 본문으로 구성하며 기능·기여·구조·STAR 문제 해결을 연결합니다.
 
-It covers two data pipelines carrying a mobile product each, two papers, and
-two statistical studies. Every claim in the running text carries its evidence
-in the margin beside it: what was measured, and the condition it was measured
-under.
+## 실행
 
-The premise is that a portfolio is read by someone looking for a reason to stop
-reading. Asking that reader to take a number on trust — and then go somewhere
-else to check it — is the moment that costs you. So the condition sits next to
-the figure.
+Node 22.12 이상 필요. `.node-version`의 버전을 권장합니다.
 
-## What is on it
-
-| | |
-|---|---|
-| §1 Data pipelines | **Dartoo** — a regulatory-filing pipeline, four of six services owned. **MAP** — a travel itinerary pipeline behind one gateway, six services owned. Each opens on its own page with the architecture, the mechanisms that hold it up, and the defects found and fixed, stated as symptom → cause → fix. |
-| §2 Research | A first-author paper at KIPS ASK 2026 that took a silver award, and Section III.E of a survey under review at IEEE TAI. Each paper page carries the build behind it and the manuscript itself. |
-| §3 Data analysis | Seoul crime across 25 districts, and eighteen years of multiplex revenue. Both figures are recomputed from the studies' own data rather than copied out of a report. |
-| §4 More work | Services, coursework and prototypes, listed as they stand. |
-| §5 About | The path here as a timeline, the awards and certifications along it, and what else I do. |
-
-## The rule that governs the rest
-
-**A number without its stated condition does not publish.** That is enforced,
-not intended. [`src/content.config.ts`](src/content.config.ts) refines the note
-schema so a `measurement` without a `condition` or a `source` without a link
-fails the build:
-
-```
-[InvalidContentEntryDataError] notes → … data does not match collection schema.
-  condition: a `measurement` note requires `condition`
-```
-
-Three gates run before every build:
-
-- `scripts/check-claims.mjs` — rules in English and Korean, each derived from a
-  claim that appeared in an earlier CV and did not survive being checked against
-  the repositories. Content files are read line for line; in source files a
-  comment explaining why a phrase is banned is not itself a claim.
-- `scripts/check-notes.mjs` — refuses a duplicate note id, a reference to a note
-  that does not exist, and a note no claim cites.
-- `scripts/check-i18n.mjs` — refuses a string that exists in one language only,
-  a placeholder that survives on one side and not the other, and a project or
-  note that has not been mirrored.
-
-## Two languages, one document
-
-`/` is English and `/ko/` is Korean, mirrored route for route, with a switch in
-the bar that works without JavaScript. What the site says in its own voice is in
-`src/i18n/`; what the *work* says is in `src/content/` with a Korean mirror
-beside it. Both sides load through one set of schemas, so a measurement carries
-its condition in either language.
-
-## Running it
-
-```bash
+```sh
 npm install
-npm run dev        # astro dev  (add --background to detach)
-npm run verify     # both gates
-npm run build      # verify runs first, via prebuild
-npm run preview    # serve the built output
+npm run dev
+# 또는 npm run dev -- --background
+npm run verify
+npm run check
+npm run build
+npm run preview
 ```
 
-Requires Node ≥ 22.12 (Astro 7). `.node-version` pins 24.14.1 to match Render.
+백그라운드 서버: `npx astro dev status`, `npx astro dev logs`, `npx astro dev stop`.
 
-## How it is put together
+## 콘텐츠와 라우팅
 
-```
-src/
-├── content.config.ts        the schema that refuses an unconditioned number
-├── content/
-│   ├── notes.yaml           every piece of evidence on the site
-│   ├── projects/            MDX; the body calls <N id="…" /> inline
-│   ├── research.yaml · record.yaml
-│   └── ko/                  the same four, in Korean
-├── i18n/                    ui.ts (the site's own voice) · viz.ts (words in figures)
-├── components/
-│   ├── pages/               Home · Work · Paper — one component per route, per language
-│   ├── note/                N.astro (marker + note) · NoteLines.astro (overlay)
-│   └── viz/                 every figure, drawn in code
-├── pages/                   four-line wrappers that pick the language
-├── scripts/                 note-lines · viz · deck · nav · controls · observe · motion
-└── styles/                  tokens · base · document · print
-```
+- `src/content/projects.json`: 프로젝트 소개, 기능, 기여, 구조, STAR 사례.
+- `src/content/research.json`: 연구 질문, 접근 방법, 역할, 결과, 저자 순서.
+- `src/content/evidence.json`: 내부 근거. 공개 각주나 브라우저 데이터로 출력하지 않음.
+- `src/content.config.ts`: 단일 컬렉션의 스키마와 측정 조건 검사.
+- `src/components/pages/`: 홈, 프로젝트 상세, 연구 상세.
+- `src/data/architecture*.ts`: 프로젝트별 경계·구성 요소·방향 연결·기여 범위.
+- `src/components/viz/ArchitectureDiagram.astro`: 아이콘·연결선·모션·텍스트 대안을 공유하는 아키텍처 도식.
+- `src/styles/`: 공통 디자인 토큰, 레이아웃, 인쇄 화면.
 
-A marker and its note are emitted as **adjacent siblings**, so pairing is
-`ref.nextElementSibling` — no ids to collide, and a screen reader meets the note
-where the claim is. The numbering is a CSS counter, correct without JavaScript.
+`/`가 기본 한국어 주소입니다. 프로젝트는 `/work/<slug>/`, 연구는 `/research/<id>/`.
+기존 `/ko/*` 주소는 기본 주소로 이동하며 JavaScript 사용 시 query와 hash를 보존합니다.
+JavaScript 없이도 자동 이동과 기본 주소 링크를 제공합니다.
+기존 홈 앵커 `pipelines`, `analysis`, `research`, `more`, `about`를 유지합니다.
+그 밖의 작업은 CareerRadar·StarIndex로 구성합니다.
+사용자 요청으로 Wealthy·Invader·F1 키오스크·공간 드로잉의 공개 항목과 상세 주소는 제거했습니다.
+홈 기술 배지는 대표 프로젝트 상단에서 한 번만 표시하며, 선택 이유는 각 프로젝트 상세에서 제공합니다.
 
-Notes float into the margin above 64rem. Below that, with scripting off, or when
-the reader moves them, they return to the flow — which is also what print does,
-as real footnotes.
+## 검수
 
-### The figures
+`npm run verify`는 공개 주장, 내부 근거 참조, 한국어 문구·placeholder·링크,
+검사 규칙의 실패 사례를 확인합니다. `npm run check`는 Astro·TypeScript 검사입니다.
+`npm run build`는 verify를 먼저 실행하고, 생성 후 HTML의 간격·공개 메타데이터·
+한국어 선언·내부 링크·앵커·이전 주소를 확인합니다.
 
-Sixteen diagrams, drawn in code rather than exported from anywhere — the
-pipeline each product runs on, the architecture with the parts I built marked,
-the two lanes of the Dartoo defect, the MAP write race before and after the
-rule, the paper's uplift by churn sensitivity, the crime regression with the
-variable it ruled out, the residual choropleth, and every plate reproducing a
-published figure or table from the two papers.
+외부 원본 프로젝트까지 있는 환경에서는 `node scripts/check-notes.mjs --local`로
+근거 파일의 존재를 추가 확인할 수 있습니다. 일반 빌드는 다른 컴퓨터의 절대경로에 의존하지 않습니다.
 
-No paper figure is served as an image. Each is rebuilt from the manuscript's own
-published values, so the numbers on the page and the numbers in the paper are
-the same numbers.
+수동 화면 검수는 1440·1024·768·390px에서 진행합니다. 전체 가로 넘침, 목업과 차트 잘림,
+키보드 탐색, 화면 전환, SWOT 펼침, 모션 끔, reduced-motion을 확인합니다.
+모션 없이도 내용과 완성된 도식이 표시되어야 합니다.
 
-Every one of them animates something the surrounding prose already states —
-packets travel because the diagram is about packets not arriving, a bar grows
-from the baseline it is measured against, a strike-through is drawn because the
-variable failed. They take their colours from the same tokens as the text, and
-they carry `role="img"` with a description rather than being hidden, because a
-diagram that states a result is not decoration.
+원본 앱 화면과 외부 논문을 제외한 공개 화면에는 날짜·기간·검증일·검사 건수·커밋·감사 기록을 넣지 않습니다.
+공동 구현과 본인 개선, 수상과 선정, 연구 저자 순서는 근거대로 유지합니다.
 
-A wide figure uses the note column, so it has to clear any note already
-floating there. Each `.column` is a block formatting context for that reason:
-without it a note escaping one section made the next section's figure clear
-notes it had nothing to do with, opening a 550px gap between the prose and its
-own plate.
+## 배포
 
-### The leader lines
-
-A tall note under a short paragraph gets pushed down by `clear: right`, up to
-about 104px away from its own marker on this content. A number alone does not
-carry that distance, so a line is drawn from the marker to the note and the
-note's own number is hidden while it is there.
-
-The line leaves the marker, drops to the bottom of its own line box, runs along
-the boundary between two lines, and turns down only after the column's right
-edge — it is never inside the measure. Sampling every path at 1.5px intervals
-against all rendered text lines: zero points fall inside one, at 1024, 1280,
-1440 and 1600.
-
-### Notes on anime.js 4.5.0
-
-Two things cost time and are worth knowing:
-
-- A drawable proxy **does not tween through `createTimeline().add()`** — it
-  jumps to the target value. Measured on one path over 800ms: 96 distinct `draw`
-  values via `animate()`, exactly 1 via the timeline. Sequencing uses `delay`.
-- `createDrawable` only writes the initial `draw` when the element's
-  `pathLength` is not already its normalised 1000, so calling it twice on one
-  element silently skips initialisation. One proxy per path, built once.
-
-Separately: `ResizeObserver` fires the moment you observe, and again for every
-layout change the reveal itself causes. Rebuilding on those restarted the
-geometry mid-draw and snapped every line to its finished state.
-
-### Nothing hides content it cannot restore
-
-Anything that hides content in order to animate it in has to answer for the case
-where the reveal never fires. Every observation carries a 2500ms deadline, the
-initial hidden state is set in JavaScript rather than CSS, and with scripting
-disabled the page renders in full.
-
-Verified clean across seven failure modes — normal scroll, a slam to the bottom
-and back, `prefers-reduced-motion`, the motion control off, the control switched
-off mid-reveal, a resize afterwards, and 6× CPU throttling — each reporting zero
-hidden notes and zero half-drawn lines.
-
-## Deployment
-
-Render static site; see [`render.yaml`](render.yaml). `autoDeployTrigger: commit`
-is set explicitly because its absence is what left the previous portfolio on
-manual deploys.
-
-`public/og.png` and `public/og-ko.png` are the share cards, rendered by the same
-browser that renders the site from the same tokens, so they cannot drift away
-from the page they point at. Regenerate them if the one-line introduction
-changes.
-
-## Size
-
-The whole JavaScript bundle, anime.js included, is 14.5 KB gzipped.
+배포 설정은 `render.yaml`에 있으며 `main`의 commit을 기준으로 Render 자동 배포를 요청합니다.
+push 전 콘텐츠·타입·빌드·생성 HTML·반응형 검수를 완료합니다.
+원본 PDF와 프로젝트 저장소는 조사 자료로 유지합니다.

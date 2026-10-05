@@ -1,0 +1,94 @@
+---
+import {Image} from 'astro:assets';
+import photo from '../assets/profile/photo.jpg';
+import Swot from './Swot.astro';
+import Icon from './Icon.astro';
+import DisclosureIndicator from './DisclosureIndicator.astro';
+import FlowDiagram from './viz/FlowDiagram.astro';
+import ServiceNetwork from './viz/ServiceNetwork.astro';
+import {site} from '../lib/site';
+const credentials=['정보처리기사','SQLD','ADsP','AWS Certified Cloud Practitioner','Microsoft Azure AI Fundamentals'];
+const workflow=[
+ {title:'맥락 설계',detail:'목표·범위·제약·완료 기준 정리'},
+ {title:'작업 분리',detail:'역할·변경 파일·작업 공간 분리'},
+ {title:'구현',detail:'관련 코드 중심의 단계별 구현'},
+ {title:'검토·반영',detail:'AI 리뷰 대조와 채택 범위 판단'}
+];
+---
+<section class="profile-intro" id="about" aria-labelledby="profile-name">
+ <div class="profile-opening">
+  <div class="profile-copy">
+   <h1 id="profile-name">류제무</h1>
+   <p class="profile-subtitle">AI 활용부터 서비스 구현까지</p>
+   <ul class="profile-keywords" aria-label="핵심 역량"><li><Icon name="brain" size={18}/>AI 작업 설계</li><li><Icon name="layers" size={18}/>백엔드·앱 연결</li><li><Icon name="chart" size={18}/>데이터 분석·연구</li></ul>
+   <div class="profile-links"><a href={site.github}><Icon name="code" size={19}/>GitHub</a><a href={`mailto:${site.email}`}><Icon name="mail" size={19}/>연락하기</a><a href="#pipelines"><Icon name="arrow-down" size={19}/>프로젝트 보기</a></div>
+  </div>
+  <div class="profile-network"><ServiceNetwork /></div>
+  <aside class="profile-snapshot" aria-label="주요 이력">
+   <div class="snapshot-heading"><Image src={photo} alt="류제무" width={128} height={128} class="profile-avatar" loading="eager"/><div><strong><Icon name="graduation" size={18}/><span>한양대학교 ERICA</span></strong><p>컴퓨터학부 · ICI Lab 학부연구생</p></div></div>
+   <ul><li><Icon name="award" size={18}/><a href="/work/dartoo/">Dartoo · SW/ICT/AI 학술대회 최우수상</a></li><li><Icon name="check" size={18}/><span>AI TOP 100 CAMPUS · 개인 본선 진출</span></li></ul>
+  </aside>
+ </div>
+ <details class="profile-details" id="profile-details">
+  <summary data-disclosure-summary><span class="profile-summary-label"><Icon name="user" size={19}/><span>소개 <span class="profile-details-hint">학력 · 경험 · 자격</span></span></span><DisclosureIndicator/></summary>
+  <div class="profile-expanded">
+   <div class="profile-facts">
+    <section><h2><Icon name="graduation"/>학력</h2><ul class="profile-fact-list"><li><strong>한양대학교 ERICA</strong><span>컴퓨터학부 재학 · 융합보안 복수전공</span></li></ul><h2 class="profile-experience-heading"><Icon name="book"/>경험</h2><ul class="profile-fact-list"><li><strong>ICI Lab 학부연구생</strong><span>강화학습 요금 정책 · LLM 빔 예측</span></li><li><strong>C 프로그래밍 실습 조교</strong><span>실습 지원과 프로그래밍 학습 보조</span></li></ul></section>
+    <section><h2><Icon name="layers"/>역량</h2><ul class="profile-fact-list"><li><strong>AI 작업 설계</strong><span>프롬프트 · 컨텍스트 · 역할 분리</span></li><li><strong>서비스 구현</strong><span>Python · Spring Boot · Flutter 연동</span></li><li><strong>데이터와 연구</strong><span>수집·정제 · 검색 · 분석·실험</span></li></ul></section>
+    <section><h2><Icon name="award"/>수상</h2><ul class="profile-fact-list"><li><strong>SW/ICT/AI 학술대회 최우수상</strong><span>한양대학교 · Dartoo</span></li><li><strong>논문 경진대회 은상</strong><span>한국정보처리학회 ASK · 강화학습 요금 연구</span></li></ul></section>
+    <section><h2><Icon name="check"/>선정</h2><ul class="profile-fact-list"><li><strong>AI TOP 100 CAMPUS</strong><span>개인 본선 진출</span></li><li><strong>AI ROOKIE 100팀 선정</strong><span>MAP 팀</span></li><li><strong>관광 데이터 공모전</strong><span>MAP · 서비스 심사 통과</span></li></ul></section>
+   </div>
+   <section class="profile-credentials"><h2><Icon name="book"/>자격</h2><ul>{credentials.map(item=><li>{item}</li>)}</ul></section>
+   <section class="profile-workflow" id="ai-workflow" aria-labelledby="profile-workflow-heading">
+    <div class="profile-workflow-heading"><h2 id="profile-workflow-heading"><Icon name="brain"/>작업법</h2><p>Claude Code · Codex · Gemini Code Assist</p></div>
+    <FlowDiagram stages={workflow} label="맥락 설계부터 검토·반영까지의 AI 활용 과정" compact/>
+    <dl class="profile-decisions"><div><dt><Icon name="code" size={17}/>위임</dt><dd>코드 초안 · 실패 재현 · 수정안 · 리뷰</dd></div><div><dt><Icon name="target" size={17}/>판단</dt><dd>문제 정의 · 원인 대조 · 수정 채택 · 결과 확인</dd></div></dl>
+   </section>
+   <Swot/>
+   <section class="profile-contact" id="contact"><h2><Icon name="mail"/>연락</h2><div><a href={`mailto:${site.email}`}><Icon name="mail" size={18}/>{site.email}</a><a href={site.github}><Icon name="code" size={18}/>GitHub</a><a href={site.blog}><Icon name="book" size={18}/>기술 블로그</a></div></section>
+  </div>
+ </details>
+</section>
+<style>
+ .profile-intro{padding:52px 0 28px;scroll-margin-top:100px}
+ .profile-opening{display:grid;grid-template-columns:minmax(0,1fr) 220px 320px;align-items:center;gap:32px}
+ .profile-network{width:220px;justify-self:center}
+ .profile-copy{min-width:0}
+ .profile-copy h1{display:inline-block;position:relative;padding-bottom:17px;font-size:54px;line-height:1.15;letter-spacing:-.05em;font-weight:760}
+ .profile-copy h1::after{content:"";position:absolute;bottom:0;left:0;width:48px;height:5px;background:var(--blue)}
+ .profile-subtitle{margin-top:12px;font-size:24px;line-height:1.45;font-weight:550;letter-spacing:-.035em}
+ .profile-keywords{display:flex;flex-wrap:wrap;list-style:none;padding:0;margin:22px 0 0;gap:8px 18px;font-size:15px;color:var(--muted)}
+ .profile-keywords li{margin:0;display:inline-flex;align-items:center;gap:7px}.profile-keywords :global(.icon),.profile-links :global(.icon){color:var(--blue)}
+ .profile-links{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;margin-top:18px;font-size:15px;font-weight:600}
+ .profile-links a{display:inline-flex;align-items:center;gap:9px;min-height:44px}.profile-links span{font-size:17px;color:var(--blue)}
+ .profile-snapshot{min-width:0;padding:8px 0 8px 24px;border-left:2px solid var(--rule)}
+ .profile-avatar{flex-shrink:0;width:64px;height:64px;object-fit:cover;object-position:center;border-radius:50%}
+ .snapshot-heading{display:flex;align-items:center;gap:14px}.snapshot-heading>div{min-width:0}.snapshot-heading strong{display:flex;align-items:center;gap:7px}.snapshot-heading p{font-size:14px;line-height:1.6;color:var(--muted);margin-top:4px}
+ .profile-snapshot ul{margin-top:18px;list-style:none;padding:0;font-size:14px;line-height:1.6;color:var(--muted)}
+ .profile-snapshot li{display:flex;align-items:flex-start;gap:9px}.profile-snapshot li> :global(.icon){margin-top:2px;color:var(--blue)}.profile-snapshot li+li{margin-top:12px}.profile-snapshot strong{font-size:15px;color:var(--ink);font-weight:600}.profile-snapshot li span{min-width:0}
+ .profile-details{margin-top:28px;border:1px solid var(--line-strong);border-left:4px solid var(--blue);background:var(--surface)}
+ .profile-details>summary{padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:20px;list-style:none;cursor:pointer;min-height:64px;font-size:15px;font-weight:600}
+ .profile-details>summary::-webkit-details-marker{display:none}
+ .profile-summary-label{display:flex;align-items:center;gap:9px}.profile-summary-label> :global(.icon){color:var(--blue)}
+ .profile-details-hint{margin-left:16px;font-size:14px;font-weight:400;color:var(--muted)}
+ .profile-expand{font-size:24px;font-weight:400;color:var(--muted);transition:transform .2s}
+ .profile-details[open]>.profile-expand,.profile-details[open]>summary .profile-expand{transform:rotate(45deg)}
+ .profile-expanded{padding:28px;background:var(--paper);border-top:1px solid var(--line-strong)}
+ .profile-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 64px}
+ .profile-expanded h2{display:flex;align-items:center;gap:9px;font-size:18px;line-height:1.4;letter-spacing:-.025em;margin-bottom:18px}
+ .profile-expanded h2> :global(.icon){color:var(--blue)}
+ .profile-fact-list{list-style:none;padding:0}.profile-expanded .profile-experience-heading{margin-top:24px}.profile-fact-list li+li{margin-top:16px}
+ .profile-fact-list strong{display:block;font-size:15px;font-weight:600}.profile-fact-list span{display:block;font-size:14px;color:var(--muted);margin-top:3px}
+ .profile-credentials{padding-top:28px;margin-top:32px;border-top:1px solid var(--line);display:grid;grid-template-columns:120px minmax(0,1fr);gap:20px}
+ .profile-credentials h2{margin:0}.profile-credentials ul{display:flex;flex-wrap:wrap;list-style:none;padding:0;gap:10px;font-size:14px;color:var(--ink)}.profile-credentials li{margin:0;padding:9px 13px;border:1px solid var(--interactive-line);border-radius:7px;background:var(--paper);line-height:1.65;max-width:100%;overflow-wrap:anywhere}
+ .profile-workflow{margin-top:32px;border-top:1px solid var(--line);padding-top:28px;scroll-margin-top:100px}
+ .profile-workflow-heading{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:26px}.profile-workflow-heading h2{margin:0}.profile-workflow-heading p{font-size:14px;color:var(--muted)}
+ .profile-decisions{display:grid;grid-template-columns:1fr 1fr;gap:16px 36px;margin:24px 0 0;padding-top:20px;border-top:1px solid var(--line)}
+ .profile-decisions div{font-size:14px}.profile-decisions dt{display:flex;align-items:center;gap:7px;font-weight:600}.profile-decisions dt> :global(.icon){color:var(--blue)}.profile-decisions dd{margin:5px 0 0;color:var(--muted)}
+ .profile-contact{display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding-top:28px;scroll-margin-top:100px}.profile-contact h2{margin:0}.profile-contact div{display:flex;flex-wrap:wrap;gap:12px 24px;font-size:14px}.profile-contact a{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:var(--muted)}.profile-contact a:hover{color:var(--blue)}
+ @media(max-width:1100px){.profile-opening{grid-template-columns:minmax(0,1fr) 220px 280px;gap:24px}}
+ @media(max-width:900px){.profile-opening{grid-template-columns:minmax(0,1fr) 260px;gap:24px}.profile-snapshot{grid-column:1/-1;border-left:0;border-top:1px solid var(--line-strong);padding:20px 0 0}.profile-network{grid-column:2;grid-row:1}.profile-snapshot{gap:14px}.profile-avatar{width:56px;height:56px}.profile-keywords{gap:4px 14px}}
+ @media(max-width:700px){.profile-intro{padding-top:32px;padding-bottom:18px}.profile-opening{grid-template-columns:1fr;gap:20px}.profile-network{grid-column:1;grid-row:auto;margin-block:4px}.profile-snapshot{grid-column:1}.profile-copy h1{font-size:44px}.profile-subtitle{font-size:24px;margin-top:10px}.profile-keywords{font-size:14px;margin-top:18px;gap:9px 16px}.profile-links{margin-top:10px;gap:8px 24px}.profile-snapshot{padding:20px 0 0;gap:16px;border-left:0;border-top:1px solid var(--line-strong)}.profile-snapshot li+li{margin-top:5px}.profile-snapshot strong{font-size:14px}.profile-details{margin-top:22px}.profile-facts{gap:28px 24px}.profile-expanded{padding:22px 18px}.profile-credentials{display:block}.profile-credentials ul{margin-top:12px}.profile-workflow-heading{display:block}.profile-workflow-heading p{margin-top:8px}.profile-contact{display:block}.profile-contact div{margin-top:10px}}
+ @media(max-width:480px){.profile-keywords{column-gap:14px}.profile-facts{grid-template-columns:1fr;gap:28px}.profile-facts>section+section{padding-top:24px;border-top:1px solid var(--line)}.profile-decisions{grid-template-columns:1fr;gap:16px}.profile-contact div{column-gap:20px}.profile-contact a:first-child{flex-basis:100%}}
+ @media print{.profile-intro{padding-top:12px}.profile-copy h1{font-size:30pt}.profile-links,.profile-details>summary{display:none}.profile-details{margin-top:16px}.profile-details::details-content{content-visibility:visible!important;display:block!important}.profile-expanded{display:block!important}.profile-snapshot{break-inside:avoid}.profile-facts{gap:24px}.profile-workflow{break-inside:avoid}}
+</style>

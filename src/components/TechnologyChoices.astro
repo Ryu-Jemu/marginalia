@@ -1,0 +1,20 @@
+---
+import TechBadge from './TechBadge.astro';
+interface Props { choices: readonly {label:string;need:string;reason:string;usage:string}[] }
+const {choices} = Astro.props;
+---
+<ol class="technology-choices" aria-label="프로젝트 요구와 기술 선택 이유">
+  {choices.map(choice => <li class="technology-choice">
+    <h3>{choice.label.split(' · ').map(name=><TechBadge name={name}/>)}</h3>
+    <dl>
+      <div class="technology-need"><dt>요구</dt><dd>{choice.need}</dd></div>
+      <div><dt>이유</dt><dd>{choice.reason}</dd></div>
+      <div class="technology-usage"><dt>적용</dt><dd>{choice.usage}</dd></div>
+    </dl>
+  </li>)}
+</ol>
+<style>
+  .technology-choices{list-style:none;padding:0;margin:0;max-width:1020px}.technology-choice{display:grid;grid-template-columns:170px minmax(0,1fr);gap:28px;padding:24px 0;margin:0;border-bottom:1px solid var(--line)}.technology-choice:first-child{padding-top:0}.technology-choice:last-child{padding-bottom:0;border-bottom:0}
+  .technology-choice h3{display:flex;flex-wrap:wrap;align-content:start;gap:8px;margin:0;font-size:16px;line-height:1.5}.technology-choice dl{display:grid;gap:10px;margin:0}.technology-choice dl>div{display:grid;grid-template-columns:65px minmax(0,1fr);gap:14px;align-items:baseline}.technology-choice dt{font-size:14px;color:var(--muted);font-weight:600;line-height:1.7}.technology-choice dd{font-size:16px;line-height:1.75;margin:0}.technology-need dd{color:var(--muted)}.technology-choice .technology-usage dd{font-size:14px;color:var(--muted)}.technology-choice .technology-usage dt{color:var(--icon-teal)}
+  @media(max-width:700px){.technology-choice{grid-template-columns:1fr;gap:16px;padding-block:24px}.technology-choice dl>div{grid-template-columns:59px minmax(0,1fr);gap:12px}}
+</style>

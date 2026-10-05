@@ -1,0 +1,32 @@
+---
+import { Image } from 'astro:assets';
+import mapHome from '../../assets/projects/map/screen-home.png';
+import mapItinerary from '../../assets/projects/map/screen-itinerary.png';
+import dartooHome from '../../assets/projects/dartoo/screen-home.png';
+import dartooDisclosure from '../../assets/projects/dartoo/screen-disclosure.png';
+interface Props { project: 'map' | 'dartoo' }
+const { project } = Astro.props;
+const shots = project === 'map'
+  ? [{ image: mapHome, alt: 'MAP의 여행 탐색 화면' }, { image: mapItinerary, alt: 'MAP의 여행 일정과 지도 화면' }]
+  : [{ image: dartooHome, alt: 'Dartoo의 공시 목록 화면' }, { image: dartooDisclosure, alt: 'Dartoo의 공시 요약 화면' }];
+---
+<div class:list={['project-preview', `preview-${project}`]}>
+  {shots.map(shot => (
+    <figure class="preview-shot">
+      <div class="preview-phone">
+        <Image src={shot.image} width={330} height={Math.round(330 * shot.image.height / shot.image.width)} alt={shot.alt} format="webp" quality={88} loading="eager" draggable="false" />
+      </div>
+    </figure>
+  ))}
+</div>
+<style>
+  .project-preview{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:center;height:344px;max-height:350px;padding:22px;background:transparent;border:0;border-radius:0;overflow:visible}
+  .preview-shot{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;height:100%;margin:0}
+  .preview-phone{width:132px;max-width:calc(100% - 16px);flex:none;border:3px solid #252a32;border-radius:19px;overflow:hidden;background:#252a32;box-shadow:0 14px 26px rgba(24,34,56,.16),0 3px 7px rgba(24,34,56,.12);line-height:0;transition:transform .28s ease,box-shadow .28s ease}
+  .preview-phone img{display:block;width:100%;height:auto;margin:0;padding:0;border-radius:15px}
+  :global(.project-cover:hover) .preview-phone,:global(.project-cover:focus-visible) .preview-phone{transform:translateY(-5px);box-shadow:0 19px 30px rgba(24,34,56,.18),0 4px 8px rgba(24,34,56,.1)}
+  @media(max-width:600px){.project-preview{height:330px;padding:22px 14px 20px}.preview-phone{width:124px;max-width:calc(100% - 18px);border-radius:18px}.preview-phone img{border-radius:14px}}
+  @media print{.project-preview{height:auto;min-height:0;max-height:none;padding:16px;gap:24px;background:transparent;border:0}.preview-phone{width:95px;box-shadow:none;border-color:var(--rule,#263244)}}
+  @media(prefers-reduced-motion:reduce){:global(.project-cover:hover) .preview-phone,:global(.project-cover:focus-visible) .preview-phone{transform:none;transition:none}}
+  :global(html[data-motion=off] .project-cover:hover) .preview-phone,:global(html[data-motion=off] .project-cover:focus-visible) .preview-phone{transform:none;transition:none}
+</style>

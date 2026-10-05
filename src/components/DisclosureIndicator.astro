@@ -1,0 +1,21 @@
+---
+interface Props { tone?: 'blue' | 'teal' | 'violet' | 'amber' }
+const { tone = 'blue' } = Astro.props;
+---
+<span class="disclosure-indicator" style={`--disclosure-color:var(--icon-${tone})`} aria-hidden="true">
+  <span class="disclosure-label"><span class="disclosure-closed">펼치기</span><span class="disclosure-open">접기</span></span>
+  <span class="disclosure-mark"><i></i><b></b></span>
+</span>
+<style>
+  .disclosure-indicator{display:inline-flex;align-items:center;justify-content:flex-end;gap:10px;flex:0 0 auto;margin-left:auto;color:var(--disclosure-color);white-space:nowrap}
+  .disclosure-label{font-size:14px;font-weight:650;line-height:1.5;letter-spacing:-.02em}
+  .disclosure-open{display:none}
+  .disclosure-mark{position:relative;display:block;flex:0 0 40px;width:40px;height:40px;border:1px solid var(--disclosure-color);border-radius:9px;background:var(--disclosure-color);color:#fff;transition:filter .18s,box-shadow .18s}
+  .disclosure-mark i,.disclosure-mark b{position:absolute;left:11px;top:18px;width:16px;height:2px;border-radius:1px;background:currentColor}
+  .disclosure-mark b{transform:rotate(90deg);transition:transform .18s,opacity .18s}
+  :global(details[open]>summary) .disclosure-closed{display:none}
+  :global(details[open]>summary) .disclosure-open{display:inline}
+  :global(details[open]>summary) .disclosure-mark b{transform:rotate(0);opacity:0}
+  :global(summary:hover) .disclosure-mark,:global(summary:focus-visible) .disclosure-mark{filter:brightness(.9);box-shadow:0 2px 5px rgb(25 35 51 / .13)}
+  @media print{.disclosure-indicator{display:none}}
+</style>

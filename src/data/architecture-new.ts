@@ -1,0 +1,76 @@
+import type { ArchitectureModel, ArchitectureNode, ArchitectureEdge } from './architecture-types';
+const n=(id:string,label:string,detail:string,icon:ArchitectureNode['icon'],x:number,y:number,role:ArchitectureNode['role']='owned',roleLabel?:string):ArchitectureNode=>({id,label,detail,icon,x,y,width:216,height:96,role,roleLabel});
+const e=(from:string,to:string,kind:ArchitectureEdge['kind'],points:[number,number][],label?:string,labelX?:number,labelY?:number):ArchitectureEdge=>({from,to,kind,points,label,labelX,labelY});
+
+export const newArchitectures:Record<string,ArchitectureModel>={
+  careerradar:{
+    id:'careerradar',title:'CareerRadar 데이터 · 탐색 구성',summary:'원본 보존과 재처리 · 공고 통합 · 내장 데이터 웹',width:880,height:810,
+    zones:[
+      {id:'source',label:'외부 원천',x:8,y:8,width:248,height:174},
+      {id:'pipeline',label:'수집 · 정제 파이프라인',x:300,y:8,width:572,height:390},
+      {id:'db',label:'PostgreSQL · 논리 저장 영역',x:8,y:214,width:248,height:394},
+      {id:'analysis',label:'분석 · 로컬 실행형 웹',x:300,y:430,width:572,height:370},
+    ],
+    nodes:[
+      n('sources','채용 사이트','원문 · 구조화 공고','book',24,70,'external','사람인 · 잡코리아 등'),
+      n('collect','원천별 수집','어댑터 · 재시도 · 동시 처리','code',332,70),
+      n('airflow','Airflow DAG','태스크 순서 · 품질 분기','route',640,70),
+      n('raw','원본 영역','원문과 수집 문맥 보존','database',24,280,'shared','PostgreSQL'),
+      n('transform','정규화 · 통합','공고 조건 · 중복 후보','layers',332,280),
+      n('quality','품질 점검','정제 결과 · 필수 조건','check',640,280),
+      n('clean','정제 · 관측 영역','통합 공고 · 관측 자료','database',24,496,'shared','같은 PostgreSQL'),
+      n('analysis','EDA · SQL','직무 · 기술 · 지역 비교','chart',332,496),
+      n('export','웹 자료 생성','CSV · 분석 결과 결합','code',640,496),
+      n('web','CareerRadar','검색 · 저장 · 내보내기','search',640,688),
+    ],
+    edges:[
+      e('sources','collect','request',[[240,118],[332,118]]),
+      e('airflow','collect','event',[[640,118],[548,118]],'수집 실행',594,106),
+      e('airflow','transform','event',[[688,166],[688,224],[440,224],[440,280]],'정제 실행',553,212),
+      e('collect','raw','storage',[[368,166],[368,204],[220,204],[220,280]],'원본 보존',238,194),
+      e('raw','transform','storage',[[240,328],[332,328]]),
+      e('transform','quality','request',[[548,328],[640,328]]),
+      e('transform','clean','storage',[[402,376],[402,416],[132,416],[132,496]],'정제 · 통합',265,406),
+      e('clean','analysis','storage',[[240,544],[332,544]]),
+      e('analysis','export','request',[[548,544],[640,544]]),
+      e('export','web','request',[[748,592],[748,688]],'자료 내장',790,642),
+    ],
+    notes:['원본과 정제·관측 영역은 같은 PostgreSQL 안의 논리 구분.','웹은 수집 결과를 내장한 독립 HTML. 공고 원문 링크·브라우저 저장·CSV 내보내기 제공.'],
+  },
+  starindex:{
+    id:'starindex',title:'StarIndex 데이터 팩 · 앱 구성',summary:'공공자료 배치와 iOS 화면 사이를 공용 데이터 팩으로 연결',width:880,height:840,
+    zones:[
+      {id:'input',label:'데이터 · 실행 환경',x:8,y:8,width:248,height:390},
+      {id:'batch',label:'백엔드 · 배치와 팩 발행',x:300,y:8,width:572,height:390},
+      {id:'device',label:'기기 · 외부 라이브러리',x:8,y:430,width:248,height:394},
+      {id:'ios',label:'iOS · 팩 연동과 스카이뷰',x:300,y:430,width:572,height:394},
+    ],
+    nodes:[
+      n('public','기상 · 천문 자료','기상청 · 천문연구원','book',24,76,'external','공공 API'),
+      n('batch','Spring Batch','자료 수집 · 보존 기간 정리','route',332,76),
+      n('db','PostgreSQL','예보 · 지역 · 천문 자료','database',640,76,'shared','Neon 저장소 연동'),
+      n('schedule','GitHub Actions','배치 실행','route',24,280,'shared','실행 워크플로 연결'),
+      n('publisher','지수 · 팩 생성','야간 계산 · gzip · manifest','chart',332,280),
+      n('storage','Object Storage','공용 읽기 데이터 팩','database',640,280,'shared','팩 발행 · 읽기 경계'),
+      n('motion','센서 · 위치','CoreMotion · 위치 입력','compass',24,500,'external','Apple 기기 기능'),
+      n('client','팩 클라이언트','조건부 GET · 무결성 검사','layers',640,500),
+      n('astronomy','천문 엔진','천체 위치 · 별 카탈로그','compass',24,704,'external','Astronomy Engine 활용'),
+      n('sky','SwiftUI 스카이뷰','천체 탐색 · 지수 · 일몰 재생','smartphone',332,704),
+      n('cache','로컬 캐시','검사된 팩 보관','database',640,704),
+    ],
+    edges:[
+      e('public','batch','request',[[240,124],[332,124]]),
+      e('schedule','batch','event',[[240,328],[284,328],[284,148],[332,148]]),
+      e('batch','db','storage',[[548,124],[640,124]]),
+      e('db','publisher','storage',[[748,172],[748,220],[440,220],[440,280]],'예보 · 천문 자료',594,208),
+      e('publisher','storage','storage',[[548,328],[640,328]],'팩 발행',594,316),
+      e('storage','client','request',[[748,376],[748,500]],'공용 읽기',788,442),
+      e('client','cache','storage',[[748,596],[748,704]]),
+      e('client','sky','request',[[640,566],[514,566],[514,704]],'새 팩 반영',585,554),
+      e('cache','sky','storage',[[640,752],[548,752]],'저장 예보',594,740),
+      e('motion','sky','request',[[240,548],[440,548],[440,704]],'방향 · 위치',400,536),
+      e('astronomy','sky','request',[[240,752],[332,752]]),
+    ],
+    notes:['앱은 Object Storage의 공용 팩을 읽고, 저장된 예보를 로컬 캐시에서 활용.','천문 계산과 원본 카탈로그는 외부 라이브러리·자료 활용. 관측 지수는 날씨·달빛·박명 기반의 경험적 계산.'],
+  },
+};

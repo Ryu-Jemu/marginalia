@@ -1,5 +1,4 @@
-# Both language trees are the same document; each page names the other with a
-# hreflang link, so neither needs to be hidden from a crawler.
+# Korean canonical pages are indexed. Legacy /ko/ redirects declare noindex.
 User-agent: *
 Allow: /
 

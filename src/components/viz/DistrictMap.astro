@@ -1,0 +1,119 @@
+---
+import StudyFigure from './StudyFigure.astro';
+import districts from '../../data/seoul-districts.json';
+import { districtPopulation, populationBands, populationBandFor } from '../../data/district-metrics';
+
+interface Props { id?: string }
+const { id = 'district-population' } = Astro.props;
+const format = new Intl.NumberFormat('ko-KR');
+const boundaries = new Map(districts.map(district => [district.name, district.d]));
+const plotted = districtPopulation.map(district => {
+  const d = boundaries.get(district.name);
+  if (!d) throw new Error(`Missing boundary for ${district.name}`);
+  return { ...district, d, band: populationBandFor(district.population) };
+});
+---
+<StudyFigure id={id} eyebrow="지역 분포" title="자치구마다 다른 인구 규모"
+  description="분석 입력 자료의 인구를 지역별로 비교"
+  caption="서울 25개 자치구 · 분석 입력 자료의 인구(명). 진한 색일수록 큰 인구 규모. 면적당 밀도가 아닌 자치구별 인구 합계.">
+  <div slot="chart" class="district-map" data-district-map>
+    <div class="map-frame">
+      <svg viewBox="-8 -8 776 642" role="group" aria-label="자치구별 인구 지도. 자치구명과 인구는 아래 수치 표에서도 확인 가능."
+        aria-describedby={`${id}-selection`}>
+        {plotted.map(({ name, population, d, band }) =>
+          <path d={d} fill={band.color} tabindex="0" role="button" aria-pressed="false"
+            aria-label={`${name} ${format.format(population)}명, ${band.label}`}
+            data-district={name} data-population={`${format.format(population)}명`}>
+            <title>{name} · {format.format(population)}명</title>
+          </path>
+        )}
+      </svg>
+    </div>
+    <div class="map-selection" id={`${id}-selection`} role="status" aria-live="polite" aria-atomic="true">
+      <strong data-district-name>자치구별 인구</strong>
+      <span data-district-value>지도에서 자치구 선택</span>
+    </div>
+    <p class="map-help" data-map-help hidden>터치·클릭으로 선택 · 방향키로 이동</p>
+    <div class="population-legend" aria-label="인구 색상 범례, 단위 명">
+      <span class="legend-unit">인구 · 명</span>
+      <ul>
+        {populationBands.map(band => <li>
+          <i style={`background:${band.color}`} aria-hidden="true"></i>
+          <span>{band.lower}</span>{band.upper && <span>{band.upper}</span>}
+        </li>)}
+      </ul>
+    </div>
+  </div>
+  <table slot="table">
+    <caption>분석 입력 자료의 자치구별 인구</caption>
+    <thead><tr><th scope="col">자치구</th><th scope="col">인구(명)</th><th scope="col">색상 구간</th></tr></thead>
+    <tbody>{plotted.map(({ name, population, band }) => <tr>
+      <th scope="row">{name}</th><td>{format.format(population)}</td><td>{band.label}</td>
+    </tr>)}</tbody>
+  </table>
+</StudyFigure>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-district-map]').forEach(map => {
+    const paths = [...map.querySelectorAll<SVGPathElement>('[data-district]')];
+    const name = map.querySelector<HTMLElement>('[data-district-name]');
+    const value = map.querySelector<HTMLElement>('[data-district-value]');
+    const help = map.querySelector<HTMLElement>('[data-map-help]');
+    if (!name || !value || !paths.length) return;
+    if (help) help.hidden = false;
+    map.querySelector('svg')?.setAttribute('aria-label', '자치구별 인구 지도. 자치구를 선택하면 인구 표시. 방향키로 자치구 이동.');
+    const select = (path: SVGPathElement) => {
+      paths.forEach(item => {
+        item.tabIndex = item === path ? 0 : -1;
+        item.setAttribute('aria-pressed', String(item === path));
+      });
+      name.textContent = path.dataset.district ?? '';
+      value.textContent = path.dataset.population ?? '';
+    };
+    paths.forEach((path, index) => {
+      path.tabIndex = index === 0 ? 0 : -1;
+      path.addEventListener('pointerenter', event => {
+        if (event.pointerType !== 'touch') select(path);
+      });
+      path.addEventListener('focus', () => select(path));
+      path.addEventListener('click', () => select(path));
+      path.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          select(path);
+          return;
+        }
+        let next: number | null = null;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % paths.length;
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + paths.length) % paths.length;
+        if (event.key === 'Home') next = 0;
+        if (event.key === 'End') next = paths.length - 1;
+        if (next === null) return;
+        event.preventDefault();
+        paths[next].focus();
+      });
+    });
+  });
+</script>
+<style>
+  .district-map{width:100%;min-width:0}
+  .map-frame{width:100%;max-width:500px;margin-inline:auto;padding:5px}
+  .map-frame svg{display:block;width:100%;height:auto;overflow:visible}
+  .map-frame path{stroke:#fff;stroke-width:3;stroke-linejoin:round;cursor:pointer;outline:none}
+  .map-frame path:hover,.map-frame path[aria-pressed="true"]{stroke:var(--ink);stroke-width:4;paint-order:fill stroke}
+  .map-frame path:focus-visible{stroke:#121b2b;stroke-width:6;filter:drop-shadow(0 0 2px #fff)}
+  .map-selection{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;border-top:1px solid var(--line);padding-top:15px;margin-top:14px;min-height:43px;font-size:17px;line-height:1.6;font-variant-numeric:tabular-nums}
+  .map-selection strong{font-weight:650;color:var(--ink)}
+  .map-selection span{color:var(--blue);font-size:16px}
+  .map-help{margin-top:6px;font-size:14px;line-height:1.6;color:var(--muted)}
+  .map-help[hidden]{display:none}
+  .population-legend{margin-top:20px;font-size:14px;line-height:1.55;color:var(--muted)}
+  .legend-unit{display:block;margin-bottom:9px;font-weight:600;color:var(--ink)}
+  .population-legend ul{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));list-style:none;padding:0;margin:0;gap:7px}
+  .population-legend li{display:flex;flex-direction:column;font-size:14px;letter-spacing:-.015em}
+  .population-legend i{display:block;height:12px;margin-bottom:9px;border:1px solid #71869b40;border-radius:2px}
+  .population-legend li span{white-space:nowrap}
+  @media(max-width:420px){.population-legend ul{gap:5px}.population-legend li{letter-spacing:-.04em}.map-selection{font-size:16px}.map-selection span{font-size:15px}}
+  @media(max-width:380px){.population-legend ul{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}}
+  @media(forced-colors:active){.map-frame path{fill:Canvas;stroke:CanvasText}.map-frame path:focus-visible,.map-frame path[aria-pressed="true"]{fill:Highlight;stroke:HighlightText}}
+  @media print{.map-frame path,.population-legend i{-webkit-print-color-adjust:exact;print-color-adjust:exact}.map-help{display:none}}
+</style>

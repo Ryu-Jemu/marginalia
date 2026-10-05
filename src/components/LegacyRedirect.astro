@@ -1,0 +1,25 @@
+---
+import {site} from '../lib/site';
+interface Props {to:string}
+const {to}=Astro.props;
+if(!to.startsWith('/') || to.startsWith('//')) throw new Error('A legacy redirect requires a local destination');
+const canonical=new URL(to,site.url);
+---
+<!doctype html>
+<html lang="ko" data-redirect={to}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>페이지 이동 · 류제무</title>
+    <link rel="canonical" href={canonical} />
+    <script is:inline>
+      const target=document.documentElement.dataset.redirect;
+      if(target && target.startsWith('/') && !target.startsWith('//')) {
+        location.replace(target + location.search + location.hash);
+      }
+    </script>
+    <noscript><meta http-equiv="refresh" content={`0;url=${to}`} /></noscript>
+  </head>
+  <body><main><h1>페이지 이동</h1><p><a href={to}>포트폴리오 보기</a></p></main></body>
+</html>

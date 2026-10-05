@@ -1,0 +1,97 @@
+---
+import DisclosureIndicator from '../DisclosureIndicator.astro';
+interface Props {
+  id: string;
+  title: string;
+  description?: string;
+  caption: string;
+  eyebrow?: string;
+}
+const { id, title, description, caption, eyebrow } = Astro.props;
+const hasTable = Astro.slots.has('table');
+// The table slot supplies a semantic table with its own caption and scoped headers.
+---
+<figure class="study-figure" id={id} aria-labelledby={`${id}-title`} aria-describedby={`${id}-caption`}>
+  <header class="study-heading">
+    {eyebrow && <p class="study-eyebrow">{eyebrow}</p>}
+    <h3 class="study-title" id={`${id}-title`}>{title}</h3>
+    {description && <p class="study-description">{description}</p>}
+    <p class="study-scroll-hint" data-study-hint hidden>↔ 차트 안에서 좌우로 이동 · 키보드 방향키 지원</p>
+  </header>
+  <div class="study-scroll study-chart" data-study-scroll data-scroll-label={`${title} 차트`} role="region" aria-label={`${title} 차트`} tabindex="0">
+    <slot name="chart"><slot /></slot>
+  </div>
+  {hasTable && <details class="study-details">
+    <summary data-disclosure-summary><span>수치</span><DisclosureIndicator tone="teal"/></summary>
+    <div class="study-scroll study-values" data-study-scroll data-scroll-label={`${title} 수치 표`} role="region" aria-label={`${title} 수치 표`} tabindex="0">
+      <slot name="table" />
+    </div>
+  </details>}
+  <figcaption class="study-caption" id={`${id}-caption`}>{caption}</figcaption>
+</figure>
+<script>
+  // Add a keyboard scroll stop only when the chart or table actually overflows.
+  document.querySelectorAll<HTMLElement>('[data-study-scroll]').forEach(viewport => {
+    const sync = () => {
+      const overflowing = viewport.clientWidth > 0 && viewport.scrollWidth > viewport.clientWidth + 1;
+      if (viewport.classList.contains('study-chart')) {
+        const hint = viewport.closest('figure')?.querySelector<HTMLElement>('[data-study-hint]');
+        if (hint) hint.hidden = !overflowing;
+      }
+      if (overflowing) {
+        viewport.tabIndex = 0;
+        viewport.setAttribute('role', 'region');
+        viewport.setAttribute('aria-label', `${viewport.dataset.scrollLabel}. 좌우 방향키로 이동`);
+      } else {
+        viewport.removeAttribute('tabindex');
+        viewport.removeAttribute('role');
+        viewport.removeAttribute('aria-label');
+      }
+    };
+    const observer = new ResizeObserver(sync);
+    viewport.addEventListener('keydown', event => {
+      if (event.target !== viewport || viewport.scrollWidth <= viewport.clientWidth + 1) return;
+      const step = Math.max(80, Math.round(viewport.clientWidth * .65));
+      const next = event.key === 'ArrowRight' ? viewport.scrollLeft + step
+        : event.key === 'ArrowLeft' ? viewport.scrollLeft - step
+        : event.key === 'Home' ? 0
+        : event.key === 'End' ? viewport.scrollWidth : null;
+      if (next === null) return;
+      event.preventDefault();
+      viewport.scrollLeft = next;
+    });
+    observer.observe(viewport);
+    [...viewport.children].forEach(child => observer.observe(child));
+    viewport.closest('details')?.addEventListener('toggle', sync);
+    document.fonts.ready.then(sync);
+    sync();
+  });
+</script>
+<style>
+  .study-figure{width:100%;max-width:100%;min-width:0;margin:0;padding-top:28px;border-top:1px solid var(--line);scroll-margin-top:110px}
+  .study-heading{margin-bottom:24px;max-width:78ch}
+  .study-eyebrow{margin:0 0 10px;color:var(--icon-teal,var(--blue));font-size:14px;font-weight:600;line-height:1.5}
+  .study-figure .study-title{margin:0;font-size:clamp(20px,2vw,25px);line-height:1.4;letter-spacing:-.025em}
+  .study-description{margin-top:12px;font-size:16px;line-height:1.7;color:var(--muted)}
+  .study-scroll-hint{font-size:14px;line-height:1.6;color:var(--blue);margin-top:14px}
+  .study-scroll-hint[hidden]{display:none}
+  .study-scroll{max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}
+  .study-scroll:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+  .study-chart{padding-block:4px 12px}
+  .study-details{margin-top:20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .study-details>summary{min-height:64px;padding:12px 0;font-size:14px;font-weight:600;line-height:1.65;color:var(--ink);cursor:pointer}
+  .study-details>summary:hover{color:var(--blue)}
+  .study-values{padding-bottom:18px}
+  .study-values :global(table){width:100%;border-collapse:collapse;font-size:14px;line-height:1.6}
+  .study-values :global(caption){padding:5px 0 14px;text-align:left;font-weight:600;color:var(--ink)}
+  .study-values :global(th),.study-values :global(td){padding:12px 16px 12px 0;vertical-align:top;text-align:left;border-bottom:1px solid var(--line)}
+  .study-values :global(th){font-weight:600;color:var(--ink)}
+  .study-values :global(thead th){border-bottom-color:var(--line-strong)}
+  .study-values :global(td){color:var(--muted);font-variant-numeric:tabular-nums}
+  .study-values :global(p){font-size:14px;line-height:1.7;color:var(--muted)}
+  .study-values :global(p + table),.study-values :global(table + p){margin-top:16px}
+  .study-values :global(ul),.study-values :global(ol){font-size:14px;line-height:1.7;margin-top:16px;color:var(--muted)}
+  .study-caption{margin-top:18px;font-size:14px;line-height:1.7;color:var(--muted);max-width:90ch}
+  @media(max-width:600px){.study-figure{padding-top:24px}.study-heading{margin-bottom:18px}.study-description{font-size:16px}.study-values :global(th),.study-values :global(td){padding-right:14px}}
+  @media print{.study-figure{break-inside:avoid}.study-scroll{overflow:visible}.study-chart :global(svg){max-width:100%;height:auto}.study-details>summary{padding-block:10px}.study-values{padding-bottom:12px}}
+</style>

@@ -1,0 +1,33 @@
+---
+interface Props {
+  stages: { title: string; detail: string }[];
+  label?: string;
+  compact?: boolean;
+}
+const { stages, label = '작업 흐름', compact = false } = Astro.props;
+---
+<ol class:list={['flow', { compact }]} data-flow aria-label={label} style={`--stages:${stages.length}`}>
+  {stages.map((stage, index) => (
+    <li data-flow-stage>
+      <div class="flow-top"><span class="flow-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><span class="flow-track" aria-hidden="true"><i data-flow-line></i></span></div>
+      <h3>{stage.title}</h3>
+      <p>{stage.detail}</p>
+    </li>
+  ))}
+</ol>
+<style>
+  .flow{display:grid;grid-template-columns:repeat(var(--stages),minmax(0,1fr));gap:28px;list-style:none;padding:0;margin:0}
+  .flow li{min-width:0;margin:0;padding:0 0 12px}
+  .flow-top{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+  .flow-number{display:grid;place-items:center;flex:0 0 42px;height:42px;border:1px solid var(--line);border-radius:50%;color:var(--blue);background:var(--blue-light);font-size:14px;font-weight:650;transition:background .2s,color .2s}
+  .flow-track{height:1px;flex:1;background:var(--line);position:relative;overflow:hidden}
+  .flow-track i{position:absolute;inset:0;background:var(--blue);transform-origin:left}
+  .flow li:last-child .flow-track{visibility:hidden}
+  .flow li[data-active] .flow-number{background:var(--blue);color:white;border-color:var(--blue)}
+  .flow h3{font-size:20px;margin-bottom:12px;line-height:1.35}
+  .flow p{font-size:16px;line-height:1.65;color:var(--muted);max-width:28ch}
+  .compact{gap:18px}.compact h3{font-size:18px}.compact p{font-size:14px}.compact .flow-top{margin-bottom:18px}
+  @media(max-width:800px){.flow{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:28px}}
+  @media(max-width:480px){.flow{gap:24px 18px}.flow-top{gap:10px;margin-bottom:16px}.flow h3{font-size:18px}.flow p{font-size:14px}.flow-number{flex-basis:36px;height:36px}}
+  @media print{.flow{grid-template-columns:repeat(var(--stages),minmax(0,1fr))}}
+</style>

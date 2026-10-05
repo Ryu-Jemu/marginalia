@@ -1,0 +1,57 @@
+---
+import type { ComponentProps } from 'astro/types';
+import Icon from '../Icon.astro';
+interface Props {
+  label: string;
+  stages: readonly {
+    title: string;
+    detail: string;
+    output: string;
+    icon?: ComponentProps<typeof Icon>['name'];
+  }[];
+}
+const { stages, label } = Astro.props;
+---
+<ol class="preparation-flow" role="list" aria-label={label} data-flow style={`--preparation-columns:${Math.min(Math.max(stages.length, 1), 4)}`}>
+  {stages.map((stage, index) => <li class="preparation-stage" data-flow-stage>
+    <div class="preparation-step" aria-hidden="true">
+      <span class="preparation-number">{index + 1}</span>
+      {index < stages.length - 1 && <span class="preparation-track"><i data-flow-line></i></span>}
+    </div>
+    <div class="preparation-content">
+      <h3 class="preparation-title">{stage.icon && <Icon name={stage.icon} size={20}/>}<span>{stage.title}</span></h3>
+      <p class="preparation-detail">{stage.detail}</p>
+      <p class="preparation-output"><span class="preparation-output-label">산출물</span><span>{stage.output}</span></p>
+    </div>
+  </li>)}
+</ol>
+<style>
+  .preparation-flow{display:grid;grid-template-columns:repeat(var(--preparation-columns),minmax(0,1fr));gap:28px;max-width:100%;min-width:0;list-style:none;margin:0;padding:0}
+  .preparation-flow .preparation-stage{position:relative;min-width:0;margin:0;padding:0}
+  .preparation-step{display:flex;align-items:center;gap:16px;min-height:30px}
+  .preparation-number{display:grid;place-items:center;width:28px;height:28px;flex:0 0 28px;border:1px solid var(--line-strong);border-radius:50%;background:var(--paper);font-size:14px;font-weight:650;line-height:1;color:var(--blue);transition:color .2s,border-color .2s,background .2s}
+  .preparation-track{position:relative;flex:1;height:1px;background:var(--line)}
+  .preparation-track i{position:absolute;inset:0;background:var(--blue);transform-origin:left}
+  .preparation-track::after{position:absolute;right:0;top:-3px;width:6px;height:6px;border-top:1px solid var(--blue);border-right:1px solid var(--blue);transform:rotate(45deg);content:''}
+  .preparation-content{margin-top:18px;min-width:0}
+  .preparation-flow .preparation-title{display:flex;align-items:flex-start;gap:8px;margin:0;font-size:16px;line-height:1.5;letter-spacing:-.02em}
+  .preparation-title :global(.icon){margin-top:2px}
+  .preparation-detail{margin-top:10px;font-size:14px;line-height:1.7;color:var(--muted)}
+  .preparation-output{display:flex;flex-direction:column;gap:4px;border-left:2px solid var(--icon-teal,var(--blue));padding-left:12px;margin-top:16px;font-size:14px;line-height:1.6;color:var(--ink)}
+  .preparation-output-label{font-size:14px;font-weight:600;color:var(--icon-teal,var(--blue))}
+  .preparation-stage[data-active] .preparation-number{color:var(--paper);background:var(--blue);border-color:var(--blue)}
+  @media(max-width:860px){.preparation-flow{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 24px}.preparation-stage:nth-child(even) .preparation-track{visibility:hidden}}
+  @media(max-width:540px){
+    .preparation-flow{grid-template-columns:1fr;gap:28px}
+    .preparation-flow .preparation-stage{display:grid;grid-template-columns:28px minmax(0,1fr);gap:14px}
+    .preparation-step{align-items:flex-start}
+    .preparation-track{display:none}
+    .preparation-stage:not(:last-child)::after{position:absolute;left:13px;top:39px;bottom:-17px;width:1px;background:var(--line);content:''}
+    .preparation-content{margin-top:2px}
+    .preparation-output{margin-top:12px}
+  }
+  @media(prefers-reduced-motion:reduce){.preparation-stage{opacity:1!important}.preparation-track i{transform:none!important}.preparation-number{transition:none}}
+  :global(html[data-motion=off]) .preparation-stage{opacity:1!important}
+  :global(html[data-motion=off]) .preparation-track i{transform:none!important}
+  @media print{.preparation-flow{grid-template-columns:repeat(var(--preparation-columns),minmax(0,1fr));break-inside:avoid}.preparation-flow .preparation-stage{display:block;opacity:1!important}.preparation-stage::after{display:none}.preparation-content{margin-top:14px}.preparation-track{display:block;visibility:visible!important}.preparation-track i{transform:none!important}}
+</style>

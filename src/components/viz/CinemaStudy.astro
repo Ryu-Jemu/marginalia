@@ -1,0 +1,45 @@
+---
+import StudyFigure from './StudyFigure.astro';
+import PreparationFlow from './PreparationFlow.astro';
+import { cinemaKeywords } from '../../data/analysis-results';
+const stages = [
+  {title:'자료 수집',detail:'영화 시장 통계·블로그 검색',output:'통계 표 · 검색 문서',icon:'search' as const},
+  {title:'분석 기준 정리',detail:'권역별 집계·텍스트 정제',output:'권역 지표 · 단어 빈도',icon:'tool' as const},
+  {title:'관계 탐색',detail:'영화관 규모·점유율 비교',output:'상관계수 · 키워드',icon:'chart' as const},
+  {title:'입지 연결',detail:'주소·좌표·주변 시설 결합',output:'지도 · 대시보드',icon:'compass' as const},
+];
+// A deterministic layout, independent of frequency. Size alone encodes frequency.
+const cloudOrder = [11,9,6,14,2,0,8,16,3,1,5,10,7,4,12,17,13,18,15,19];
+---
+<div class="cinema-study">
+  <PreparationFlow label="영화관 시장·텍스트·입지 분석 과정" stages={stages}/>
+  <StudyFigure id="cinema-keywords" eyebrow="텍스트 분석" title="검색 문서에 남은 영화관 키워드"
+    description="관람·주차·시설·할인으로 살펴보는 수집 문서의 주제"
+    caption="공동 분석 자료의 메가박스 관련 블로그 검색 결과 · 불용어 제거 후 빈도 상위 20개. 빈도가 높을수록 큰 글자. 감성 점수나 전체 고객의 선호 비율을 뜻하지 않음.">
+    <div slot="chart" class="keyword-layout">
+      <ul class="word-cloud" aria-label="블로그 키워드와 등장 횟수">
+        {cloudOrder.map(i => { const [word,count] = cinemaKeywords[i]; return <li style={`font-size:${Math.round(Math.sqrt(count)*7)}px`} class:list={{prominent:i<6}}><span>{word}</span><span class="word-frequency"> {count}회</span></li> })}
+      </ul>
+      <div class="keyword-note">
+        <span class="note-label">처리 과정</span>
+        <ol><li>제목·요약 텍스트 결합</li><li>명사 추출·불용어 제외</li><li>단어별 빈도 집계</li></ol>
+        <p>검색 문서에서 반복되는 단어의 탐색</p>
+      </div>
+    </div>
+    <table slot="table">
+      <caption>블로그 검색 문서의 단어 등장 횟수</caption>
+      <thead><tr><th scope="col">단어</th><th scope="col">등장 횟수</th><th scope="col">단어</th><th scope="col">등장 횟수</th></tr></thead>
+      <tbody>{cinemaKeywords.slice(0,10).map(([word,count],i) => <tr><th scope="row">{word}</th><td>{count}회</td><th scope="row">{cinemaKeywords[i+10][0]}</th><td>{cinemaKeywords[i+10][1]}회</td></tr>)}</tbody>
+    </table>
+  </StudyFigure>
+</div>
+<style>
+  .cinema-study{display:grid;gap:32px;min-width:0}
+  .keyword-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(220px,1fr);align-items:center;gap:48px}
+  .word-cloud{min-height:300px;list-style:none;display:flex;flex-wrap:wrap;align-items:center;align-content:center;justify-content:center;gap:12px 22px;max-width:650px;margin:0;padding:20px 12px}
+  .word-cloud li{line-height:1.15;margin:0;font-weight:550;color:var(--ink);white-space:nowrap;letter-spacing:-.03em}.word-cloud li.prominent{color:var(--blue);font-weight:750}
+  .word-frequency{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .keyword-note{border-left:2px solid var(--icon-teal);padding-left:22px;font-size:15px;line-height:1.8}.note-label{font-size:14px;font-weight:650;color:var(--icon-teal)}.keyword-note ol{padding-left:18px;margin-top:12px}.keyword-note li{margin-bottom:7px}.keyword-note p{font-size:14px;color:var(--muted);margin-top:16px}
+  @media(max-width:760px){.keyword-layout{grid-template-columns:1fr;gap:18px}.word-cloud{max-width:580px;margin:auto;min-height:250px}.keyword-note{font-size:14px}.keyword-note ol{display:flex;flex-wrap:wrap;gap:4px 32px}.keyword-note p{margin-top:8px}}
+  @media(max-width:540px){.word-cloud{padding-inline:0;gap:12px 16px}.keyword-note ol{display:block}}
+</style>

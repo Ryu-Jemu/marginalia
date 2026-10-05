@@ -1,0 +1,144 @@
+---
+import Icon from '../Icon.astro';
+import DisclosureIndicator from '../DisclosureIndicator.astro';
+import type { ArchitectureModel, ArchitectureEdge, ArchitectureNode, ArchitectureRole, ArchitectureEdgeKind } from '../../data/architecture-types';
+interface Props { model: ArchitectureModel; showDetails?: boolean }
+const { model, showDetails = true } = Astro.props;
+const id = `architecture-${model.id.replace(/[^a-z0-9_-]/gi, '-')}`;
+const roleNames: Record<ArchitectureRole, string> = { owned: '본인 구현·구성', shared: '연동·개선', external: '연동 대상·공동 기반' };
+const edgeNames: Record<ArchitectureEdgeKind, string> = { request: '호출·데이터 전달', event: '작업·이벤트', storage: '저장소 접근' };
+const edgeKinds: ArchitectureEdgeKind[] = ['request', 'event', 'storage'];
+const roles: ArchitectureRole[] = ['owned', 'shared', 'external'];
+const nodeById = new Map(model.nodes.map(node => [node.id, node]));
+if (nodeById.size !== model.nodes.length) throw new Error(`${model.id}: duplicate architecture node`);
+for (const edge of model.edges) {
+  if (!nodeById.has(edge.from) || !nodeById.has(edge.to) || edge.points.length < 2) {
+    throw new Error(`${model.id}: invalid architecture connection ${edge.from} -> ${edge.to}`);
+  }
+}
+const pathOf = (edge: ArchitectureEdge) => edge.points.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ');
+const textWidth = (text: string, fontSize = 14) => [...text].reduce((width, char) => width + fontSize * (/\s/.test(char) ? .3 : /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(char) ? 1 : /[A-Z]/.test(char) ? .65 : /[ilI.,·:]/.test(char) ? .3 : .53), 0);
+function linesOf(text: string, available: number): string[] {
+  if (!text) return [];
+  const lines: string[] = [];
+  let line = '';
+  for (const word of text.split(/\s+/)) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (textWidth(candidate) <= available || !line) line = candidate;
+    else { lines.push(line); line = word; }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+const nodeLayout = (node: ArchitectureNode) => {
+  const width = node.width ?? 156;
+  const detail = linesOf(node.detail, width - 24);
+  const role = linesOf(node.roleLabel ?? '', width - 24);
+  return { width, height: node.height ?? 84, detail, role, roleY: 48 + detail.length * 18 + 4 };
+};
+const labelPosition = (edge: ArchitectureEdge) => {
+  const middle = Math.max(0, Math.floor((edge.points.length - 1) / 2));
+  const start = edge.points[middle];
+  const end = edge.points[middle + 1];
+  return { x: edge.labelX ?? (start[0] + end[0]) / 2, y: edge.labelY ?? (start[1] + end[1]) / 2 - 9 };
+};
+---
+<figure class="architecture-figure" data-network style={`--diagram-width:${model.width}px`}>
+  <figcaption class="architecture-caption"><strong>{model.title}</strong><p>{model.summary}</p></figcaption>
+  <div class="architecture-legends">
+    <ul class="role-legend" aria-label="기여 범위">{roles.map(role => <li><span class={`role-key role-${role}`} aria-hidden="true"></span>{roleNames[role]}</li>)}</ul>
+    <ul class="edge-legend" aria-label="연결 종류">{edgeKinds.map(kind => <li><span class={`edge-key edge-${kind}`} aria-hidden="true"></span>{edgeNames[kind]}</li>)}</ul>
+  </div>
+  <p class="architecture-scroll-hint" id={`${id}-scroll-hint`}><Icon name="arrow-up-right" size={16}/>작은 화면에서는 좌우로 이동 · 방향키로 전체 구조 탐색</p>
+  <div class="architecture-viewport" tabindex="0" role="region" aria-label={`${model.title} 도식`} aria-describedby={`${id}-scroll-hint`}>
+    <svg class="architecture-canvas" viewBox={`0 0 ${model.width} ${model.height}`} width={model.width} height={model.height} role="img" aria-labelledby={`${id}-title ${id}-description`}>
+      <title id={`${id}-title`}>{model.title}</title>
+      <desc id={`${id}-description`}>{model.summary} 파란 실선은 호출과 데이터 전달, 주황 점선은 작업과 이벤트, 회색 선은 저장소 접근. 파란 실선 테두리는 본인 구현·구성, 파란 점선 테두리는 연동·개선, 회색 테두리는 연동 대상·공동 기반. 전체 구성과 연결은 아래 연결 항목에서 확인 가능.</desc>
+      <defs>{edgeKinds.map(kind => <marker id={`${id}-arrow-${kind}`} class={`arrow-${kind}`} viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 8 4 0 8 2 4Z"/></marker>)}</defs>
+      <g class="architecture-zones">{model.zones.map(zone => <g><rect x={zone.x} y={zone.y} width={zone.width} height={zone.height} rx="10"/><text x={zone.x + 14} y={zone.y + 25}>{zone.label}</text></g>)}</g>
+      <g class="architecture-edges" fill="none">{model.edges.map(edge => <path class={`architecture-edge edge-${edge.kind}`} d={pathOf(edge)} marker-end={`url(#${id}-arrow-${edge.kind})`}/>)}</g>
+      <g class="architecture-packets" fill="none" aria-hidden="true">{model.edges.filter(edge => edge.kind !== 'storage').map((edge, index) => <path class={`architecture-packet edge-${edge.kind}`} d={pathOf(edge)} pathLength="100" style={`animation-delay:${index * -.63}s`}/>)}</g>
+      <g class="architecture-nodes">{model.nodes.map(node => {
+        const layout = nodeLayout(node);
+        return <g class={`architecture-node node-${node.role}`} transform={`translate(${node.x} ${node.y})`}>
+          <rect class="node-surface" width={layout.width} height={layout.height} rx="8"/>
+          <g class="node-icon" transform="translate(13 12)"><Icon name={node.icon} size={22}/></g>
+          <text class="node-label" x="44" y="28">{node.label}</text>
+          <text class="node-detail" x="12" y="48">{layout.detail.map((line, index) => <tspan x="12" dy={index ? 18 : 0}>{line}</tspan>)}</text>
+          {layout.role.length > 0 && <text class="node-role" x="12" y={layout.roleY}>{layout.role.map((line, index) => <tspan x="12" dy={index ? 18 : 0}>{line}</tspan>)}</text>}
+        </g>;
+      })}</g>
+      <g class="architecture-edge-labels">{model.edges.filter(edge => edge.label).map(edge => {
+        const position = labelPosition(edge);
+        const width = textWidth(edge.label!) + 14;
+        return <g class={`edge-caption edge-${edge.kind}`} transform={`translate(${position.x} ${position.y})`}><rect x={-width / 2} y="-15" width={width} height="21" rx="3"/><text text-anchor="middle">{edge.label}</text></g>;
+      })}</g>
+    </svg>
+  </div>
+  {model.notes.length > 0 && <ul class="architecture-notes">{model.notes.map(note => <li>{note}</li>)}</ul>}
+  {showDetails && <details class="architecture-details" id={`${id}-details`}>
+    <summary data-disclosure-summary><span class="architecture-details-label"><Icon name="layers" size={18}/>연결</span><DisclosureIndicator/></summary>
+    <div class="architecture-text">
+      <section><h3>구성 요소와 역할</h3><dl>{model.nodes.map(node => <div><dt>{node.label}</dt><dd>{node.detail}<span>{roleNames[node.role]}{node.roleLabel ? ` · ${node.roleLabel}` : ''}</span></dd></div>)}</dl></section>
+      <section><h3>방향별 연결</h3><ol>{model.edges.map(edge => <li><span class={`connection-kind kind-${edge.kind}`}>{edgeNames[edge.kind]}</span><span>{nodeById.get(edge.from)!.label} → {nodeById.get(edge.to)!.label}{edge.label ? ` · ${edge.label}` : ''}</span></li>)}</ol></section>
+    </div>
+  </details>}
+</figure>
+<style>
+  .architecture-figure{margin:0;min-width:0;max-width:100%;color:var(--ink)}
+  .architecture-caption{margin-bottom:20px;font-size:16px;line-height:1.65}
+  .architecture-caption strong{display:block;font-size:18px;font-weight:650;line-height:1.45}
+  .architecture-caption p{font-size:15px;color:var(--muted);margin-top:6px}
+  .architecture-legends{display:flex;flex-direction:column;gap:10px;padding-block:15px;border-block:1px solid var(--line);margin-bottom:12px}
+  .architecture-legends ul{display:flex;flex-wrap:wrap;gap:10px 24px;list-style:none;margin:0;padding:0}
+  .architecture-legends li{display:flex;align-items:center;gap:8px;margin:0;font-size:14px;line-height:1.5;color:var(--muted)}
+  .role-key{width:19px;height:15px;border:1.5px solid #778393;border-radius:3px;background:#fff;flex:none}
+  .role-owned{border:2px solid var(--blue);background:var(--blue-light)}
+  .role-shared{border:2px dashed var(--blue)}
+  .edge-key{position:relative;width:24px;height:0;border-top:2px solid;flex:none;margin-right:2px}
+  .edge-key::after{content:'';position:absolute;right:-1px;top:-4px;width:5px;height:5px;border-top:2px solid;border-right:2px solid;transform:rotate(45deg)}
+  .edge-key.edge-event{border-top-style:dashed}
+  .edge-request{color:var(--blue,#2357d9)}.edge-event{color:#b65c19}.edge-storage{color:#697787}
+  .architecture-scroll-hint{display:flex;align-items:center;gap:7px;margin:0 0 12px;font-size:14px;line-height:1.5;color:var(--muted)}
+  .architecture-scroll-hint :global(.icon){color:var(--blue);flex:none}
+  .architecture-viewport{width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;scrollbar-color:#98a4b7 var(--surface);padding-bottom:10px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+  .architecture-viewport:focus-visible{outline:3px solid var(--blue);outline-offset:4px}
+  .architecture-canvas{display:block;width:var(--diagram-width);min-width:var(--diagram-width);max-width:none;height:auto;margin-inline:auto;font-family:var(--font,sans-serif)}
+  .architecture-zones rect{fill:#f4f6f8;stroke:#dce1e8;stroke-width:1}
+  .architecture-zones text{fill:var(--muted);font-size:14px;font-weight:600;letter-spacing:0}
+  .architecture-edge{stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .architecture-edge.edge-event{stroke-dasharray:6 5;stroke-width:2}
+  .arrow-request path{fill:var(--blue,#2357d9)}.arrow-event path{fill:#b65c19}.arrow-storage path{fill:#697787}
+  .architecture-packet{stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-dasharray:2 98;stroke-dashoffset:-38;opacity:0;animation:architecture-flow 5.4s linear infinite;animation-play-state:paused}
+  .architecture-figure[data-network-active] .architecture-packet{opacity:.8;animation-play-state:running}
+  .node-surface{fill:#fff;stroke:#7f8b9b;stroke-width:1.5}
+  .node-owned .node-surface{stroke:var(--blue);stroke-width:2;fill:var(--blue-light)}
+  .node-shared .node-surface{stroke:var(--blue);stroke-width:2;stroke-dasharray:6 3}
+  .node-icon{color:#566171}.node-owned .node-icon,.node-shared .node-icon{color:var(--blue)}
+  .node-label{fill:var(--ink);font-size:17px;font-weight:650;letter-spacing:-.015em}
+  .node-detail{fill:var(--muted);font-size:14px;font-weight:450}
+  .node-role{fill:var(--muted);font-size:14px;font-weight:500}.node-owned .node-role,.node-shared .node-role{fill:#244eae}
+  .edge-caption rect{fill:#fff;fill-opacity:.97}
+  .edge-caption text{fill:currentColor;font-size:14px;font-weight:500}
+  .architecture-notes{display:grid;gap:7px;padding-left:18px;margin:17px 0 0;font-size:14px;line-height:1.75;color:var(--muted)}
+  .architecture-notes li{margin:0}
+  .architecture-details{margin-top:22px;border-block:1px solid var(--line)}
+  .architecture-details summary{display:flex;align-items:center;gap:9px;cursor:pointer;min-height:64px;list-style:none;font-size:15px;font-weight:600}
+  .architecture-details summary::-webkit-details-marker{display:none}
+  .architecture-details-label{display:inline-flex;align-items:center;gap:9px}
+  .architecture-text{padding:6px 0 24px;display:grid;grid-template-columns:1fr 1fr;gap:32px;min-width:0}
+  .architecture-text h3{font-size:16px;margin:0 0 16px;line-height:1.5}
+  .architecture-text dl{display:grid;gap:15px;margin:0}
+  .architecture-text dt{font-size:15px;font-weight:600;line-height:1.5}
+  .architecture-text dd{margin:4px 0 0;font-size:14px;color:var(--muted);line-height:1.65}
+  .architecture-text dd span{display:block;margin-top:3px}
+  .architecture-text ol{padding-left:18px;margin:0;font-size:14px;line-height:1.7}
+  .architecture-text li+li{margin-top:13px}
+  .connection-kind{display:block;font-weight:600;font-size:14px}
+  .kind-request{color:var(--blue)}.kind-event{color:#b65c19}.kind-storage{color:#697787}
+  @keyframes architecture-flow{from{stroke-dashoffset:0}to{stroke-dashoffset:-100}}
+  @media(max-width:600px){.architecture-caption{margin-bottom:16px}.architecture-legends ul{gap:9px 18px}.architecture-scroll-hint{align-items:flex-start}.architecture-scroll-hint :global(.icon){margin-top:3px}.architecture-text{grid-template-columns:1fr;gap:28px}.architecture-details{margin-top:18px}}
+  @media(prefers-reduced-motion:reduce){.architecture-packet{animation:none!important;opacity:0!important}}
+  :global(html[data-motion='off']) .architecture-packet{animation:none!important;opacity:0!important}
+  @media print{.architecture-viewport{overflow:visible;padding:0;border:0}.architecture-canvas{width:100%;min-width:0;max-width:100%}.architecture-scroll-hint{display:none}.architecture-packet{animation:none!important;opacity:0!important}.architecture-text{grid-template-columns:1fr 1fr}.architecture-details::details-content{content-visibility:visible!important;display:block!important}.architecture-text{display:grid!important}.architecture-details summary{display:none}}
+</style>

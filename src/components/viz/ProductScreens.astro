@@ -1,0 +1,65 @@
+---
+import { Image } from 'astro:assets';
+import mapHome from '../../assets/projects/map/screen-home.png';
+import mapItinerary from '../../assets/projects/map/screen-itinerary.png';
+import dartooHome from '../../assets/projects/dartoo/screen-home.png';
+import dartooDisclosure from '../../assets/projects/dartoo/screen-disclosure.png';
+import dartooChat from '../../assets/projects/dartoo/screen-chat.png';
+interface Props { project: 'map' | 'dartoo'; home?: boolean }
+const { project, home = false } = Astro.props;
+const all = project === 'map' ? [
+  { image: mapHome, label: '여행의 시작', alt: 'MAP 앱 홈: 여행지와 일정 탐색 화면' },
+  { image: mapItinerary, label: '일정과 장소를 한눈에', alt: 'MAP 앱 일정 상세: 장소별 방문 순서와 지도 화면' },
+] : [
+  { image: dartooHome, label: '관심 기업의 공시', alt: 'Dartoo 모바일 웹: 기업 공시 목록 화면' },
+  { image: dartooDisclosure, label: '핵심 내용 요약', alt: 'Dartoo 모바일 웹: 공시 원문과 AI 요약 화면' },
+  { image: dartooChat, label: '공시에 관한 질문', alt: 'Dartoo 모바일 웹: 공시 기반 질문과 답변 화면' },
+];
+const shots = home ? all.slice(0, 2) : all;
+const name = project === 'map' ? 'MAP' : 'Dartoo';
+---
+<div class:list={['product-screens', { 'is-home': home }]} data-phone-deck={!home ? '' : undefined} aria-label={`${name} 실제 서비스 화면`} role="group">
+  <div class="screen-viewport" data-deck-viewport>
+    {shots.map((shot) => (
+      <figure class="screen-shot" data-deck-shot data-label={shot.label}>
+        <div class="phone-frame">
+          <Image src={shot.image} width={660} height={Math.round(660 * shot.image.height / shot.image.width)} widths={[330,660]} sizes={home ? '(max-width: 600px) 145px, 220px' : '(max-width: 600px) 240px, 248px'} alt={shot.alt} format="webp" quality={88} loading="lazy" draggable="false" />
+        </div>
+      </figure>
+    ))}
+  </div>
+  {!home && <div class="deck-controls" data-deck-controls hidden>
+    <div class="deck-navigation">
+      <button type="button" data-deck-step="-1" aria-label="이전 화면"><span aria-hidden="true">←</span></button>
+      <p class="deck-position" data-deck-status aria-live="polite" aria-atomic="true">1 / {shots.length} · {shots[0].label}</p>
+      <button type="button" data-deck-step="1" aria-label="다음 화면"><span aria-hidden="true">→</span></button>
+    </div>
+    <div class="deck-dots" aria-label="화면 선택">{shots.map((shot, index) => <button type="button" data-deck-index={index} aria-label={`${index + 1}번째 화면: ${shot.label}`} aria-pressed={index === 0}><span></span></button>)}</div>
+    <p class="deck-hint">버튼 · 좌우 방향키 · 스와이프로 탐색</p>
+  </div>}
+</div>
+<style>
+  .product-screens{max-width:560px;margin-inline:auto;background:transparent;border:0;border-radius:0;min-width:0}
+  .screen-viewport{display:flex;justify-content:center;align-items:flex-start;gap:28px;flex-wrap:wrap;min-width:0;padding:32px 24px;background:transparent;border-radius:0;touch-action:pan-y}
+  .screen-viewport:focus-visible{outline:3px solid var(--blue,#2357d9);outline-offset:-8px;border-radius:10px}
+  .screen-shot{flex:0 1 248px;min-width:0;max-width:248px;margin:0}
+  .phone-frame{border:4px solid #252a32;background:#252a32;border-radius:26px;overflow:hidden;box-shadow:0 16px 32px rgba(24,34,56,.15),0 3px 8px rgba(24,34,56,.12);line-height:0}
+  .phone-frame img{display:block;width:100%;height:auto;margin:0;padding:0;border-radius:21px}
+  .is-home .screen-viewport{flex-wrap:nowrap;gap:26px;align-items:flex-end;padding:30px 24px}
+  .is-home .screen-shot{flex:1 1 0;max-width:184px}
+  [data-deck-ready] .screen-shot{flex-basis:248px;width:100%}
+  .deck-controls{padding:18px 22px 16px;text-align:center;background:transparent;border-top:2px solid var(--rule,#263244)}
+  .deck-navigation{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;justify-content:center;align-items:center;gap:18px;max-width:390px;margin-inline:auto}
+  .deck-navigation button{height:44px;width:44px;min-height:44px;padding:0;flex-shrink:0;background:#fff;color:var(--ink);border:2px solid var(--rule,#263244);border-radius:8px;font-size:21px;line-height:1}
+  .deck-navigation button:hover:not(:disabled){background:var(--stage-blue,#284ddb);border-color:var(--stage-blue,#284ddb);color:#fff}
+  .deck-navigation button:disabled{opacity:.3;cursor:default;border-color:var(--line-strong,#929eaf);background:#fff}
+  .deck-position{font-size:14px;font-weight:600;line-height:1.6;color:var(--ink);min-width:0}
+  .deck-dots{display:flex;justify-content:center;margin-top:3px;gap:0}
+  .deck-dots button{border:0;display:grid;place-items:center;min-height:44px;width:44px;padding:0;background:transparent}
+  .deck-dots button:hover{background:var(--blue-light)}
+  .deck-dots button span{display:block;width:7px;height:7px;background:var(--line-strong,#929eaf);border-radius:50%}
+  .deck-dots button[aria-pressed=true] span{background:var(--stage-blue,#284ddb);width:22px;border-radius:8px}
+  .deck-hint{font-size:14px;color:var(--muted);margin-top:0;line-height:1.5}
+  @media(max-width:600px){.screen-viewport{padding:26px 20px}.is-home .screen-viewport{padding:26px 16px;gap:20px}.phone-frame{border-radius:24px}.phone-frame img{border-radius:19px}.screen-shot,[data-deck-ready] .screen-shot{flex-basis:240px;max-width:240px}.deck-controls{padding:16px 16px 14px}.deck-navigation{gap:12px}.deck-position{font-size:14px}.is-home .screen-shot{max-width:184px}}
+  @media print{.product-screens{break-inside:avoid;max-width:none;background:transparent;border:0}.screen-shot{max-width:180px!important;flex:1 1 0!important}.screen-shot[hidden]{display:block!important}.screen-viewport{flex-wrap:nowrap;padding:20px;background:transparent}.deck-controls{display:none}.phone-frame{box-shadow:none;border-color:var(--rule,#263244)}}
+</style>

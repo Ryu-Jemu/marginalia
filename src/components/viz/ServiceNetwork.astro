@@ -1,0 +1,178 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = 'service-network' } = Astro.props;
+const arrowId = `${id}-arrow`;
+const descriptionId = `${id}-description`;
+---
+
+<div class="service-network" data-network>
+  <svg
+    viewBox="0 0 260 180"
+    width="260"
+    height="180"
+    role="img"
+    aria-label="데이터와 AI, 백엔드, 앱을 연결하는 서비스 흐름"
+    aria-describedby={descriptionId}
+  >
+    <title>AI와 서비스를 잇는 작업</title>
+    <desc id={descriptionId}>데이터가 AI로 연결되고, AI·백엔드·앱 사이를 오가는 흐름을 단순화한 도식.</desc>
+
+    <defs>
+      <marker id={arrowId} viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M1 1 L5 3 L1 5" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" />
+      </marker>
+    </defs>
+
+    <g class="network-connections" fill="none" marker-end={`url(#${arrowId})`}>
+      <path d="M40 42 C67 42 82 48 101 48" />
+      <path d="M111 69 C100 84 85 96 77 107" />
+      <path d="M88 127 H178" />
+      <path d="M204 101 C204 66 184 48 159 48" />
+    </g>
+
+    <g class="network-packets" fill="none" aria-hidden="true">
+      <path class="network-packet packet-data" d="M40 42 C67 42 82 48 101 48" pathLength="100" />
+      <path class="network-packet packet-ai" d="M111 69 C100 84 85 96 77 107" pathLength="100" />
+      <path class="network-packet packet-api" d="M88 127 H178" pathLength="100" />
+      <path class="network-packet packet-app" d="M204 101 C204 66 184 48 159 48" pathLength="100" />
+    </g>
+
+    <circle class="network-ring" cx="130" cy="48" r="32" fill="none" />
+    <circle class="node-ai" cx="130" cy="48" r="25" />
+    <text class="label-ai" x="130" y="54">AI</text>
+
+    <circle class="node-data" cx="27" cy="42" r="9" />
+    <circle class="node-data-core" cx="27" cy="42" r="3" />
+    <text class="network-label" x="28" y="19">데이터</text>
+
+    <circle class="node-service" cx="64" cy="127" r="23" />
+    <g class="node-icon" aria-hidden="true">
+      <rect x="53" y="117" width="22" height="8" rx="2" />
+      <rect x="53" y="129" width="22" height="8" rx="2" />
+      <path d="M58 121 H61 M58 133 H61" />
+    </g>
+    <text class="network-label" x="64" y="173">백엔드</text>
+
+    <circle class="node-service" cx="204" cy="127" r="23" />
+    <g class="node-icon" aria-hidden="true">
+      <rect x="197" y="116" width="14" height="23" rx="3" />
+      <path d="M201 135 H207" />
+    </g>
+    <text class="network-label" x="204" y="173">앱</text>
+  </svg>
+</div>
+
+<style>
+  .service-network {
+    width: 260px;
+    max-width: 100%;
+    margin-inline: auto;
+    color: var(--ink, #20242b);
+  }
+
+  .service-network svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .network-connections {
+    color: #78828f;
+    stroke: currentColor;
+    stroke-width: 1.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .network-connections > path,
+  .network-packet,
+  .network-ring,
+  .node-service,
+  .node-data,
+  .node-icon > * {
+    vector-effect: non-scaling-stroke;
+  }
+
+  .network-packet {
+    stroke: var(--blue, #2357d9);
+    stroke-width: 3.2;
+    stroke-linecap: round;
+    stroke-dasharray: 2 98;
+    stroke-dashoffset: -42;
+    animation: network-flow 4.8s linear infinite;
+    animation-play-state: paused;
+  }
+
+  .packet-data { animation-delay: -0.5s; }
+  .packet-ai { animation-delay: -2.1s; }
+  .packet-api { animation-delay: -3.5s; }
+  .packet-app { animation-delay: -1.2s; }
+
+  .network-ring {
+    stroke: var(--blue, #2357d9);
+    stroke-width: 1;
+    opacity: 0.35;
+    transform-origin: 130px 48px;
+    animation: network-ring 4.8s ease-in-out infinite;
+    animation-play-state: paused;
+  }
+
+  .service-network[data-network-active] .network-packet,
+  .service-network[data-network-active] .network-ring {
+    animation-play-state: running;
+  }
+
+  .node-ai { fill: var(--blue, #2357d9); }
+  .node-data { fill: var(--paper, #fff); stroke: var(--blue, #2357d9); stroke-width: 1.5; }
+  .node-data-core { fill: var(--blue, #2357d9); }
+  .node-service { fill: var(--paper, #fff); stroke: #66717f; stroke-width: 1.3; }
+  .node-icon { fill: none; stroke: var(--ink, #20242b); stroke-width: 1.5; stroke-linecap: round; }
+
+  .network-label,
+  .label-ai {
+    text-anchor: middle;
+    font-family: var(--font, sans-serif);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  .network-label { fill: var(--ink, #20242b); }
+  .label-ai { fill: #fff; font-weight: 700; letter-spacing: 0; }
+
+  @keyframes network-flow {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: -100; }
+  }
+
+  @keyframes network-ring {
+    0%, 100% { opacity: 0.25; transform: scale(0.97); }
+    50% { opacity: 0.45; transform: scale(1.04); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .network-packet,
+    .network-ring { animation: none !important; }
+    .network-packet { stroke-dashoffset: -42; }
+    .network-ring { opacity: 0.35; transform: none; }
+  }
+
+  :global(html[data-motion='off']) .network-packet,
+  :global(html[data-motion='off']) .network-ring {
+    animation: none !important;
+  }
+
+  :global(html[data-motion='off']) .network-packet { stroke-dashoffset: -42; }
+  :global(html[data-motion='off']) .network-ring { opacity: 0.35; transform: none; }
+
+  @media print {
+    .network-packet,
+    .network-ring { animation: none !important; }
+    .network-packet { stroke-dashoffset: -42; }
+    .network-ring { opacity: 0.35; transform: none; }
+  }
+</style>

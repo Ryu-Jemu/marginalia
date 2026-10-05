@@ -1,0 +1,38 @@
+---
+import Icon from './Icon.astro';
+import type { Project } from '../lib/content';
+
+interface Props { cloud: NonNullable<Project['data']['cloud']> }
+const { cloud } = Astro.props;
+---
+<div class="cloud-environment">
+  <p class="cloud-summary">{cloud.summary}</p>
+  <div class="cloud-groups">
+    {cloud.groups.map(group => (
+      <section class="cloud-group">
+        <header>
+          <h3><Icon name={group.icon} size={22}/><span>{group.title}</span></h3>
+          <span class:list={['cloud-status', { 'cloud-status-progress': group.status === '구성 중' }]}>{group.status}</span>
+        </header>
+        <ul>{group.items.map(item => <li>{item}</li>)}</ul>
+      </section>
+    ))}
+  </div>
+</div>
+
+<style>
+  .cloud-environment{min-width:0}
+  .cloud-summary{max-width:70ch;margin:0 0 25px;color:var(--muted);font-size:17px;line-height:1.75;word-break:keep-all;overflow-wrap:anywhere}
+  .cloud-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+  .cloud-group{min-width:0;border-top:1px solid var(--line);padding-top:18px}
+  .cloud-group header{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+  .cloud-group h3{display:flex;align-items:flex-start;gap:9px;margin:0;color:var(--ink);font-size:17px;font-weight:650;line-height:1.55;word-break:keep-all;overflow-wrap:anywhere}
+  .cloud-group h3 :global(.icon){margin-top:2px;flex:none}
+  .cloud-status{display:inline-flex;align-items:center;padding:2px 8px;border:1px solid var(--line);border-radius:5px;background:var(--blue-light);color:var(--blue);font-size:14px;font-weight:550;line-height:1.5;white-space:nowrap}
+  .cloud-status-progress{background:var(--surface);color:var(--muted)}
+  .cloud-group ul{display:grid;gap:7px;margin:15px 0 0;padding-left:18px;color:var(--ink);font-size:16px;line-height:1.75;word-break:keep-all;overflow-wrap:anywhere}
+  .cloud-group li{margin:0;padding-left:1px}
+  .cloud-group li::marker{color:var(--muted)}
+  @media(max-width:700px){.cloud-groups{grid-template-columns:1fr;gap:25px}.cloud-summary{font-size:16px;margin-bottom:20px}.cloud-group header{flex-direction:row;align-items:center;justify-content:space-between;gap:12px}.cloud-group h3{min-width:0}.cloud-status{flex:none}}
+  @media print{.cloud-groups{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.cloud-group{break-inside:avoid}.cloud-status{background:transparent}}
+</style>

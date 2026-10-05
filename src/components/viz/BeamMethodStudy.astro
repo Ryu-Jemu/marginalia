@@ -1,0 +1,50 @@
+---
+import StudyFigure from './StudyFigure.astro';
+import PreparationFlow from './PreparationFlow.astro';
+const stages = [
+  {title:'패치 구성',detail:'과거 40시점을 5시점씩 분할',output:'8개 패치',icon:'grid' as const},
+  {title:'입력 투영',detail:'128차원 패치·어텐션 결합',output:'768차원 모델 입력',icon:'layers' as const},
+  {title:'언어 모델 연결',detail:'텍스트 prefix + 동결 GPT-2',output:'결합된 표현',icon:'brain' as const},
+  {title:'출력 투영',detail:'학습 가능한 회귀 출력 계층',output:'미래 10시점',icon:'chart' as const},
+];
+---
+<StudyFigure id="beam-input-method" eyebrow="사례 구현 · 입력 표현" title="수치 시계열을 언어 모델에 연결"
+  description="시점별 입력 → 패치 → 언어 모델 표현 → 회귀 출력"
+  caption="노트북 구현의 입력·모델 구성. 경로 인덱스를 빔 라벨로 사용하는 문제와 독립 평가 보완 필요.">
+  <div slot="chart" class="beam-method">
+    <div class="input-patches">
+      <div class="input-fields"><strong>시점별 입력</strong><ul><li>경로 인덱스</li><li>AoD 방위각</li><li>AoD 고도각</li></ul><span>과거 40시점 × 입력 3개</span></div>
+      <div class="patch-view">
+        <div class="patches" aria-label="과거 40시점을 5시점씩 나눈 8개 패치. 색은 묶음을 구분하며 관측값을 나타내지 않음.">
+          {Array.from({length:8},(_,i) => <div class="patch"><div aria-hidden="true">{Array.from({length:5},() => <i></i>)}</div><span>패치 {i+1}</span></div>)}
+        </div>
+        <span class="patch-caption">칸 1개 = 시점 1개 · 값의 크기를 나타내지 않는 구성도</span>
+      </div>
+    </div>
+    <PreparationFlow label="입력 패치와 동결 언어 모델의 결합" stages={stages}/>
+    <div class="learning-scope">
+      <p><strong>학습</strong><span>패치·어텐션·입출력 투영 계층</span></p>
+      <p><strong>동결</strong><span>사전학습 GPT-2 가중치</span></p>
+    </div>
+  </div>
+  <table slot="table">
+    <caption>입력 처리와 학습 범위</caption>
+    <thead><tr><th scope="col">구분</th><th scope="col">구현 내용</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">전처리</th><td>시계열 윈도 구성 · AoD 비유한 값 처리</td></tr>
+      <tr><th scope="row">텍스트 prefix</th><td>도메인 설명 · 예측 지시 · 입력 평균</td></tr>
+      <tr><th scope="row">학습 범위</th><td>동결 언어 모델 주변의 결합 계층과 출력 계층</td></tr>
+      <tr><th scope="row">다음 과제</th><td>빔 코드북 기준 라벨 정합성 · 독립 평가 구성</td></tr>
+    </tbody>
+  </table>
+</StudyFigure>
+<style>
+  .beam-method{display:grid;gap:30px;min-width:0}
+  .input-patches{display:grid;grid-template-columns:210px minmax(0,1fr);gap:30px;align-items:center;padding-bottom:26px;border-bottom:1px solid var(--line)}
+  .input-fields{font-size:15px;line-height:1.6}.input-fields>strong{font-size:16px}.input-fields ul{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:10px}.input-fields li{margin:0}.input-fields>span{display:block;color:var(--muted);font-size:14px;margin-top:10px}
+  .patches{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px}.patch>div{display:flex;gap:3px}.patch i{flex:1;height:56px;border-radius:2px;background:#c7d8f9;border:1px solid #7193d5}.patch:nth-child(even) i{background:#c6e6e3;border-color:#72aaa5}.patch>span{display:block;text-align:center;font-size:14px;margin-top:8px;white-space:nowrap;color:var(--muted)}
+  .patch-caption{display:block;font-size:14px;line-height:1.6;color:var(--muted);margin-top:18px}
+  .learning-scope{display:grid;grid-template-columns:1fr 1fr;gap:20px;border-top:1px solid var(--line);padding-top:22px}.learning-scope p{font-size:15px;line-height:1.7;display:flex;align-items:baseline;gap:12px}.learning-scope strong{font-size:14px;color:var(--blue);flex:none}.learning-scope p:last-child strong{color:var(--icon-violet)}.learning-scope span{color:var(--muted)}
+  @media(max-width:1000px){.input-patches{grid-template-columns:1fr}.patches{gap:10px}.learning-scope{grid-template-columns:1fr;gap:8px}}
+  @media(max-width:600px){.patches{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px 12px}.patch i{height:42px}.input-patches{gap:22px}}
+</style>

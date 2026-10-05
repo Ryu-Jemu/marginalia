@@ -1,0 +1,40 @@
+---
+import districts from '../../data/seoul-districts.json';
+interface Props { kind: 'crime' | 'cinema'; compact?: boolean }
+const { kind, compact = false } = Astro.props;
+// Published study export: extracted_keywords.csv, descending frequency.
+const words = [['관람',43],['최신',41],['주차장',40],['주차',39],['대구',33],['시네마',33]] as const;
+---
+<figure class:list={['analysis-visual', kind, { compact }]}>
+  {kind === 'crime' ? <>
+    <div class="visual-heading"><span>자치구 기준 공공자료 결합</span><span>서울</span></div>
+    <svg class="district-map" viewBox="-4 -4 768 634" role="img" aria-label="공공자료를 결합한 서울 25개 자치구의 분석 범위 지도">
+      {districts.map(district => <path d={district.d} fill="#dce7fb" stroke="#ffffff" stroke-width="3" stroke-linejoin="round"><title>{district.name}</title></path>)}
+    </svg>
+    <div class="map-legend" aria-label="자료 결합 과정"><span>공공자료</span><b aria-hidden="true">→</b><span>자치구 결합</span><b aria-hidden="true">→</b><span>모형 비교</span></div>
+    <figcaption>범죄·시설·인구 자료를 자치구 단위로 연결한 분석 범위.</figcaption>
+  </> : <>
+    <div class="visual-heading"><span>블로그 속 영화관 키워드</span><span>등장 횟수 · 회</span></div>
+    <ol class="word-bars" aria-label="메가박스 블로그 수집 자료의 단어 등장 횟수 상위 6개">
+      {words.map(([word,count],index) => <li><span class="word-label">{word}</span><div class="bar-track" aria-hidden="true"><i style={`width:${count / 43 * 100}%`} class:list={{ first: index === 0 }}></i></div><span class="word-count">{count}</span></li>)}
+    </ol>
+    <figcaption>메가박스 관련 블로그 수집 자료 · 불용어 제거 후 단어 빈도 상위 6개.</figcaption>
+  </>}
+</figure>
+<style>
+  .analysis-visual{background:var(--surface);padding:30px;border-radius:18px;min-width:0;display:flex;flex-direction:column;height:100%}
+  .visual-heading{display:flex;gap:16px;align-items:baseline;justify-content:space-between;font-size:14px;color:var(--muted);line-height:1.5}
+  .visual-heading span:first-child{color:var(--ink);font-weight:600}
+  .visual-heading span:last-child{white-space:nowrap}
+  .district-map{width:100%;max-width:440px;margin:22px auto 18px;height:330px;object-fit:contain}
+  .compact .district-map{max-width:320px;height:250px;margin-block:18px}
+  .map-legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:14px;color:var(--muted)}
+  .map-legend b{font-weight:400;color:var(--blue)}.map-legend span{display:flex;align-items:center;gap:8px}.map-legend i{width:11px;height:11px;border-radius:2px;background:#667285}.map-legend .positive{background:var(--blue)}
+  figcaption{font-size:14px;line-height:1.6;color:var(--muted);margin-top:22px}
+  .word-bars{list-style:none;padding:0;display:flex;flex:1;flex-direction:column;justify-content:center;gap:17px;margin-block:32px 15px;min-height:300px}
+  .word-bars li{display:flex;gap:14px;align-items:center;margin:0}
+  .word-label{flex:0 0 52px;font-size:16px;white-space:nowrap}.word-count{flex:0 0 24px;text-align:right;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+  .bar-track{flex:1;height:24px;border-radius:3px;overflow:hidden;background:#e7ebf1}.bar-track i{display:block;height:100%;background:#8da4d3;border-radius:3px}.bar-track .first{background:var(--blue)}
+  .compact .word-bars{min-height:272px}
+  @media(max-width:600px){.analysis-visual{padding:24px 18px}.visual-heading{gap:10px;flex-wrap:wrap}.district-map,.compact .district-map{height:auto;max-height:300px}.word-bars,.compact .word-bars{min-height:250px;gap:14px;margin-top:24px}.word-bars li{gap:10px}figcaption{margin-top:18px}}
+</style>

@@ -1,52 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
-import { t } from '../i18n/ui';
-
-/**
- * One page for both trees. A 404 is served for an address that does not exist,
- * so there is no locale to read off the path — it says both things instead of
- * guessing, and each half points at its own document.
- */
 ---
-
-<Base lang="en" title="404 — Ryu Jemu">
-  <main class="shell">
-    <div class="column">
-      <p class="meta">404</p>
-      <h1>{t('en', 'label.notfound')}</h1>
-      <p class="lede">{t('en', 'label.notfound.body')}</p>
-      <p class="lede lede--ko" lang="ko">{t('ko', 'label.notfound.body')}</p>
-      <ul class="links">
-        <li><a href="/">{t('en', 'label.home')}</a></li>
-        <li><a href="/ko/" lang="ko">{t('ko', 'label.home')}</a></li>
-      </ul>
-    </div>
-  </main>
+<Base title="페이지를 찾을 수 없음 · 류제무" noindex>
+  <section class="wrap missing-page">
+    <p class="eyebrow">404</p>
+    <h1>페이지를 찾을 수 없음</h1>
+    <p>주소를 확인하거나 홈에서 프로젝트를 선택해 주세요.</p>
+    <a class="button" href="/">홈으로 이동 →</a>
+  </section>
 </Base>
-
-<style>
-  main {
-    padding-block: 6rem 8rem;
-  }
-  h1 {
-    margin-top: 0.6rem;
-  }
-  .lede {
-    margin-top: 1rem;
-    font-size: var(--t-lede);
-    line-height: var(--lh-lede);
-    font-weight: 300;
-    color: var(--ink-muted);
-  }
-  .lede--ko {
-    font-size: 1rem;
-    color: var(--ink-faint);
-  }
-  .links {
-    margin-top: 2rem;
-    display: grid;
-    gap: 0.35rem;
-    font-family: var(--family-mono);
-    font-size: var(--t-data);
-  }
-</style>
+<style>.missing-page{padding-block:7rem;min-height:60vh}.missing-page p{margin-block:1.5rem}.missing-page h1{font-size:clamp(2rem,5vw,4rem)}</style>

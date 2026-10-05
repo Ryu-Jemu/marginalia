@@ -1,0 +1,24 @@
+/* A shared affordance for native disclosures, text links and manual screen controls. */
+@media screen{
+  details>summary[data-disclosure-summary]{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:64px;list-style:none;cursor:pointer;transition:background .18s,color .18s}
+  details>summary[data-disclosure-summary]::-webkit-details-marker{display:none}
+  details>summary[data-disclosure-summary]::marker{content:''}
+  details>summary[data-disclosure-summary]>:first-child{min-width:0}
+  details>summary[data-disclosure-summary]:hover{background:var(--interactive-wash)}
+  details>summary[data-disclosure-summary]:focus-visible{outline:3px solid var(--focus-ring);outline-offset:4px}
+  .document-detail .star-case>summary[data-disclosure-summary]:focus-visible{outline-offset:-3px}
+  #main :is(.profile-links a,.profile-contact a,.detail-header .detail-links a,.document-detail .back-link,.personal-quadrant a,.implementation-link){color:var(--interactive-blue);text-decoration:underline;text-decoration-color:var(--interactive-line);text-decoration-thickness:1px;text-underline-offset:5px;transition:color .18s,text-decoration-color .18s}
+  #main :is(.profile-links a,.profile-contact a,.detail-header .detail-links a,.document-detail .back-link,.personal-quadrant a,.implementation-link):hover{color:var(--interactive-blue-hover);text-decoration-color:currentColor}
+  .directory-list a:is(:hover,:focus-visible){box-shadow:inset 3px 0 var(--interactive-blue);background:var(--interactive-wash)}
+  .directory-list a:is(:hover,:focus-visible) h3{color:var(--interactive-blue)}
+  [data-phone-deck][data-deck-ready] [data-deck-controls] button[data-deck-step]{border-color:var(--interactive-blue);background:var(--interactive-blue);color:#fff;border-radius:9px;min-width:44px;min-height:44px;transition:background .18s,border-color .18s,box-shadow .18s}
+  [data-phone-deck][data-deck-ready] [data-deck-controls] button[data-deck-step]:hover:not(:disabled){border-color:var(--interactive-blue-hover);background:var(--interactive-blue-hover);color:#fff;box-shadow:0 2px 7px rgb(35 87 217 / .2)}
+  [data-phone-deck][data-deck-ready] [data-deck-controls] button[data-deck-step]:disabled{border-color:var(--line);background:var(--surface);color:var(--muted);opacity:.65;box-shadow:none}
+  [data-phone-deck][data-deck-ready] [data-deck-controls] button[data-deck-index]{border:1px solid var(--interactive-line);border-radius:8px;color:var(--interactive-blue);background:var(--paper);min-height:44px;transition:background .18s,border-color .18s,color .18s}
+  [data-phone-deck][data-deck-ready] [data-deck-controls] button[data-deck-index]:hover{border-color:var(--interactive-blue);background:var(--interactive-wash)}
+  [data-phone-deck][data-deck-ready] [data-deck-controls] button[data-deck-index][aria-pressed=true]{border-color:var(--interactive-blue);background:var(--interactive-blue);color:#fff}
+  [data-phone-deck][data-deck-ready] .deck-dots{gap:8px;margin-top:14px;margin-bottom:10px;flex-wrap:wrap}
+  [data-phone-deck][data-deck-ready] .deck-dots button[data-deck-index] span{background:var(--interactive-blue)}
+  [data-phone-deck][data-deck-ready] .deck-dots button[data-deck-index][aria-pressed=true] span{background:#fff}
+  [data-deck-controls] button:focus-visible{outline:3px solid var(--focus-ring);outline-offset:4px}
+}

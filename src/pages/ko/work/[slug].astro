@@ -1,15 +1,9 @@
 ---
-import Work from '../../../components/pages/Work.astro';
-import { projectsOf, slugOf } from '../../../lib/content';
-
-export const prerender = true;
-
-export async function getStaticPaths() {
-  const projects = await projectsOf('ko');
-  return projects.map((entry) => ({ params: { slug: slugOf(entry) }, props: { entry } }));
+import LegacyRedirect from '../../../components/LegacyRedirect.astro';
+import {projectsOf} from '../../../lib/content';
+export const prerender=true;
+export async function getStaticPaths(){
+  return (await projectsOf()).map(project=>({params:{slug:project.id}}));
 }
-
-const { entry } = Astro.props;
 ---
-
-<Work entry={entry} lang="ko" />
+<LegacyRedirect to={`/work/${Astro.params.slug}/`}/>

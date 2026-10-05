@@ -1,409 +1,124 @@
 ---
-import { render, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Nav from '../chrome/Nav.astro';
-import NoteLines from '../note/NoteLines.astro';
-import Section from '../doc/Section.astro';
-import Bullets from '../doc/Bullets.astro';
-import DataPanel from '../doc/DataPanel.astro';
-import StatusLabel from '../work/StatusLabel.astro';
-import Actions from '../work/Actions.astro';
-import FixList from '../work/FixList.astro';
-import SafetyList from '../work/SafetyList.astro';
-import Verification from '../work/Verification.astro';
-import ContributionTable from '../work/ContributionTable.astro';
-import ProductDeck from '../viz/ProductDeck.astro';
-import Architecture from '../viz/Architecture.astro';
-import Figure from '../viz/Figure.astro';
-import SystemFlow from '../viz/SystemFlow.astro';
-import PublisherComparison from '../viz/PublisherComparison.astro';
-import ResultIsolation from '../viz/ResultIsolation.astro';
-import ProjectFigures from '../viz/ProjectFigures.astro';
-import Plates from '../viz/Plates.astro';
-import { t, localise, type Lang } from '../../i18n/ui';
-import { slugOf } from '../../lib/content';
-
-interface Props {
-  entry: CollectionEntry<'projects'>;
-  lang: Lang;
-}
-const { entry, lang } = Astro.props;
-const p = entry.data;
-const slug = slugOf(entry);
-const { Content } = await render(entry);
-
-/* Only the two products have a device to stand beside their plates. On a study
-   there is nothing in the left column, so the figures were being squeezed into
-   two thirds of the page with a third of it blank. */
-const hasDevice = slug === 'dartoo' || slug === 'map';
-const hasPlates = slug === 'cinema-dashboard';
-
-const backTo =
-  p.domain === 'pipeline'
-    ? '#pipelines'
-    : p.domain === 'research'
-      ? '#research'
-      : p.domain === 'analysis'
-        ? '#analysis'
-        : '#more';
-
-let n = 0;
-const next = () => String(++n);
-let fig = 0;
-const nextFig = () => String(++fig);
+import '../../styles/detail.css';
+import type {Project} from '../../lib/content';
+import ProductScreens from '../viz/ProductScreens.astro';
+import WebScreens from '../viz/WebScreens.astro';
+import { webScreens } from '../../data/web-screens';
+import CloudEnvironment from '../CloudEnvironment.astro';
+import TechBadge from '../TechBadge.astro';
+import TechnologyChoices from '../TechnologyChoices.astro';
+import { technologyChoices } from '../../data/project-technology';
+import FlowDiagram from '../viz/FlowDiagram.astro';
+import CrimeStudy from '../viz/CrimeStudy.astro';
+import CinemaStudy from '../viz/CinemaStudy.astro';
+import PricingResults from '../viz/PricingResults.astro';
+import BeamMethodStudy from '../viz/BeamMethodStudy.astro';
+import StarCases from '../StarCases.astro';
+import Icon from '../Icon.astro';
+import ArchitectureDiagram from '../viz/ArchitectureDiagram.astro';
+import { architectures } from '../../data/architectures';
+interface Props { project: Project }
+const {project} = Astro.props;
+const p = project.data;
+const architecture = architectures[project.id];
+const choices = technologyChoices[project.id];
+const linkIcon = (href: string): 'code' | 'book' | 'smartphone' | 'link' => href.includes('github.com/') ? 'code' : href.includes('apps.apple.com/') ? 'smartphone' : href.startsWith('/research/') || /\.pdf(?:[?#]|$)/.test(href) ? 'book' : 'link';
+const hasPhoneScreens = ['map', 'dartoo'].includes(project.id);
+const webScreenSet = webScreens[project.id];
+const hasScreens = hasPhoneScreens || Boolean(webScreenSet);
+const hasVisual = p.category === 'analysis' || p.category === 'research';
+const researchId = project.id === 'network-pricing' ? 'ask-2026' : project.id === 'bp-llm' ? 'ieee-tai-survey' : null;
+const returnAnchor = p.category === 'ai' ? 'ai-projects' : p.category === 'analysis' ? 'analysis' : p.category === 'research' ? 'research' : p.category === 'other' ? 'more' : 'pipelines';
 ---
+<Base title={`${p.title} · 류제무 포트폴리오`} description={p.tagline}>
+  <div class:list={['wrap detail-wrap document-detail', {'architecture-detail': architecture}]}>
+    <header class="detail-header">
+      <a class="back-link" href={`/#${returnAnchor}`}>← 포트폴리오</a>
+      <div class="project-kicker"><span>{p.status}</span><span>{p.team}</span></div>
+      <h1>{p.title}</h1>
+      <p class="detail-lede">{p.tagline}</p>
+      <p class="detail-role"><strong>담당</strong><span>{p.role}</span></p>
+      <ul class="chips" aria-label="사용 기술">{p.stack.map(s => <li><TechBadge name={s}/></li>)}</ul>
+      <div class="detail-links">
+        {p.links.map(l => <a href={l.href}><Icon name={linkIcon(l.href)} size={18}/>{l.label}<Icon name="arrow-up-right" size={15}/></a>)}
+        {researchId && !p.links.some(l => l.href === `/research/${researchId}/`) && <a href={`/research/${researchId}/`}><Icon name="book" size={18}/>관련 연구<Icon name="arrow-up-right" size={15}/></a>}
+      </div>
+    </header>
 
-<Base lang={lang} title={`${p.title} — ${t(lang, 'site.name')}`} description={p.tagline}>
-  <Nav lang={lang} base={localise(lang, '/')} />
+    <div class="detail-layout">
+      <aside class="detail-sidebar">
+        <nav class="detail-nav" aria-label="프로젝트 목차" data-section-nav>
+          <span class="detail-nav-title">목차</span>
+          {hasScreens && <a href="#screens"><Icon name={hasPhoneScreens ? 'smartphone' : 'code'} size={17}/>화면</a>}
+          {hasVisual && <a href="#overview"><Icon name={p.category === 'analysis' ? 'chart' : 'book'} size={17}/>시각화</a>}
+          <a href="#features"><Icon name="grid" size={17}/>기능</a>
+          <a href="#contribution"><Icon name="user" size={17}/>기여</a>
+          {choices && <a href="#technology"><Icon name="code" size={17}/>기술</a>}
+          <a href="#architecture"><Icon name={p.category === 'analysis' ? 'chart' : 'layers'} size={17}/>구조</a>
+          {p.cloud && <a href="#cloud"><Icon name="cloud" size={17}/>클라우드</a>}
+          {p.cases.length > 0 && <a href="#troubleshooting"><Icon name="tool" size={17}/>트러블슈팅</a>}
+          {p.outcomes.length > 0 && <a href="#outcomes"><Icon name="check" size={17}/>결과</a>}
+        </nav>
+      </aside>
 
-  <main class="shell">
-    <article class="document" data-annotated>
-      <NoteLines />
+      <div class="detail-body">
+        {hasPhoneScreens && <section class="detail-section detail-screens" id="screens">
+          <h2><Icon name="smartphone" size={22}/>화면</h2>
+          <ProductScreens project={project.id as 'map' | 'dartoo'}/>
+        </section>}
+        {webScreenSet && <section class="detail-section detail-web-screens" id="screens">
+          <h2><Icon name="code" size={22}/>화면</h2>
+          <WebScreens {...webScreenSet}/>
+        </section>}
+        {hasVisual && <section class="detail-section detail-visual" id="overview">
+          <h2><Icon name={p.category === 'analysis' ? 'chart' : 'book'} size={22}/>시각화</h2>
+          {project.id === 'crime-analysis' && <CrimeStudy/>}
+          {project.id === 'cinema-dashboard' && <CinemaStudy/>}
+          {project.id === 'network-pricing' && <PricingResults/>}
+          {project.id === 'bp-llm' && <BeamMethodStudy/>}
+        </section>}
 
-      <header class="column column--wide head">
-        <p class="head__back">
-          <a href={localise(lang, `/${backTo}`)}>&larr; {t(lang, 'nav.back')}</a>
-        </p>
-        <p class="meta head__meta">
-          <span>{p.period}</span>
-          <span class="head__sep">·</span>
-          <span>{p.team}</span>
-          <StatusLabel status={p.status} hosting={p.hosting} lang={lang} />
-        </p>
-        <h1>{p.title}</h1>
-        <p class="head__tagline">{p.tagline}</p>
-        <p class="meta head__role">{p.role}</p>
+        <section class="detail-section" id="features">
+          <h2><Icon name="grid" size={22}/>기능</h2>
+          <dl class="detail-features">{p.features.map(f => <div><dt>{f.title}</dt><dd>{f.detail}</dd></div>)}</dl>
+        </section>
 
-        {p.hosting === 'offline' && <p class="head__hosting">{t(lang, 'work.hosting.offline')}</p>}
+        <section class="detail-section" id="contribution">
+          <h2><Icon name="user" size={22}/>기여</h2>
+          <div class="contribution-list">{p.contributions.map(c => <article><h3>{c.area}</h3><div><p>{c.work}</p><p class="contribution-context">{c.context}</p></div></article>)}</div>
+        </section>
 
-        {
-          p.links.length > 0 && (
-            <Actions
-              actions={p.links.map((l) => ({
-                href: l.href,
-                label: l.label,
-                // A filled button says "this is running". Nothing here is.
-                kind: p.hosting === 'offline' && l.kind === 'deployed' ? 'doc' : l.kind,
-              }))}
-            />
-          )
-        }
-      </header>
+        {choices && <section class="detail-section" id="technology">
+          <h2><Icon name="code" size={22}/>기술</h2>
+          <TechnologyChoices choices={choices}/>
+        </section>}
 
-      {
-        p.data.length > 0 && (
-          <div class="column column--wide head__panel">
-            <DataPanel items={p.data} />
-          </div>
-        )
-      }
+        <section class="detail-section" id="architecture">
+          <h2><Icon name={p.category === 'analysis' ? 'chart' : 'layers'} size={22}/>구조</h2>
+          {architecture ? <ArchitectureDiagram model={architecture}/> : <>
+            <FlowDiagram stages={p.flow} label={`${p.title}의 주요 처리 흐름`} compact/>
+            {p.architecture.length > 0 && <div class="architecture-groups">{p.architecture.map(group => <section><h3>{group.title}</h3><ul>{group.items.map(item => <li>{item}</li>)}</ul></section>)}</div>}
+          </>}
+        </section>
 
-      {
-        p.pipeline && (
-          <Section id="pipeline" n={next()} title={t(lang, 'work.pipeline')}>
-            <div class="column column--wide">
-              <Figure
-                n={nextFig()}
-                title={[t(lang, 'fig.pipeline.full', { title: p.title }), p.pipeline.note].filter(Boolean).join(' ')}
-                lang={lang}
-              >
-                <SystemFlow
-                  from={p.pipeline.from}
-                  to={p.pipeline.to}
-                  feeds={p.pipeline.feeds}
-                  stages={p.pipeline.stages}
-                  lang={lang}
-                />
-              </Figure>
-            </div>
-            {p.summary.length > 0 && (
-              <div class="column column--wide summary">
-                <Bullets items={p.summary} tone="ink" />
-              </div>
-            )}
+        {p.cloud && <section class="detail-section" id="cloud">
+          <h2><Icon name="cloud" size={22}/>클라우드</h2>
+          <CloudEnvironment cloud={p.cloud}/>
+        </section>}
 
-            {p.architecture && (
-              <div class="column column--wide arch">
-                <Figure
-                  n={nextFig()}
-                  title={t(lang, 'fig.architecture', { title: p.title })}
-                  lang={lang}
-                >
-                  <Architecture
-                    external={p.architecture.external}
-                    services={p.architecture.services}
-                    clients={p.architecture.clients}
-                    stores={p.architecture.stores}
-                    externalLabel={p.architecture.externalLabel}
-                    lang={lang}
-                  />
-                </Figure>
-              </div>
-            )}
-          </Section>
-        )
-      }
+        {p.cases.length > 0 && <section class="detail-section" id="troubleshooting">
+          <h2><Icon name="tool" size={22}/>트러블슈팅</h2>
+          <StarCases cases={p.cases}/>
+        </section>}
 
-      <Section id="scope" n={next()} title={t(lang, 'work.scope')}>
-        {p.contributions.length > 0 ? (
-          <div class="column column--wide"><ContributionTable items={p.contributions} lang={lang} /></div>
-        ) : (
-        <div class="column column--wide scope">
-          <div>
-            <p class="meta scope__key">{t(lang, 'work.owned')}</p>
-            <ul class="scope__list">
-              {p.ownership.owned.map((o) => <li>{o}</li>)}
-            </ul>
-          </div>
-          {
-            p.ownership.notOwned.length > 0 && (
-              <div>
-                <p class="meta scope__key scope__key--not">{t(lang, 'work.notowned')}</p>
-                <ul class="scope__list scope__list--not">
-                  {p.ownership.notOwned.map((o) => (
-                    <li>{o}</li>
-                  ))}
-                </ul>
-              </div>
-            )
-          }
-        </div>
-        )}
-      </Section>
+        {p.outcomes.length > 0 && <section class="detail-section outcomes" id="outcomes">
+          <h2><Icon name="check" size={22}/>결과</h2>
+          <ul class="prose-list">{p.outcomes.map(x => <li>{x}</li>)}</ul>
+        </section>}
 
-      {p.collaboration.length > 0 && (
-        <Section id="collaboration" n={next()} title={t(lang, 'work.collaboration')}>
-          <div class="column column--wide">
-            <Bullets items={p.collaboration} tone="ink" />
-          </div>
-        </Section>
-      )}
-
-      <Section id="what" n={next()} title={t(lang, 'work.how')}>
-        {hasDevice && (
-          <div class="column column--wide">
-            <Figure n={nextFig()} title={t(lang, slug === 'dartoo' ? 'fig.reconciliation' : 'fig.isolation')} lang={lang}>
-              {slug === 'dartoo' ? <PublisherComparison lang={lang} /> : <ResultIsolation lang={lang} />}
-            </Figure>
-          </div>
-        )}
-        <div class="column prose">
-          <Content />
-        </div>
-        {/* The device and the plates share a row on a product page: given its
-            own full-width band the phone leaves two thirds of the page empty
-            beside it, and the diagram that explains the same screens ends up a
-            scroll below the thing it explains. A study has no device, so its
-            figures take the whole width. */}
-        <div class:list={['column', 'column--wide', 'media', hasDevice && 'media--split']}>
-          {hasDevice && (
-            <div class="media__device">
-              <ProductDeck slug={slug} lang={lang} />
-            </div>
-          )}
-          <div class="media__plates">
-            <ProjectFigures slug={slug} startAt={fig} lang={lang} />
-          </div>
-        </div>
-      </Section>
-
-      {
-        hasPlates && (
-          <Section
-            id="plates"
-            n={next()}
-            title={t(lang, 'work.plates')}
-            lede={t(lang, 'work.plates.lede')}
-          >
-            <div class="column column--wide">
-              <Plates slug={slug} lang={lang} />
-            </div>
-          </Section>
-        )
-      }
-
-      {
-        p.safety.length > 0 && (
-          <Section
-            id="safety"
-            n={next()}
-            title={t(lang, 'work.safety')}
-            lede={t(lang, 'work.safety.lede')}
-          >
-            <div class="column column--wide">
-              <SafetyList items={p.safety} />
-            </div>
-          </Section>
-        )
-      }
-
-      {
-        p.fixes.length > 0 && (
-          <Section
-            id="fixes"
-            n={next()}
-            title={t(lang, 'work.fixes')}
-            lede={t(lang, 'work.fixes.lede')}
-          >
-            <div class="column column--wide">
-              <FixList fixes={p.fixes} lang={lang} />
-            </div>
-          </Section>
-        )
-      }
-
-      {
-        p.verification.length > 0 && (
-          <Section
-            id="verification"
-            n={next()}
-            title={t(lang, 'work.verification')}
-            lede={t(lang, 'work.verification.lede')}
-          >
-            <div class="column column--wide">
-              <Verification items={p.verification} summary={p.verificationSummary} lang={lang} />
-            </div>
-          </Section>
-        )
-      }
-
-      <Section id="stack" n={next()} title={t(lang, 'work.stack')}>
-        <div class="column column--wide">
-          <ul class="stack">
-            {p.stack.map((s) => <li>{s}</li>)}
-          </ul>
-        </div>
-      </Section>
-    </article>
-  </main>
+        <footer class="detail-bottom"><a class="back-link" href={`/#${returnAnchor}`}>← 다른 프로젝트 보기</a></footer>
+      </div>
+    </div>
+  </div>
 </Base>
-
-<style>
-  main {
-    padding-block: 1.75rem 5rem;
-  }
-
-  .head__back {
-    font-family: var(--family-mono);
-    font-size: var(--t-data);
-    margin-bottom: 1.5rem;
-  }
-  .head__back a {
-    color: var(--ink-faint);
-    text-decoration: none;
-  }
-  .head__back a:hover {
-    color: var(--rubric);
-  }
-  .head__meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.55rem;
-    margin-bottom: 0.7rem;
-  }
-  .head__sep {
-    color: var(--rule-strong);
-  }
-  .head__tagline {
-    margin-top: 0.8rem;
-    font-size: var(--t-lede);
-    line-height: var(--lh-lede);
-    font-weight: 400;
-    color: var(--ink-muted);
-    max-width: 72ch;
-    text-wrap: pretty;
-  }
-  .head__role {
-    margin-top: 0.9rem;
-  }
-  /* Stated where the links are, because that is where the assumption forms. */
-  .head__hosting {
-    margin-top: 0.9rem;
-    padding-left: 0.85rem;
-    border-left: 2px solid var(--boundary);
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--ink-muted);
-    max-width: 62ch;
-  }
-  .head__panel {
-    margin-top: 1.5rem;
-  }
-  .summary {
-    margin-top: 1.25rem;
-  }
-  .arch {
-    margin-top: 1.25rem;
-  }
-
-  .media {
-    margin-top: 1.25rem;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem;
-  }
-  .media > div { min-width: 0; }
-  @media (min-width: 52rem) {
-    .media--split {
-      grid-template-columns: 20.5rem minmax(0, 1fr);
-      gap: 2rem;
-      align-items: start;
-    }
-  }
-  /* The first plate carries a top rule of its own; without this the device and
-     the plate beside it start on two different lines. */
-  .media__plates > :global(.figure:first-child) {
-    margin-top: 0;
-  }
-
-  .scope {
-    display: grid;
-    gap: 1.5rem;
-  }
-  @media (min-width: 34rem) {
-    .scope {
-      grid-template-columns: 1fr 1fr;
-      gap: 2.25rem;
-    }
-  }
-  .scope__key {
-    color: var(--scope);
-    margin-bottom: 0.45rem;
-  }
-  .scope__key--not {
-    color: var(--boundary);
-  }
-  .scope__list {
-    display: grid;
-    gap: 0.35rem;
-    font-size: 0.97em;
-  }
-  .scope__list li {
-    position: relative;
-    padding-left: 1rem;
-  }
-  .scope__list li::before {
-    content: '·';
-    position: absolute;
-    left: 0.15rem;
-    color: var(--rule-strong);
-  }
-  .scope__list--not {
-    color: var(--ink-faint);
-  }
-
-  .stack {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 0.5rem;
-  }
-  .stack li {
-    font-family: var(--family-mono);
-    font-size: var(--t-data);
-    color: var(--ink-muted);
-    border: 1px solid var(--rule);
-    border-radius: 999px;
-    padding: 0.25em 0.7em;
-  }
-</style>

@@ -15,7 +15,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, relative } from 'node:path';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const DIRS = ['src/content', 'src/pages', 'src/components', 'src/layouts', 'src/i18n'];
+const DIRS = ['src/content', 'src/pages', 'src/components', 'src/layouts', 'src/i18n', 'src/lib', 'src/data'];
 const EXTS = new Set(['.md', '.mdx', '.yaml', '.yml', '.astro', '.ts', '.js', '.json']);
 
 const RULES = [
@@ -67,7 +67,7 @@ const RULES = [
     id: 'second-author',
     re: /\b(second|2nd)\s+author\b/i,
     why: 'The IEEE TAI author list places him 4th of 7.',
-    instead: 'Use research.yaml authorPosition {index, of}, which renders the position mechanically.',
+    instead: 'Use research.json authorPosition {index, of}, which renders the position mechanically.',
   },
   {
     id: 'live-status',
@@ -171,7 +171,10 @@ const CONTENT = new Set(['.md', '.mdx', '.yaml', '.yml']);
 const isSourceComment = (file, line) =>
   !CONTENT.has(extname(file)) && /^\s*(\{\s*\/\*|\/\/|\/\*|\*(?!\/)|\*\/|<!--)/.test(line);
 
-const files = DIRS.flatMap((d) => walk(join(ROOT, d)));
+// Internal evidence contains provenance and retired claims for audit purposes.
+// It is not public copy and must not be imported into a rendered component.
+const files = DIRS.flatMap((d) => walk(join(ROOT, d)))
+  .filter((file) => file !== join(ROOT, 'src/content/evidence.json'));
 const violations = [];
 
 for (const file of files) {

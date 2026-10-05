@@ -1,0 +1,26 @@
+---
+import districts from '../../data/seoul-districts.json';
+import {populationByDistrict,populationBandFor} from '../../data/district-metrics';
+interface Props { kind: 'crime' | 'cinema' }
+const { kind } = Astro.props;
+// A qualitative preview of observed keywords; word size does not encode frequency.
+const keywordRows = [['관람', '최신'], ['주차장', '주차'], ['대구', '시네마']];
+---
+<div class:list={['analysis-thumbnail', kind]} aria-hidden="true">
+  {kind === 'crime' ? <svg viewBox="-8 -8 776 642" focusable="false">
+    {districts.map(district => <path d={district.d} fill={populationBandFor(populationByDistrict[district.name]).color} />)}
+  </svg> : <div class="thumbnail-words">
+    {keywordRows.map(row => <div>{row.map(word => <span>{word}</span>)}</div>)}
+  </div>}
+</div>
+<style>
+  .analysis-thumbnail{display:flex;align-items:center;justify-content:center;flex:none;width:112px;height:88px;min-width:0}
+  .analysis-thumbnail svg{width:100%;height:100%;stroke:var(--paper);stroke-width:4;stroke-linejoin:round}
+  .thumbnail-words{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;font-size:16px;font-weight:600;line-height:1.4;letter-spacing:-.03em}
+  .thumbnail-words>div{display:flex;align-items:baseline;justify-content:center;gap:8px;white-space:nowrap}
+  .thumbnail-words span{color:var(--muted)}
+  .thumbnail-words>div:first-child span:first-child,.thumbnail-words>div:last-child span:last-child{color:var(--blue)}
+  .thumbnail-words>div:nth-child(2) span:first-child{color:var(--icon-teal,var(--blue))}
+  @media(max-width:600px){.analysis-thumbnail{width:84px;height:76px}.thumbnail-words{font-size:14px;gap:4px}.thumbnail-words>div{gap:7px}}
+  @media print{.analysis-thumbnail{break-inside:avoid}}
+</style>

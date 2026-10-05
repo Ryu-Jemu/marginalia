@@ -10,10 +10,10 @@
     "prebuild": "npm run verify",
     "build": "astro build",
     "preview": "astro preview",
-    "verify": "node scripts/check-claims.mjs && node scripts/check-notes.mjs && node scripts/check-i18n.mjs",
+    "verify": "node scripts/check-claims.mjs && node scripts/check-notes.mjs && node scripts/check-i18n.mjs && node --test scripts/content-guards.test.mjs",
     "check": "astro check",
     "astro": "astro",
-    "postbuild": "node scripts/check-spacing.mjs"
+    "postbuild": "node scripts/check-spacing.mjs && node scripts/check-public.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",
